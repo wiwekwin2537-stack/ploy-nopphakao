@@ -2,7 +2,7 @@
 import { validTree } from './passives.js';
 import { validItems, emptyEquip } from './items.js';
 
-export const SAVE_VERSION = 12;
+export const SAVE_VERSION = 13;
 const KEY = 'ploy.save';
 
 // ตัวแปลงเซฟรุ่นเก่า → รุ่นใหม่ (เพิ่มที่นี่เมื่อเปลี่ยนรูปแบบเซฟ)
@@ -59,6 +59,8 @@ const MIGRATIONS = {
   // v10 → v11: หีบเก็บของในเวียง เริ่มว่าง
   10: (d) => ({ ...d, v: 11, stash: [] }),
   // v11 → v12: แต้มพาสซีฟจากเควสรอง (บทแบบ PoE) · รางวัลเควสหลักที่ทำไปแล้วนับว่ารับแล้ว (ไม่ให้ซ้ำ)
+  // v12 → v13: อาชีพ + ชื่อตัวละคร (เซฟเก่า: อาชีพจากสายที่เลือกในต้นพาสซีฟ ไม่มี = นักรบ)
+  12: (d) => { const st = ['warrior', 'ranger', 'shaman'].find((c) => (d.passives || []).includes(c)); return { ...d, v: 13, cls: st || 'warrior', name: 'นักล่าพลอย', passives: st ? d.passives : ['warrior', ...(d.passives || [])] }; },
   11: (d) => ({ ...d, v: 12, questPoints: 0, flags: { ...d.flags, ...(d.flags.heardHimmapan ? { q_q1_main: true } : {}) } }),
 };
 
@@ -69,7 +71,7 @@ export function serialize(game) {
     zone: at ? at.zone : z.id, x: Math.round(at ? at.x * 32 : p.x), y: Math.round(at ? at.y * 32 : p.y),
     level: p.level, xp: p.xp, coins: p.coins, potions: p.potions, mpPotions: p.mpPotions, hp: Math.round(p.hp), mp: Math.round(p.mp),
     items: JSON.parse(JSON.stringify(p.items)), stash: JSON.parse(JSON.stringify(p.stash || [])), equip: JSON.parse(JSON.stringify(p.equip)), nextUid: p.nextUid,
-    passives: p.passives.slice(), gemXp: { ...(p.gemXp || {}) }, questPoints: p.questPoints || 0, bag: p.bag.slice(), currency: { ...p.currency }, flags: { ...game.flags },
+    passives: p.passives.slice(), gemXp: { ...(p.gemXp || {}) }, questPoints: p.questPoints || 0, cls: p.cls, name: p.name, bag: p.bag.slice(), currency: { ...p.currency }, flags: { ...game.flags },
   };
 }
 
@@ -85,6 +87,7 @@ export function validate(s, data) {
   if (!num(d.x, 0, 1e6) || !num(d.y, 0, 1e6) || !d.flags || typeof d.flags !== 'object') return null;
   const known = (g) => !gemsData || !!(gemsData.main[g] || gemsData.support[g]);
   if (!Array.isArray(d.bag) || !d.bag.every((g) => typeof g === 'string' && known(g)) || d.bag.length > 500) return null;
+  if ((data.passives && !data.passives.classes[d.cls]) || typeof d.name !== 'string' || !d.name.trim() || d.name.length > 16) return null;
   if (!Number.isInteger(d.questPoints) || d.questPoints < 0 || d.questPoints > 50) return null;
   if (!d.gemXp || typeof d.gemXp !== 'object' || !Object.entries(d.gemXp).every(([k, v]) => known(k) && Number.isInteger(v) && v >= 0 && v <= 1e7)) return null;
   if (!d.currency || typeof d.currency !== 'object' || !Object.entries(d.currency).every(([k, v]) => (!data.items || data.items.currency[k]) && Number.isInteger(v) && v >= 0 && v <= 9999)) return null;

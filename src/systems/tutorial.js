@@ -3,10 +3,11 @@ import { makeMob } from './monsters.js';
 import { openDialog } from './npc.js';
 import { spawnDrop } from './loot.js';
 import { ownsGem, autoSocket } from './gems.js';
+import { classGem } from './player.js';
 
 const KEYS = {
   keyboard: { move: 'WASD / ลูกศร หรือคลิกพื้น', attack: 'J หรือคลิกที่มอน', dash: 'Space', skill: 'K หรือคลิกขวา', interact: 'E' },
-  touch: { move: 'จอยด้านซ้าย', attack: 'ปุ่มดาบ', dash: 'ปุ่มหลบ', skill: 'ปุ่มทับทิม', interact: 'ปุ่มคุย หรือแตะที่ตัวคน' },
+  touch: { move: 'จอยด้านซ้าย', attack: 'ปุ่มดาบ', dash: 'ปุ่มหลบ', skill: 'ปุ่มสกิล', interact: 'ปุ่มคุย หรือแตะที่ตัวคน' },
   pad: { move: 'สติ๊กซ้าย', attack: 'ปุ่ม A', dash: 'ปุ่ม B', skill: 'ปุ่ม X', interact: 'ปุ่ม Y' },
 };
 const k = (game, a) => (KEYS[game.input.mode] || KEYS.keyboard)[a];
@@ -26,8 +27,8 @@ function ensureStepMobs(game) {
   if (game.world.zone.id !== 'road') return;
   const alive = (t) => game.mobs.some((m) => m.tutorial && m.type === t && !m.dead);
   if (st === 'attack' && !alive('piglet')) { spawnTut(game, 'piglet', 140, -30); spawnTut(game, 'piglet', 170, 34); }
-  if (st === 'dash' && !alive('bigboar') && !game.drops.some((d) => d.gem === 'ruby')) spawnTut(game, 'bigboar', 260, 0);
-  if (st === 'gem' && !game.flags.gotRuby && !game.drops.some((d) => d.gem === 'ruby')) spawnDrop(game, { kind: 'gem', gem: 'ruby', x: game.player.x + 50, y: game.player.y });
+  if (st === 'dash' && !alive('bigboar') && !game.drops.some((d) => d.gem === classGem(game.data, game.player))) spawnTut(game, 'bigboar', 260, 0);
+  if (st === 'gem' && !game.flags.gotRuby && !game.drops.some((d) => d.gem === classGem(game.data, game.player))) spawnDrop(game, { kind: 'gem', gem: classGem(game.data, game.player), x: game.player.x + 50, y: game.player.y });
 }
 
 export function setTutStep(game, step) {
@@ -43,7 +44,7 @@ export function hintText(game) {
     case 'attack': return 'ลูกหมูป่าอสูรบุกมาแล้ว! ฟันด้วย ' + k(game, 'attack');
     case 'dash': return game.tutDodged ? 'หลบได้สวย! ฟันมันตอนมันมึนงง' : 'เห็นเส้นแดงเมื่อไหร่ กดหลบด้วย ' + k(game, 'dash');
     case 'gem': return 'มีบางอย่างส่องแสง... เดินไปเก็บ';
-    case 'skill': return 'ยิงลูกไฟทับทิมด้วย ' + k(game, 'skill');
+    case 'skill': return `ใช้สกิล${game.data.gems.main[classGem(game.data, game.player)].skill}ด้วย ` + k(game, 'skill');
     case 'go': return z === 'road' ? 'ท่อนไม้ขวางทางหายไปแล้ว เดินไปทางตะวันออก สู่เวียงด่านหิน' : '';
     case 'chan': return z === 'town' ? 'ไปพบพ่อเฒ่าจันทร์ที่ศาลาฝั่งตะวันออก (' + k(game, 'interact') + ')' : 'กลับไปเวียงด่านหิน';
     case 'done': return z === 'town' && game.hintT < 9 ? 'ออกประตูทิศเหนือ ไปฝึกฝีมือที่ทุ่งนาร้าง' : '';
@@ -56,7 +57,7 @@ export function tutorialTarget(game) {
   if (st === 'go' && z.id === 'road') { const e = z.exits[0]; return { x: e.x, y: e.y + e.h / 2 }; }
   if (st === 'chan' && z.id === 'town') { const n = z.npcs.find((q) => q.id === 'chan'); return n ? { x: n.x, y: n.y - 20 } : null; }
   if (st === 'done' && z.id === 'town' && game.hintT < 9) { const e = z.exits.find((q) => q.to === 'field'); return { x: e.x + e.w / 2, y: e.y + 20 }; }
-  if (st === 'gem') { const d = game.drops.find((q) => q.gem === 'ruby'); return d ? { x: d.x, y: d.y - 10 } : null; }
+  if (st === 'gem') { const d = game.drops.find((q) => q.gem === classGem(game.data, game.player)); return d ? { x: d.x, y: d.y - 10 } : null; }
   return null;
 }
 
@@ -80,8 +81,9 @@ export function setupTutorial(game) {
   });
   E.on('chargeDodged', () => { if (game.flags.tutStep === 'dash') game.tutDodged = true; });
   E.on('gemPicked', ({ gem }) => {
-    if (gem !== 'ruby' || game.flags.tutorialDone) return;
-    openDialog(game, 'ทับทิม', ['ทับทิมเปล่งแสงแดงฉาน แล้วซึมเข้าสู่ดาบของเจ้า...', 'ได้รับสกิล "ลูกไฟทับทิม"!'], () => setTutStep(game, 'skill'));
+    if (gem !== classGem(game.data, game.player) || game.flags.tutorialDone) return;
+    const g = game.data.gems.main[gem];
+    openDialog(game, g.name, [`${g.name}เปล่งแสงเจิดจ้า แล้วซึมเข้าสู่อาวุธของเจ้า...`, `ได้รับสกิล "${g.skill}"!`], () => setTutStep(game, 'skill'));
   });
   E.on('skillCast', () => { if (game.flags.tutStep === 'skill') setTutStep(game, 'go'); });
   E.on('metChan', () => setTutStep(game, 'done'));
@@ -99,7 +101,8 @@ export function updateTutorial(game, dt) {
 
 export function skipTutorial(game) {
   const p = game.player;
-  if (!ownsGem(p, 'ruby')) autoSocket(p, 'ruby', game.data.gems);
+  const gem = classGem(game.data, p);
+  if (!ownsGem(p, gem)) autoSocket(p, gem, game.data.gems);
   Object.assign(game.flags, { gotRuby: true, metChan: true, tutorialDone: true, tutStep: 'done' });
   game.hintT = 0;
 }

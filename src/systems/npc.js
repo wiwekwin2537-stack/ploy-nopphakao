@@ -1,5 +1,6 @@
 // ชาวเวียงและกล่องบทสนทนา
 import { readyQuestFor, claimQuest } from './quests.js';
+import { classGem } from './player.js';
 export function openDialog(game, speaker, lines, onDone) {
   game.dialog = { speaker, lines, i: 0, shown: 0, onDone };
   game.mode = 'dialog';
@@ -9,7 +10,8 @@ export function openDialog(game, speaker, lines, onDone) {
 function lineFor(game, npc) {
   const D = game.data.dialogue;
   if (npc.id === 'chan' && !game.flags.metChan) {
-    return { lines: D.chan_first, done: () => { game.flags.metChan = true; game.flags.tutorialDone = true; game.events.emit('metChan', {}); } };
+    const gname = game.data.gems.main[classGem(game.data, game.player)].name;
+    return { lines: D.chan_first.map((l) => l.replace('{gem}', gname).replace('{name}', game.player.name || 'นักล่าพลอย')), done: () => { game.flags.metChan = true; game.flags.tutorialDone = true; game.events.emit('metChan', {}); } };
   }
   // เควสที่ทำสำเร็จแล้ว: บทพูดรับรางวัล → แต้มพาสซีฟทันที / เปิดหน้าต่างเลือกพลอย
   const q = readyQuestFor(game, npc.id);

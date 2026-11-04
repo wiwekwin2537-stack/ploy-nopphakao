@@ -7,9 +7,9 @@ const lookCache = { key: '', look: null };
 
 export function heroLook(game) {
   const p = game.player, I = game.data.items, e = p.equip || {};
-  const key = ['head', 'body', 'legs', 'arms', 'amulet'].map((k) => (e[k] ? e[k].base : '')).join('|');
+  const key = p.cls + '|' + ['head', 'body', 'legs', 'arms', 'amulet'].map((k) => (e[k] ? e[k].base : '')).join('|');
   if (lookCache.key !== key || !lookCache.look) {
-    const L = { ...LOOKS.hero }, lk = (k) => (e[k] ? I.bases[e[k].base] : null);
+    const CL = game.data.passives.classes[p.cls], L = { ...LOOKS.hero, ...((CL && CL.look) || {}) }, lk = (k) => (e[k] ? I.bases[e[k].base] : null);
     const b = lk('body'), h = lk('head'), lg = lk('legs'), ar = lk('arms'), nk = lk('amulet');
     // ชุดบนตัวใช้ภาพเดียวกับไอคอนเป็นลายเสื้อ/กางเกง (แบบเอโดเรีย) + สีวัสดุเดียวกัน
     if (b) { L.top = matColor(b); L.collar = (b.look && b.look.trim) || shade(L.top, 0.08); L.plates = null; L.straps = null; L.bodyArt = itemSprite(I, e.body.base, 64); }

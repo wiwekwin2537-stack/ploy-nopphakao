@@ -48,8 +48,18 @@ await check('หน้าแรก: กดปุ่ม "เริ่มผจญ
   await page.screenshot({ path: SHOTS + '/01-title.png' });
   await page.mouse.click(422, 265);
   await page.waitForTimeout(200);
+  assert((await state(page)).mode === 'create', 'ไม่เข้าหน้าสร้างตัวละคร: ' + (await state(page)).mode);
+  // หน้าสร้างตัวละคร (แบบ PoE): เลือกหมอผี (ไม้เท้า + ทับทิม) → ตั้งชื่อ → เริ่ม
+  const C = await G(page, () => __ploy.createLayout());
+  await page.mouse.click(C.cards[2].x + C.cards[2].w / 2, C.cards[2].y + 40); await page.waitForTimeout(400);
+  await page.screenshot({ path: SHOTS + '/00-create.png' });
+  await page.fill('input', 'ทดสอบหมอผี');
+  await page.mouse.click(C.go.x + C.go.w / 2, C.go.y + C.go.h / 2);
+  await page.waitForTimeout(200);
   const s = await state(page);
   assert(s.zone === 'road' && s.mode === 'dialog', `ได้ ${s.mode}/${s.zone}`);
+  const who = await G(page, () => ({ cls: __ploy.game.player.cls, name: __ploy.game.player.name, w: __ploy.game.player.equip.weapon.base, pas: __ploy.game.player.passives.join() }));
+  assert(who.cls === 'shaman' && who.name === 'ทดสอบหมอผี' && who.w === 'herb_staff' && who.pas === 'shaman', JSON.stringify(who));
 });
 
 await check('บทนำ 1: ปิดบทพูด แล้วเดินด้วยปุ่ม D', async () => {
@@ -182,20 +192,22 @@ await check('พลอยเสริม: เก็บจากพื้น → 
   assert(n === 3, 'ลูกไฟ ' + n + ' ลูก');
 });
 
-await check('ต้นพาสซีฟ: กด P → แตะนักรบสองครั้งเลือกสาย → แตะโหนดติดกันสองครั้ง → ดาเมจดาบเพิ่ม', async () => {
-  await G(page, () => { const p = __ploy.game.player; p.level = Math.max(p.level, 3); p.passives = []; });
+await check('ต้นพาสซีฟ: กด P → จุดเริ่มเป็นอาชีพที่เลือกไว้แล้ว → แตะโหนดติดกันสองครั้งลงแต้ม → ถอนฟรีไม่ได้', async () => {
+  await G(page, () => { const p = __ploy.game.player; p.level = Math.max(p.level, 3); p.passives = [p.cls]; p.currency.regret = 0; });
   const dmg0 = await G(page, () => __ploy.game.player.level);
   await page.keyboard.press('KeyP');
   await wait(page, () => __ploy.game.mode === 'tree', null, 2000);
   const at = (id) => G(page, (id) => { const g = __ploy.game, v = g.treeView, n = g.data.passives.nodes[id], s = __ploy.layout().s; return { x: g.camera.viewW / 2 + (n.x - v.x) * v.z * s, y: g.camera.viewH / 2 + (n.y - v.y) * v.z * s }; }, id);
-  for (const id of ['warrior', 'warrior_a0']) {
-    const pt = await at(id);
-    await page.mouse.click(pt.x, pt.y); await page.waitForTimeout(80);
-    await page.mouse.click(pt.x, pt.y); await page.waitForTimeout(80);
-  }
+  const cls = await G(page, () => __ploy.game.player.cls);
+  const pt = await at(cls + '_a0');
+  await page.mouse.click(pt.x, pt.y); await page.waitForTimeout(80);
+  await page.mouse.click(pt.x, pt.y); await page.waitForTimeout(80);
   await page.screenshot({ path: SHOTS + '/10c-tree.png' });
   const r = await G(page, () => ({ pas: __ploy.game.player.passives.slice() }));
-  assert(r.pas.includes('warrior') && r.pas.includes('warrior_a0'), 'เลือกไม่ได้ ' + JSON.stringify(r.pas));
+  assert(r.pas.includes(cls) && r.pas.includes(cls + '_a0'), 'เลือกไม่ได้ ' + JSON.stringify(r.pas));
+  await page.mouse.click(pt.x, pt.y); await page.waitForTimeout(80);     // แตะซ้ำโหนดที่ลงแล้ว = ไม่มีใบลาน ถอนไม่ได้
+  await page.mouse.click(pt.x, pt.y); await page.waitForTimeout(80);
+  assert((await G(page, () => __ploy.game.player.passives.length)) === 2, 'ถอนฟรีได้ (ผิดแบบ PoE)');
   // ลากเลื่อนต้นได้
   const v0 = await G(page, () => __ploy.game.treeView.x);
   await page.mouse.move(400, 200); await page.mouse.down(); await page.mouse.move(300, 200, { steps: 5 }); await page.mouse.up();

@@ -210,7 +210,7 @@ export function createScene(game) {
       plate(ctx, itemName(I, d.item), d.x, d.y - 26, 10, col, col + 'aa');
     }
     const p = game.player;
-    if (!p.dead) plate(ctx, 'นักล่าพลอย', p.x, p.y - 62, 11, '#f4e6c8', 'rgba(217,166,48,0.9)', 'Lv.' + p.level);
+    if (!p.dead) plate(ctx, p.name || 'นักล่าพลอย', p.x, p.y - 62, 11, '#f4e6c8', 'rgba(217,166,48,0.9)', 'Lv.' + p.level);
     game.fx.drawTexts(ctx);
     const tt = tutorialTarget(game);
     if (tt && tt.x > b.l && tt.x < b.r && tt.y > b.t && tt.y < b.b) {

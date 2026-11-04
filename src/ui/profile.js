@@ -16,7 +16,7 @@ export function drawProfileStats(ctx, game, B) {
   ctx.fillStyle = g; rrect(ctx, bx, by, bw, bh, 10 * s); ctx.fill();
   ctx.strokeStyle = 'rgba(217,166,48,0.45)'; ctx.lineWidth = 1; ctx.stroke();
   const cls = startOf(p, PS), cname = cls ? PS.nodes[cls].name : 'ยังไม่เลือกสาย';
-  text(ctx, 'นักล่าพลอย', bx + bw / 2, by + 16 * s, 13 * s, C.goldHi, 'center');
+  text(ctx, p.name || 'นักล่าพลอย', bx + bw / 2, by + 16 * s, 13 * s, C.goldHi, 'center');
   text(ctx, `Lv.${p.level} · ${cname}`, bx + bw / 2, by + 33 * s, 10 * s, C.cream, 'center', '600');
   const k = Math.min(2.4, (bh - 90 * s) / 60) , cx = bx + bw / 2, cy = by + bh - 34 * s;
   ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(cx, cy, 34 * s, 9 * s, 0, 0, Math.PI * 2); ctx.fill();

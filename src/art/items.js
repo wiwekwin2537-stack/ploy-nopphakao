@@ -63,6 +63,15 @@ const WEAPONS = {
     part(g, GOLD, P(g, [26, 43, 38, 43, 40, 47, 24, 47]), 24, 43, 40, 47);
     part(g, WOOD, P(g, [29, 47, 35, 47, 37, 52, 33, 60, 29, 58, 30, 52]), 29, 47, 37, 60);   // ด้ามกริชโค้งแบบหัวนก
   },
+  herb_staff(g, M) {                                           // ไม้เท้าหมอผี: ไม้คดพันผ้ายันต์ หัวเป็นลูกแก้วในกรงราก
+    part(g, M, () => { g.beginPath(); g.moveTo(30, 18); g.quadraticCurveTo(28, 40, 31, 62); g.lineTo(35, 62); g.quadraticCurveTo(33, 40, 35, 18); g.closePath(); }, 28, 0, 36, 0);
+    g.fillStyle = '#c8302a'; g.fillRect(29, 30, 7, 3); g.fillStyle = '#f0e2c0'; g.fillRect(29.5, 33, 6, 5);   // ผ้ายันต์
+    g.fillStyle = '#5a3a10'; g.fillRect(31, 34.5, 3, 0.8); g.fillRect(31, 36, 3, 0.8);
+    const gl = g.createRadialGradient(31, 10, 1, 32.5, 12, 9); gl.addColorStop(0, '#ffe0c0'); gl.addColorStop(0.45, '#ff5a3a'); gl.addColorStop(1, '#7a1408');
+    g.save(); g.shadowColor = '#ff6a3a'; g.shadowBlur = 8; g.fillStyle = gl; g.beginPath(); g.arc(32.5, 11, 7, 0, Math.PI * 2); g.fill(); g.restore();
+    g.strokeStyle = M.lo; g.lineWidth = 2.2; g.lineCap = 'round';                        // รากไม้โอบลูกแก้ว
+    for (const [a, b] of [[26, 4], [39, 4], [33, 2]]) { g.beginPath(); g.moveTo(32.5, 19); g.quadraticCurveTo(a, 14, b, 3 + (a === 33 ? 0 : 4)); g.stroke(); }
+  },
   brass_glaive(g, M) {                                         // ง้าว: ด้ามยาว ใบโค้งใหญ่
     part(g, WOOD, R(g, 30.5, 22, 4, 40), 30, 0, 35, 0);
     g.fillStyle = '#c8302a'; g.fillRect(29, 22, 7, 3);                                   // พู่แดง
@@ -190,7 +199,7 @@ export function itemSprite(I, baseId, px, upright = false) {
 }
 
 // อาวุธในมือตัวละคร: ภาพเดียวกับไอคอนแต่ตั้งตรง (ปลายอยู่บน) + จุดจับ (gy) และความยาวจากมือถึงปลาย (reach) บนช่อง 64
-const GRIP = { brass_glaive: { gy: 50, reach: 48 }, silver_kris: { gy: 52, reach: 50 } };
+const GRIP = { brass_glaive: { gy: 50, reach: 48 }, silver_kris: { gy: 52, reach: 50 }, herb_staff: { gy: 46, reach: 44 } };
 export function weaponInHand(I, baseId) {
   const b = I.bases[baseId], art = b && (b.art || baseId);
   if (!art || !WEAPONS[art]) return null;

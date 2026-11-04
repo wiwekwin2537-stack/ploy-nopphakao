@@ -9,7 +9,7 @@ export function pointsLeft(p, P) { return pointsTotal(p, P) - pointsSpent(p, P);
 export function canAllocate(p, P, id) {
   const n = P.nodes[id];
   if (!n || p.passives.includes(id)) return false;
-  if (n.kind === 'start') return !startOf(p, P);
+  if (n.kind === 'start') return !startOf(p, P) && (!p.cls || n.class === p.cls);   // จุดเริ่ม = อาชีพที่เลือกตอนสร้างตัวละครเท่านั้น
   if (!startOf(p, P) || pointsLeft(p, P) <= 0) return false;
   return n.links.some((l) => p.passives.includes(l));
 }
@@ -32,7 +32,7 @@ export function connected(P, list, without) {
 
 export function canRefund(p, P, id) {
   if (!p.passives.includes(id)) return false;
-  if (P.nodes[id].kind === 'start') return p.passives.length === 1;
+  if (P.nodes[id].kind === 'start') return false;               // อาชีพเปลี่ยนไม่ได้ (แบบ PoE)
   return connected(P, p.passives, id);
 }
 

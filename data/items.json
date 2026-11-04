@@ -36,6 +36,36 @@
    },
    "mat": "bamboo"
   },
+  "bamboo_kris": {
+   "slot": "weapon",
+   "name": "กริชไม้ตะเคียน",
+   "req": 1,
+   "stats": {
+    "dmgFlat": 1,
+    "crit": 3
+   },
+   "color": "#c8b070",
+   "look": {
+    "kind": "kris"
+   },
+   "mat": "bamboo",
+   "art": "silver_kris"
+  },
+  "herb_staff": {
+   "slot": "weapon",
+   "name": "ไม้เท้าว่านยา",
+   "req": 1,
+   "stats": {
+    "dmgFlat": 1,
+    "dmgSpell": 8,
+    "mpFlat": 6
+   },
+   "color": "#8a5a32",
+   "look": {
+    "kind": "glaive"
+   },
+   "mat": "leather"
+  },
   "iron_sword": {
    "slot": "weapon",
    "name": "ดาบเหล็กลายไทย",

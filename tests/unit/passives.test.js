@@ -27,7 +27,8 @@ test('เลือกสายฟรี ใช้แต้มได้เฉพ�
 
 test('คืนแต้ม: คืนโหนดกลางทางไม่ได้ถ้ามีโหนดต่อจากมัน', () => {
   const g = makeGame(), P = g.data.passives, p = g.player;
-  p.level = 5;
+  p.level = 5; p.cls = 'shaman';
+  assert.equal(allocate(p, P, 'warrior'), false, 'เลือกจุดเริ่มของอาชีพอื่นไม่ได้');
   ['shaman', 'shaman_a0', 'shaman_a1', 'shaman_a2'].forEach((id) => assert.ok(allocate(p, P, id)));
   p.currency = { regret: 0 };
   assert.equal(refund(p, P, 'shaman_a2'), false, 'ไม่มีใบลานล้างกรรม = ถอนไม่ได้ (แบบ PoE)');
@@ -35,10 +36,10 @@ test('คืนแต้ม: คืนโหนดกลางทางไม่
   p.currency.regret = 5;
   assert.equal(refund(p, P, 'shaman_a1'), false);
   assert.ok(refund(p, P, 'shaman_a2')); assert.ok(refund(p, P, 'shaman_a1'));
-  assert.equal(refund(p, P, 'shaman'), false, 'คืนจุดเริ่มได้เมื่อไม่มีโหนดอื่นแล้วเท่านั้น');
-  assert.ok(refund(p, P, 'shaman_a0')); assert.ok(refund(p, P, 'shaman'));
-  assert.deepEqual(p.passives, []);
-  assert.equal(p.currency.regret, 1, 'ใช้ใบละ 1 โหนด');
+  assert.ok(refund(p, P, 'shaman_a0'));
+  assert.equal(refund(p, P, 'shaman'), false, 'จุดเริ่ม (อาชีพ) คืนไม่ได้ (แบบ PoE)');
+  assert.deepEqual(p.passives, ['shaman']);
+  assert.equal(p.currency.regret, 2, 'ใช้ใบละ 1 โหนด');
 });
 
 test('ค่าสถานะ: เพิ่ม% บวกรวม และคีย์สโตนคูณ', () => {

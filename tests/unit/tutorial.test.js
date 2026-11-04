@@ -14,8 +14,11 @@ function closeDialog(g) {
   for (let i = 0; i < 30 && g.dialog; i++) { g.input.pressed.interact = true; updateDialog(g, 1); g.input.pressed.interact = false; }
 }
 
-test('บทนำเล่นได้ครบทุกขั้นตั้งแต่ทางเกวียนถึงพ่อเฒ่าจันทร์', () => {
-  const g = makeGame(); giveStarterGear(g.player, g.data);
+for (const cls of ['warrior', 'ranger', 'shaman']) test(`บทนำเล่นได้ครบทุกขั้นตั้งแต่ทางเกวียนถึงพ่อเฒ่าจันทร์ (อาชีพ ${cls})`, () => {
+  const g = makeGame(); giveStarterGear(g.player, g.data, cls);
+  const G0 = g.data.passives.classes[cls].gem;
+  assert.equal(g.player.cls, cls); assert.deepEqual(g.player.passives, [cls], 'จุดเริ่มพาสซีฟตามอาชีพ');
+  assert.equal(g.player.equip.weapon.base, g.data.passives.classes[cls].weapon);
   enterZone(g, 'road');
   assert.equal(g.mode, 'dialog'); closeDialog(g);
   assert.equal(g.flags.tutStep, 'move');
@@ -30,12 +33,12 @@ test('บทนำเล่นได้ครบทุกขั้นตั้�
   assert.ok(boar, 'ต้องมีพญาหมูป่า');
   damageMob(g, boar, 999);
   assert.equal(g.flags.tutStep, 'gem');
-  const gem = g.drops.find((d) => d.gem === 'ruby');
-  assert.ok(gem, 'ต้องดรอปทับทิม');
+  const gem = g.drops.find((d) => d.gem === G0);
+  assert.ok(gem, 'ต้องดรอปพลอยสกิลของอาชีพ');
   g.player.x = gem.x; g.player.y = gem.y; gem.t = 1;
   updateLoot(g, 0.1);
-  assert.ok(ownsGem(g.player, 'ruby'));
-  assert.equal(g.player.equip.weapon.gems[0], 'ruby', 'ทับทิมต้องฝังช่องอาวุธให้เลย');
+  assert.ok(ownsGem(g.player, G0));
+  assert.ok(g.player.equip.weapon.gems.includes(G0), 'พลอยสกิลเม็ดแรกต้องฝังช่องอาวุธให้เลย');
   assert.equal(g.world.blocked(42.5 * 32, 10 * 32, 10), false, 'ท่อนไม้ต้องหาย');
   closeDialog(g);
   assert.equal(g.flags.tutStep, 'skill');
@@ -58,5 +61,5 @@ test('ทับทิมดรอปแค่เม็ดเดียว แม�
   const boars = g.mobs.filter((m) => m.type === 'bigboar');
   assert.equal(boars.length, 1, 'โหลดซ้ำต้องไม่เกิดพญาหมูป่าซ้ำ');
   damageMob(g, boars[0], 999); damageMob(g, boars[0], 999);
-  assert.equal(g.drops.filter((d) => d.gem === 'ruby').length, 1);
+  assert.equal(g.drops.filter((d) => d.gem === g.data.passives.classes[g.player.cls].gem).length, 1);
 });

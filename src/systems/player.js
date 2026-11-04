@@ -10,7 +10,7 @@ export function createPlayer(data) {
     x: 0, y: 0, radius: 10, level: 1, xp: 0, coins: 0, hp: 1, mp: 1,
     bag: [], currency: { jeweller: 0, fusing: 0 }, dir: 0, aim: 0, walk: 0, moving: false,
     attackCd: 0, swing: -1, combo: 0, comboT: 0, pendingHit: null, dashCd: 0, dashT: 0, dashVx: 0, dashVy: 0, skillCd: Array(gemsData.skillButtons).fill(0), castT: 0,
-    passives: [], gemXp: {}, questPoints: 0, items: [], stash: [], equip: emptyEquip(), nextUid: 0, potions: 0, potionCd: 0, mpPotions: 0, mpPotionCd: 0, invuln: 0, hurt: 0, dead: false, combatTimer: 0, moveTarget: null, targetMob: null, movedDist: 0,
+    passives: [], gemXp: {}, questPoints: 0, cls: 'warrior', name: 'นักล่าพลอย', items: [], stash: [], equip: emptyEquip(), nextUid: 0, potions: 0, potionCd: 0, mpPotions: 0, mpPotionCd: 0, invuln: 0, hurt: 0, dead: false, combatTimer: 0, moveTarget: null, targetMob: null, movedDist: 0,
   };
   const s = playerStats(p, data);
   p.hp = s.maxHp; p.mp = s.maxMp;
@@ -18,9 +18,16 @@ export function createPlayer(data) {
 }
 
 // ของเริ่มต้น: ดาบไม้ไผ่ 3 ช่องเชื่อมกันหมด + เสื้อผ้าฝ้าย 2 ช่อง + ผ้าคาดหัว + ยาหม้อ
-export function giveStarterGear(p, data) {
+// พลอยสกิลเริ่มต้นของอาชีพ (ได้จากบอสหมูป่าในบทนำ) — data/passives.json classes
+export function classGem(data, p) { const c = data.passives && data.passives.classes[p.cls]; return (c && c.gem) || 'ruby'; }
+
+// อาชีพแบบ PoE: เลือกตอนสร้างตัวละคร → อาวุธเริ่มต้น + จุดเริ่มบนต้นพาสซีฟ + พลอยสกิลในบทนำ
+export function giveStarterGear(p, data, cls = 'warrior') {
+  const C = data.passives ? data.passives.classes[cls] : null;
+  p.cls = C ? cls : 'warrior';
+  if (data.passives && data.passives.nodes[p.cls] && !p.passives.includes(p.cls)) p.passives.push(p.cls);
   const mk = (base, extra = {}) => ({ uid: ++p.nextUid, base, rarity: 'normal', ilvl: 1, mods: [], rareName: null, ...extra });
-  p.equip.weapon = mk('bamboo_sword', { sockets: 3, links: [true, true], gems: [null, null, null], colors: ['r', 'g', 'g'] });
+  p.equip.weapon = mk((C && C.weapon) || 'bamboo_sword', { sockets: 3, links: [true, true], gems: [null, null, null], colors: ['r', 'g', 'g'] });
   p.equip.body = mk('cotton_shirt', { sockets: 2, links: [false], gems: [null, null], colors: ['b', 'g'] });
   p.equip.head = mk('cloth_band');
   p.potions = data.shop ? data.shop.potion.starter : 0;

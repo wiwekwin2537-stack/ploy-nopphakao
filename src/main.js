@@ -42,6 +42,7 @@ import { updateAltar } from './systems/maps.js';
 import { drawMapMenu, updateMapMenu } from './ui/mapmenu.js';
 import { drawStash, updateStash, stashLayout } from './ui/stash.js';
 import { drawReward, updateReward, rewardLayout } from './ui/reward.js';
+import { drawCreate, updateCreate, openCreate, createLayout } from './ui/create.js';
 import { tipCloseHit, resetTipClose } from './ui/tooltip.js';
 import { drawHuman } from './art/characters.js';
 import { heroLook, heroGear } from './ui/herolook.js';
@@ -74,11 +75,12 @@ setupLoot(game); setupFlasks(game); setupUniques(game); setupProgress(game); set
 game.world.load('road');
 const scene = createScene(game);
 
-function startNew(skip) {
+function startNew(skip, cls = 'warrior', name = 'นักล่าพลอย') {
   clearSave();
   game.flags = {};
   game.player = createPlayer(game.data);
-  giveStarterGear(game.player, game.data);
+  game.player.name = String(name).trim().slice(0, 16) || 'นักล่าพลอย';
+  giveStarterGear(game.player, game.data, cls);
   if (skip) { skipTutorial(game); enterZone(game, 'town', 20.5 * 32, 17.5 * 32); } else enterZone(game, 'road');
   game.mode = game.dialog ? 'dialog' : 'play';
   writeSave(game);
@@ -87,7 +89,7 @@ function continueGame() {
   const s = readSave(game.data);
   if (!s) return startNew(false);
   const p = game.player = createPlayer(game.data);
-  Object.assign(p, { level: s.level, xp: s.xp, coins: s.coins, bag: s.bag.slice(), currency: { ...p.currency, ...s.currency }, passives: s.passives.slice(), gemXp: { ...s.gemXp }, questPoints: s.questPoints || 0, items: s.items, stash: s.stash || [], equip: { ...p.equip, ...s.equip }, nextUid: s.nextUid, potions: s.potions, mpPotions: s.mpPotions, hp: s.hp, mp: s.mp });
+  Object.assign(p, { level: s.level, xp: s.xp, coins: s.coins, bag: s.bag.slice(), currency: { ...p.currency, ...s.currency }, passives: s.passives.slice(), gemXp: { ...s.gemXp }, questPoints: s.questPoints || 0, cls: s.cls, name: s.name, items: s.items, stash: s.stash || [], equip: { ...p.equip, ...s.equip }, nextUid: s.nextUid, potions: s.potions, mpPotions: s.mpPotions, hp: s.hp, mp: s.mp });
   game.flags = { ...s.flags };
   game.mode = 'play';
   enterZone(game, s.zone, s.x, s.y);
@@ -119,10 +121,14 @@ function update(dt) {
       if (!b) continue;
       game.audio.play('click');
       if (b.id === 'continue') continueGame();
-      else if (b.id === 'skip') startNew(true);
-      else if (b.id === 'new') { if (game.hasSave && !game.confirmNew) game.confirmNew = true; else startNew(false); }
+      else if (b.id === 'skip') openCreate(game, true);
+      else if (b.id === 'new') { if (game.hasSave && !game.confirmNew) game.confirmNew = true; else openCreate(game, false); }
     }
-    if (input.pressed.interact || input.pressed.attack) { game.audio.unlock(); game.hasSave ? continueGame() : startNew(false); }
+    if (input.pressed.interact || input.pressed.attack) { game.audio.unlock(); game.hasSave ? continueGame() : openCreate(game, false); }
+  } else if (game.mode === 'create') {
+    const r = updateCreate(game, layout, game.camera.viewW, game.camera.viewH);
+    if (r === 'back') game.mode = 'title';
+    else if (r === 'start') { const c = game.create; game.create = null; startNew(c.skip, c.cls, c.name); }
     game.audio.music('town');
   } else if (game.mode === 'dialog') {
     updateDialog(game, dt);
@@ -191,9 +197,9 @@ function render() {
   const dpr = Math.min(2, devicePixelRatio || 1), w = game.camera.viewW, h = game.camera.viewH;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  if (game.mode === 'title') {
+  if (game.mode === 'title' || game.mode === 'create') {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    drawTitle(ctx, game, layout, w, h);
+    if (game.mode === 'title') drawTitle(ctx, game, layout, w, h); else drawCreate(ctx, game, layout, w, h);
   } else {
     scene.draw(wctx, PIXEL);
     scene.drawOverlay(ctx, dpr);
@@ -230,4 +236,4 @@ game.loopStats = loop.stats;
 loop.start();
 
 // test-hook: เปิดเฉพาะเมื่อมี ?test ใน URL ใช้ในเทสต์อัตโนมัติเท่านั้น
-if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, rollElite, makeUnique, spawnDrop, art: { drawHuman, heroLook, heroGear, itemSprite }, damage: damageMob, stashLayout: () => stashLayout(game.camera.viewW, game.camera.viewH, layout.s), rewardLayout: () => rewardLayout(game.camera.viewW, game.camera.viewH, layout.s), shopLayout: () => shopLayout(game.camera.viewW, game.camera.viewH, layout.s), skills: () => skillsOf(game.data.gems, game.player, game.data.items), stats: () => playerStats(game.player, game.data), layout: () => layout, bagLayout: () => bagLayout(game.camera.viewW, game.camera.viewH, layout.s), gemLayout: () => gemLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s), game.player) }; // test-hook
+if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, rollElite, makeUnique, spawnDrop, art: { drawHuman, heroLook, heroGear, itemSprite }, damage: damageMob, stashLayout: () => stashLayout(game.camera.viewW, game.camera.viewH, layout.s), createLayout: () => createLayout(game.camera.viewW, game.camera.viewH, layout.s), openCreate: (skip) => openCreate(game, skip), rewardLayout: () => rewardLayout(game.camera.viewW, game.camera.viewH, layout.s), shopLayout: () => shopLayout(game.camera.viewW, game.camera.viewH, layout.s), skills: () => skillsOf(game.data.gems, game.player, game.data.items), stats: () => playerStats(game.player, game.data), layout: () => layout, bagLayout: () => bagLayout(game.camera.viewW, game.camera.viewH, layout.s), gemLayout: () => gemLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s), game.player) }; // test-hook

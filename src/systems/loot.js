@@ -2,6 +2,7 @@
 import { rollGemDrop, ownsGem, gemType, gemInfo, autoSocket } from './gems.js';
 import { rollItem, giveItem, itemName } from './items.js';
 import { makeUnique, rollBossUnique, rollWorldUnique } from './uniques.js';
+import { classGem } from './player.js';
 
 let nextDropId = 1;
 
@@ -65,16 +66,17 @@ export function spawnDrop(game, d) {
 
 function pickGem(game, gem) {
   const p = game.player, G = game.data.gems;
-  // ทับทิมเม็ดแรกฝังลงช่องอาวุธให้เลย (บทนำ)
-  if (gem === 'ruby' && !ownsGem(p, 'ruby')) autoSocket(p, 'ruby', game.data.gems);
+  // พลอยสกิลเม็ดแรกของอาชีพฝังลงช่องอาวุธให้เลย (บทนำ)
+  const first = gem === classGem(game.data, p) && !game.flags.gotRuby;
+  if (first && !ownsGem(p, gem)) autoSocket(p, gem, game.data.gems);
   else p.bag.push(gem);
-  if (gem === 'ruby') game.flags.gotRuby = true;
+  if (first) game.flags.gotRuby = true;
   game.world.refreshFlags();
   const info = gemInfo(G, gem);
   game.fx.burst(p.x, p.y - 20, info.hi || info.color, 24, 130, 0.8, 3);
   game.fx.text(p.x, p.y - 74, 'ได้' + info.name + '!', info.hi || '#ffe9a8', true);
   game.audio.play('gem');
-  if (gem !== 'ruby' && !game.flags.bagHint) {
+  if (!first && !game.flags.bagHint) {
     game.flags.bagHint = true;
     game.notice = { text: (gemType(G, gem) === 'support' ? 'ได้พลอยเสริม! ' : 'ได้พลอยสกิลใหม่! ') + 'แตะรูปตัวละครมุมซ้ายบน → แถบพลอย เพื่อฝัง', t: 7 };
   }

@@ -59,3 +59,18 @@ test('เซฟรุ่น 6 → 7: พลอยชุด 1 ย้ายลง�
   assert.deepEqual(s.currency, { jeweller: 1, fusing: 1, chroma: 1 });
   assert.deepEqual(s.equip.weapon.colors, ['r', 'g', 'w'], 'ช่องได้สีตรงกับพลอยเดิม ช่องว่างเป็นขาว');
 });
+
+test('อาชีพ/ชื่อ: เซฟติด · เซฟเก่ารุ่น 12 ได้อาชีพจากสายที่เลือก (ไม่เคยเลือก = นักรบ) · อาชีพปลอมถูกปฏิเสธ', async () => {
+  const { makeGame } = await import('./helpers.js');
+  const { serialize, validate } = await import('../../src/systems/save.js');
+  const { giveStarterGear } = await import('../../src/systems/player.js');
+  const g = makeGame(); g.world.load('road'); giveStarterGear(g.player, g.data, 'shaman'); g.player.name = 'แม่มดน้อย';
+  const d = JSON.parse(JSON.stringify(serialize(g)));
+  const v = validate(d, g.data); assert.equal(v.cls, 'shaman'); assert.equal(v.name, 'แม่มดน้อย');
+  const old = JSON.parse(JSON.stringify(d)); old.v = 12; delete old.cls; delete old.name;
+  assert.equal(validate(old, g.data).cls, 'shaman');
+  const old2 = JSON.parse(JSON.stringify(old)); old2.passives = [];
+  const m2 = validate(old2, g.data); assert.equal(m2.cls, 'warrior'); assert.deepEqual(m2.passives, ['warrior']);
+  assert.equal(validate({ ...d, cls: 'ninja' }, g.data), null);
+  assert.equal(validate({ ...d, name: '' }, g.data), null);
+});
