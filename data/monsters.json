@@ -226,5 +226,40 @@
   ],
   "coinChance": 0.65,
   "flying": true
+ },
+ "khotchasi_king": {
+  "name": "พญาคชสีห์ทองคำ",
+  "hp": 1400,
+  "damage": 34,
+  "xp": 700,
+  "speed": 78,
+  "radius": 36,
+  "ai": "boss",
+  "aggro": 380,
+  "attackRange": 70,
+  "attackCooldown": 1.1,
+  "chargeSpeed": 470,
+  "chargeWindup": 0.85,
+  "chargeTime": 0.85,
+  "coins": [
+   60,
+   90
+  ],
+  "coinChance": 1,
+  "boss": true,
+  "bossLoot": {
+   "items": 3,
+   "rarity": "purple",
+   "redChance": 0.35,
+   "gems": 2
+  },
+  "slamRadius": 90,
+  "slamWindup": 0.8,
+  "stompWindup": 1.0,
+  "waveSpeed": 240,
+  "waveMax": 300,
+  "waveThick": 24,
+  "summon": "hatsadi",
+  "summonCount": 3
  }
 }

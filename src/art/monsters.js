@@ -181,6 +181,7 @@ export function drawMonster(ctx, type, x, y, o) {
   if (o.dying > 0) ctx.globalAlpha = Math.max(0, 1 - o.dying);
   if (type === 'krasue' || type === 'phi_phong' || type === 'hatsadi') shadow(ctx, x, y, 10, 3, 0.18);
   else if (type === 'khotchasi') shadow(ctx, x, y, 22, 6);
+  else if (type === 'khotchasi_king') shadow(ctx, x, y, 40, 11, 0.32);
   else if (type === 'yak') shadow(ctx, x, y, 30, 9, 0.32);
   else shadow(ctx, x, y, 13 * big, 4.5 * big);
   if (o.recoil > 0) ctx.translate(o.kbx * o.recoil * 30, o.kby * o.recoil * 20);   // สะดุ้งถอยตอนโดนฟัน
@@ -188,7 +189,7 @@ export function drawMonster(ctx, type, x, y, o) {
   ctx.scale(SCALE, SCALE);
   if (o.recoil > 0) ctx.scale(1 + o.recoil * 0.8, 1 - o.recoil * 0.8);
   if (o.stun) ctx.rotate(Math.sin(o.t * 30) * 0.06);                                    // ขยายให้สมกับตัวละครสูงแบบเอโดเรีย
-  if (o.windup > 0 && type !== 'krasue' && type !== 'yak') ctx.translate(Math.sin(o.t * 60) * 1.2, 0);
+  if (o.windup > 0 && type !== 'krasue' && type !== 'yak' && type !== 'khotchasi_king') ctx.translate(Math.sin(o.t * 60) * 1.2, 0);
   ctx.scale(o.face < 0 ? -1 : 1, 1);
   if (o.dying > 0) { const k = Math.min(1, o.dying * 2.2); ctx.translate(-4 * k, -6 * Math.sin(k * Math.PI)); ctx.rotate(-k * 1.4); } // ล้มตะแคง
   if (o.flash > 0 && Math.floor(o.t * 30) % 2) ctx.globalAlpha *= 0.55;
@@ -203,11 +204,17 @@ export function drawMonster(ctx, type, x, y, o) {
   else if (type === 'phi_phong') phiPhong(ctx, o);
   else if (type === 'yak') yak(ctx, o);
   else if (type === 'khotchasi') khotchasi(ctx, o);
+  else if (type === 'khotchasi_king') {                       // พญาคชสีห์ทองคำ: ตัวใหญ่เกือบสองเท่า ไอทองรอบตัว คลั่งแล้วแดง
+    const gl = ctx.createRadialGradient(4, -14, 2, 4, -14, 30);
+    gl.addColorStop(0, o.enraged ? 'rgba(255,80,40,0.45)' : 'rgba(255,215,80,0.4)'); gl.addColorStop(1, 'rgba(255,200,60,0)');
+    ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(4, -14, 30, 0, Math.PI * 2); ctx.fill();
+    ctx.scale(1.9, 1.9); khotchasi(ctx, o);
+  }
   else if (type === 'naga_noi') nagaNoi(ctx, o);
   else if (type === 'hatsadi') hatsadi(ctx, o);
   ctx.restore();
 }
 
 export function monsterHeight(type) {
-  return Math.round(({ piglet: 18, boar: 24, bigboar: 34, monkey: 34, krasue: 50, phi_pob: 42, phi_phong: 40, yak: 96, khotchasi: 32, naga_noi: 40, hatsadi: 50 }[type] || 26) * SCALE);
+  return Math.round(({ piglet: 18, boar: 24, bigboar: 34, monkey: 34, krasue: 50, phi_pob: 42, phi_phong: 40, yak: 96, khotchasi: 32, naga_noi: 40, hatsadi: 50, khotchasi_king: 62 }[type] || 26) * SCALE);
 }

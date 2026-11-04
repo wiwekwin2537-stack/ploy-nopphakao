@@ -358,6 +358,15 @@ await check('ป่าหิมพานต์: หลังล้มยัก�
   await page.screenshot({ path: SHOTS + '/16-himmapan.png' });
   const types = await G(page, () => [...new Set(__ploy.game.mobs.map((m) => m.type))].join(','));
   assert(types.includes('khotchasi') && types.includes('naga_noi') && types.includes('hatsadi'), types);
+  // บอสปลายป่า: เข้าใกล้แล้วตื่น มีแถบเลือดบอส แล้วล้มได้
+  await G(page, () => { const g = __ploy.game, k = g.mobs.find((m) => m.type === 'khotchasi_king'); g.player.x = k.x - 160; g.player.y = k.y; g.player.invuln = 999; });
+  await page.waitForTimeout(1600);
+  await page.screenshot({ path: SHOTS + '/17-khotchasi-king.png' });
+  const awake = await G(page, () => __ploy.game.mobs.find((m) => m.type === 'khotchasi_king').aggroed);
+  assert(awake, 'บอสไม่ตื่น');
+  await G(page, () => { const g = __ploy.game; g.mobs.forEach((m) => { m.hp = 1; }); const k = g.mobs.find((m) => m.type === 'khotchasi_king'); g.player.x = k.x - 50; g.player.y = k.y; });
+  for (let i = 0; i < 10; i++) { await page.keyboard.press('KeyJ'); await page.waitForTimeout(150); }
+  assert(await G(page, () => !!__ploy.game.flags.khotchasi_kingSlain), 'ล้มพญาคชสีห์ไม่ได้');
   return types;
 });
 

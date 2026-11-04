@@ -319,6 +319,168 @@
    "color": "#d9a630",
    "look": {},
    "mat": "gold"
+  },
+  "kailash_sword": {
+   "slot": "weapon",
+   "name": "ดาบเทพไกรลาส",
+   "req": 12,
+   "stats": {
+    "dmgFlat": 22,
+    "crit": 3
+   },
+   "color": "#f2c230",
+   "look": {
+    "kind": "sword"
+   },
+   "mat": "gold",
+   "art": "iron_sword"
+  },
+  "garuda_glaive": {
+   "slot": "weapon",
+   "name": "ง้าวครุฑ",
+   "req": 15,
+   "stats": {
+    "dmgFlat": 32,
+    "atkSpeedInc": -6
+   },
+   "color": "#2ab88a",
+   "look": {
+    "kind": "glaive"
+   },
+   "mat": "naga",
+   "art": "brass_glaive"
+  },
+  "phra_khan": {
+   "slot": "weapon",
+   "name": "พระขรรค์แก้ว",
+   "req": 18,
+   "stats": {
+    "dmgFlat": 34,
+    "crit": 4,
+    "dmgSpell": 10
+   },
+   "color": "#eef4ff",
+   "look": {
+    "kind": "sword"
+   },
+   "mat": "silver",
+   "art": "naga_blade"
+  },
+  "kinnari_mail": {
+   "slot": "body",
+   "name": "เกราะเกล็ดกินรี",
+   "req": 12,
+   "stats": {
+    "hpFlat": 70,
+    "moveInc": 4
+   },
+   "color": "#d9a630",
+   "look": {
+    "trim": "#fff0b0",
+    "plates": "#9a6f0e"
+   },
+   "mat": "gold",
+   "art": "naga_mail"
+  },
+  "deva_armor": {
+   "slot": "body",
+   "name": "เกราะเทวดา",
+   "req": 16,
+   "stats": {
+    "hpFlat": 96
+   },
+   "color": "#f2c230",
+   "look": {
+    "trim": "#fff6b8",
+    "plates": "#c8302a"
+   },
+   "mat": "gold",
+   "art": "bronze_cuirass"
+  },
+  "garuda_helm": {
+   "slot": "head",
+   "name": "หมวกครุฑ",
+   "req": 12,
+   "stats": {
+    "hpFlat": 34,
+    "crit": 2
+   },
+   "color": "#d9a630",
+   "look": {
+    "hat": "helm"
+   },
+   "mat": "gold",
+   "art": "iron_helm"
+  },
+  "deva_crown": {
+   "slot": "head",
+   "name": "ชฎาเทวดา",
+   "req": 16,
+   "stats": {
+    "mpFlat": 40,
+    "dmgSpell": 12
+   },
+   "color": "#f2c230",
+   "look": {
+    "hat": "crown"
+   },
+   "mat": "gold",
+   "art": "silver_crown"
+  },
+  "gold_greaves": {
+   "slot": "legs",
+   "name": "สนับแข้งทองคำ",
+   "req": 13,
+   "stats": {
+    "hpFlat": 46,
+    "moveInc": 3
+   },
+   "color": "#9a6f0e",
+   "look": {
+    "guard": "#f2c230"
+   },
+   "mat": "gold",
+   "art": "iron_greaves"
+  },
+  "naga_bracers": {
+   "slot": "arms",
+   "name": "ปลอกแขนเกล็ดนาค",
+   "req": 12,
+   "stats": {
+    "dmgMelee": 10,
+    "atkSpeedInc": 4
+   },
+   "color": "#2ab88a",
+   "look": {},
+   "mat": "naga",
+   "art": "leather_bracers"
+  },
+  "naga_pendant": {
+   "slot": "amulet",
+   "name": "ตะกรุดพญานาค",
+   "req": 12,
+   "stats": {
+    "dmgAll": 10,
+    "mpFlat": 15
+   },
+   "color": "#2ab88a",
+   "look": {
+    "neck": "#5ae0b0"
+   },
+   "mat": "naga",
+   "art": "takrut"
+  },
+  "kailash_ring": {
+   "slot": "ring",
+   "name": "แหวนเทพไกรลาส",
+   "req": 14,
+   "stats": {
+    "crit": 3,
+    "dmgAll": 6
+   },
+   "color": "#f2c230",
+   "mat": "gold",
+   "art": "naga_ring"
   }
  },
  "affixes": {
@@ -347,6 +509,11 @@
      7,
      23,
      34
+    ],
+    [
+     12,
+     35,
+     52
     ]
    ]
   },
@@ -372,6 +539,11 @@
      7,
      8,
      12
+    ],
+    [
+     12,
+     13,
+     19
     ]
    ]
   },
@@ -400,6 +572,11 @@
      7,
      23,
      34
+    ],
+    [
+     12,
+     35,
+     52
     ]
    ]
   },
@@ -430,6 +607,11 @@
      7,
      31,
      48
+    ],
+    [
+     12,
+     49,
+     73
     ]
    ]
   },
@@ -458,6 +640,11 @@
      7,
      23,
      34
+    ],
+    [
+     12,
+     35,
+     52
     ]
    ]
   },
@@ -480,6 +667,11 @@
      5,
      8,
      12
+    ],
+    [
+     12,
+     13,
+     19
     ]
    ]
   },
@@ -508,6 +700,11 @@
      7,
      5,
      7
+    ],
+    [
+     12,
+     8,
+     11
     ]
    ]
   },
@@ -529,6 +726,11 @@
      6,
      19,
      30
+    ],
+    [
+     12,
+     31,
+     46
     ]
    ]
   },
@@ -551,6 +753,11 @@
      5,
      7,
      10
+    ],
+    [
+     12,
+     11,
+     16
     ]
    ]
   },
@@ -580,6 +787,11 @@
      7,
      36,
      50
+    ],
+    [
+     12,
+     51,
+     76
     ]
    ]
   },
@@ -603,6 +815,11 @@
      5,
      3,
      4
+    ],
+    [
+     12,
+     5,
+     7
     ]
    ]
   },
@@ -625,6 +842,11 @@
      5,
      15,
      24
+    ],
+    [
+     12,
+     25,
+     37
     ]
    ]
   },
@@ -647,6 +869,11 @@
      4,
      15,
      24
+    ],
+    [
+     12,
+     25,
+     37
     ]
    ]
   },
@@ -669,6 +896,11 @@
      6,
      8,
      12
+    ],
+    [
+     12,
+     13,
+     19
     ]
    ]
   },
@@ -691,6 +923,11 @@
      5,
      8,
      12
+    ],
+    [
+     12,
+     13,
+     19
     ]
    ]
   }

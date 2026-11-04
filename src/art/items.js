@@ -168,6 +168,7 @@ const ALL = { ...WEAPONS, ...HEADS, ...BODIES, ...LEGS, ...ARMS, ...NECKS, ...RI
 
 function paintItem(g, base, id, upright) {
   const M = base.mat === 'cloth' ? clothMat(base.color) : MAT[base.mat] || MAT.iron;
+  id = base.art || id;                                         // ของระดับสูงใช้ทรงเดียวกับของพื้นฐาน แต่วัสดุต่าง
   if (WEAPONS[id] && !upright) { g.translate(32, 32); g.rotate(Math.PI / 4); g.scale(1.08, 1.08); g.translate(-32, -32); }
   (ALL[id] || BODIES.cotton_shirt)(g, M);
 }
@@ -188,6 +189,7 @@ export function itemSprite(I, baseId, px, upright = false) {
 // อาวุธในมือตัวละคร: ภาพเดียวกับไอคอนแต่ตั้งตรง (ปลายอยู่บน) + จุดจับ (gy) และความยาวจากมือถึงปลาย (reach) บนช่อง 64
 const GRIP = { brass_glaive: { gy: 50, reach: 48 }, silver_kris: { gy: 52, reach: 50 } };
 export function weaponInHand(I, baseId) {
-  if (!baseId || !WEAPONS[baseId]) return null;
-  return { sprite: itemSprite(I, baseId, 96, true), ...(GRIP[baseId] || { gy: 50, reach: 49 }) };
+  const b = I.bases[baseId], art = b && (b.art || baseId);
+  if (!art || !WEAPONS[art]) return null;
+  return { sprite: itemSprite(I, baseId, 96, true), ...(GRIP[art] || { gy: 50, reach: 49 }) };
 }
