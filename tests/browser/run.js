@@ -567,7 +567,7 @@ await check('ยูนีค: ง้าวพิทักษ์วัดร้�
   assert(res.gem === 'onyx', 'ไม่ได้สกิลจากของ ' + JSON.stringify(res));
   await G(page, () => { const g = __ploy.game, p = g.player; p.mp = 999; p.skillCd = [0, 0, 0]; g.mobs.push(__ploy.makeMob(g, 'boar', 3, p.x + 30, p.y, -1)); });
   const key = ['KeyK', 'KeyL', 'KeyU'][res.idx];
-  if (key) { await page.keyboard.press(key); await page.waitForTimeout(250); }
+  if (key) { await page.keyboard.press(key); await page.waitForTimeout(60); }
   await page.screenshot({ path: SHOTS + '/27b-unique-skill.png' });
   const cd = await G(page, (i) => __ploy.game.player.skillCd[i], res.idx);
   assert(!key || cd > 0, 'กดสกิลจากของไม่ได้');

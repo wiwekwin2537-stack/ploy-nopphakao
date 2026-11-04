@@ -98,10 +98,11 @@ export function drawTree(ctx, game, L, w, h) {
     text(ctx, n.name + (n.kind === 'keystone' ? ' (คีย์สโตน)' : n.kind === 'notable' ? ' (โหนดเด่น)' : ''), I.x + 12 * s, I.y + 14 * s, 13 * s, n.kind === 'start' ? CLASS_COL[n.class] : C.goldHi);
     text(ctx, lines.join(' · '), I.x + 12 * s, I.y + 36 * s, 10.5 * s, C.cream, 'left', 'normal');
     let act;
-    if (own.has(v.sel)) act = canRefund(p, P, v.sel) ? 'แตะอีกครั้งเพื่อคืนแต้ม' : 'คืนไม่ได้: มีโหนดอื่นต่อจากโหนดนี้';
+    const rg = (p.currency && p.currency.regret) || 0;
+    if (own.has(v.sel)) act = !canRefund(p, P, v.sel) ? 'ลงแล้ว · คืนไม่ได้: มีโหนดอื่นต่อจากโหนดนี้' : rg > 0 ? `แตะอีกครั้งเพื่อคืนแต้ม (ใช้ใบลานล้างกรรม 1 ใบ · มี ${rg})` : 'ลงแล้ว · คืนแต้มต้องใช้ใบลานล้างกรรม (ซื้อที่ร้านแม่ค้า หรือมอนดรอป)';
     else if (n.kind === 'start') act = st ? 'เลือกสายไปแล้ว (คืนทุกโหนดก่อนถึงเปลี่ยนสายได้)' : `แตะอีกครั้งเพื่อเลือกสาย${n.name} (ฟรี)`;
     else if (!st) act = 'เลือกสายเริ่มต้นก่อน (โหนดวงใหญ่ 3 จุด)';
-    else if (canAllocate(p, P, v.sel)) act = 'แตะอีกครั้งเพื่อเลือก (ใช้ 1 แต้ม)';
+    else if (canAllocate(p, P, v.sel)) act = 'แตะอีกครั้งเพื่อเลือก (ใช้ 1 แต้ม · ลงแล้วถอนฟรีไม่ได้)';
     else act = left <= 0 ? 'แต้มไม่พอ — เลเวลอัพเพื่อรับแต้ม' : 'ต้องต่อจากโหนดที่เลือกไว้แล้ว';
     text(ctx, act, I.x + 12 * s, I.y + 58 * s, 10.5 * s, '#9af0b0', 'left', '600');
   } else {
@@ -138,7 +139,7 @@ export function updateTree(game, L, w, h) {
     if (p.passives.includes(best) ? refund(p, P, best) : allocate(p, P, best)) {
       game.audio.play(p.passives.includes(best) ? 'gem' : 'click');
       game.events.emit('passivesChanged', {});
-    }
+    } else if (p.passives.includes(best) && canRefund(p, P, best)) game.notice = { text: 'คืนแต้มต้องใช้ใบลานล้างกรรม — ซื้อได้ที่ร้านแม่ค้า', t: 3 };
   }
   return false;
 }

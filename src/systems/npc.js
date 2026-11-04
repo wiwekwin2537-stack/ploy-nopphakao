@@ -63,6 +63,7 @@ export function updateDialog(game, dt) {
   if (!d) return;
   const line = d.lines[d.i];
   d.shown = Math.min(line.length, d.shown + dt * 40);
+  if (d.close && game.input.taps.some((t) => !t.consumed && Math.hypot(t.sx - d.close.x, t.sy - d.close.y) < d.close.r * 1.5)) { d.i = d.lines.length - 1; d.shown = d.lines[d.i].length; }   // ✕ = ข้ามไปจบ
   const tapped = game.input.taps.some((t) => !t.consumed);
   game.input.taps.forEach((t) => { t.consumed = true; });
   const adv = game.input.pressed.interact || game.input.pressed.attack || tapped;

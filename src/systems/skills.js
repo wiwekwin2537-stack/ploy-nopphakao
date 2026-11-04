@@ -3,6 +3,13 @@ import { spawnShot, rollDamage, damageMob } from './combat.js';
 import { playerStats } from './stats.js';
 import { skillsOf } from './gems.js';
 
+// หันตัวละครไปทางมุม a (ทิศ 0 ล่าง · 1 บน · 2 ซ้าย · 3 ขวา)
+export function faceAngle(p, a) {
+  p.aim = a;
+  const c = Math.cos(a), s = Math.sin(a);
+  p.dir = Math.abs(c) > Math.abs(s) ? (c > 0 ? 3 : 2) : (s > 0 ? 0 : 1);
+}
+
 export function skillOf(game, i) { return skillsOf(game.data.gems, game.player, game.data.items)[i] || null; }
 
 export function pickTarget(game, p) {
@@ -27,9 +34,11 @@ export function castSkill(game, group) {
   const target = pickTarget(game, p);
   const sx = p.x, sy = p.y - 22;
   const ang = target ? Math.atan2(target.y - target.height * 0.4 - sy, target.x - sx) : p.aim;
-  p.aim = ang;
+  faceAngle(p, ang);
   if (st0.bloodMagic) p.hp = Math.max(1, p.hp - sk.mp); else p.mp -= sk.mp;
-  p.skillCd[group] = sk.cooldown * st0.castCdMult; p.castT = 0.22; p.combatTimer = 4;
+  p.skillCd[group] = sk.cooldown * st0.castCdMult; p.combatTimer = 4;
+  if (sk.melee) { p.swing = 0.28; p.combo = sk.shape === 'line' ? 2 : sk.shape === 'cone' ? 1 : 0; p.comboT = 0; }   // สกิลฟัน = ท่าฟันด้วยอาวุธจริง (แนวตรง = แทง)
+  else p.castT = 0.22;                                           // สกิลพลอย = ท่ายกมือร่าย
   releaseSkill(game, sk, ang);
   game.events.emit('skillCast', { group, gem: sk.gem });
   return true;

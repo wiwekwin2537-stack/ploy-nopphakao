@@ -42,6 +42,7 @@ import { updateAltar } from './systems/maps.js';
 import { drawMapMenu, updateMapMenu } from './ui/mapmenu.js';
 import { drawStash, updateStash, stashLayout } from './ui/stash.js';
 import { drawReward, updateReward, rewardLayout } from './ui/reward.js';
+import { tipCloseHit, resetTipClose } from './ui/tooltip.js';
 import { drawHuman } from './art/characters.js';
 import { heroLook, heroGear } from './ui/herolook.js';
 import { itemSprite } from './art/items.js';
@@ -133,6 +134,11 @@ function update(dt) {
     if (r) { game.mode = r === 'back' ? 'bag' : 'play'; input.setUiMode(false); writeSave(game); }
   } else if (game.mode === 'play' && input.pressed.tree) {
     game.mode = 'tree'; openTree(game); game.audio.play('click');
+  } else if (['bag', 'shop', 'stash', 'reward'].includes(game.mode) && input.taps.some((t) => !t.consumed && tipCloseHit(t))) {
+    input.taps.forEach((t) => { if (tipCloseHit(t)) t.consumed = true; });   // ✕ ของกล่องรายละเอียด = ยกเลิกสิ่งที่เลือก
+    game.bagSel = game.gearSel = game.shopSel = game.stashSel = game.sockSel = game.craftSel = game.curSel = null;
+    if (game.reward) game.reward.sel = null;
+    game.audio.play('click');
   } else if (game.mode === 'reward') {
     if (updateReward(game, layout, game.camera.viewW, game.camera.viewH)) { game.mode = 'play'; writeSave(game); }
   } else if (game.mode === 'stash') {
@@ -191,6 +197,7 @@ function render() {
   } else {
     scene.draw(wctx, PIXEL);
     scene.drawOverlay(ctx, dpr);
+    resetTipClose();
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     drawHud(ctx, game, layout, w, h);
     if (game.mode === 'dialog') drawDialog(ctx, game, layout, w, h);

@@ -36,9 +36,11 @@ export function canRefund(p, P, id) {
   return connected(P, p.passives, id);
 }
 
+// คืนแต้ม (แบบ PoE): ต้องใช้ใบลานล้างกรรม 1 ใบต่อโหนด — ลงแล้วถอนฟรีไม่ได้
 export function refund(p, P, id) {
-  if (!canRefund(p, P, id)) return false;
+  if (!canRefund(p, P, id) || !(p.currency && p.currency.regret > 0)) return false;
   p.passives.splice(p.passives.indexOf(id), 1);
+  p.currency.regret--;
   return true;
 }
 

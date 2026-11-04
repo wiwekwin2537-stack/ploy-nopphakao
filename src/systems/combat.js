@@ -15,7 +15,7 @@ export function damageMob(game, mob, amount, crit = false, element = 'phys') {
   const p = game.player, dx = mob.x - p.x, dy = mob.y - p.y, d = Math.hypot(dx, dy) || 1;
   if (element !== 'poison') { mob.recoil = 0.14; mob.kbx = dx / d; mob.kby = dy / d; }
   if (element !== 'poison' && mob.state !== 'charge' && mob.type !== 'bigboar' && !mob.def.boss) {
-    const r = mob.def.flying ? { x: mob.x + dx / d * 5, y: mob.y + dy / d * 5 } : game.world.moveCircle(mob.x, mob.y, mob.radius, dx / d * 5, dy / d * 5);
+    const r = mob.def.flying && !game.world.zone.walls.length ? { x: mob.x + dx / d * 5, y: mob.y + dy / d * 5 } : game.world.moveCircle(mob.x, mob.y, mob.radius, dx / d * 5, dy / d * 5);
     mob.x = r.x; mob.y = r.y;
   }
   const tc = { fire: '#ffae5a', ice: '#a8d8ff', poison: '#9af0b0' }[element] || '#ffffff';

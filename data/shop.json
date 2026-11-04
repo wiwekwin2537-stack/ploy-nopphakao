@@ -27,6 +27,10 @@
    "price": 20
   },
   {
+   "currency": "regret",
+   "price": 80
+  },
+  {
    "currency": "exalt",
    "price": 400
   },

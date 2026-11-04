@@ -265,7 +265,10 @@ export function drawDialog(ctx, game, L, w, h) {
   const shown = Array.from(d.lines[d.i]).slice(0, Math.floor(d.shown)).join('');
   wrap(ctx, shown, bw - 44 * s).forEach((l, i) => text(ctx, l, x + 22 * s, y + 32 * s + i * 22 * s, 15 * s, C.cream, 'left', 'normal'));
   if (d.shown >= d.lines[d.i].length && Math.sin(game.time * 6) > 0) poly(ctx, [x + bw - 30 * s, y + bh - 22 * s, x + bw - 18 * s, y + bh - 22 * s, x + bw - 24 * s, y + bh - 14 * s], C.gold, null);
-  text(ctx, `${d.i + 1}/${d.lines.length}`, x + bw - 20 * s, y + 14 * s, 9 * s, 'rgba(244,230,200,0.6)', 'right', 'normal');
+  text(ctx, `${d.i + 1}/${d.lines.length}`, x + bw - 44 * s, y + 14 * s, 9 * s, 'rgba(244,230,200,0.6)', 'right', 'normal');
+  d.close = { x: x + bw - 16 * s, y: y + 4 * s, r: 13 * s };         // ✕ = ข้ามบทพูดที่เหลือ
+  circle(ctx, d.close.x, d.close.y, d.close.r, 'rgba(120,30,20,0.9)', C.gold, 1.5);
+  text(ctx, '✕', d.close.x, d.close.y + 1, 12 * s, '#fff', 'center');
 }
 
 export function drawDeath(ctx, game, L, w, h) {

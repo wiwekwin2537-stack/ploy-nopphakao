@@ -13,6 +13,11 @@ const MOD_COL = '#8ab4ff';      // ค่าสุ่ม (แบบ PoE สี�
 
 function statText(P, k, v) { return (P.statNames[k] || k + ' {}').replace('{}', String(v)); }
 
+// ปุ่ม ✕ ของกล่องรายละเอียดที่วาดล่าสุด (main.js ใช้ปิดกล่อง = ยกเลิกการเลือก)
+let lastClose = null;
+export function resetTipClose() { lastClose = null; }
+export function tipCloseHit(t) { return !!lastClose && Math.hypot(t.sx - lastClose.x, t.sy - lastClose.y) < lastClose.r * 1.5; }
+
 // วาดกล่องจากรายการบรรทัด [{t, col, size, weight, gap, draw(ctx,x,y,w)}] วางใกล้ (ax,ay) ไม่ล้นจอ
 function tipBox(ctx, lines0, ax, ay, s, W, H, border) {
   const w = 236 * s, pad = 10 * s, lines = [];
@@ -28,6 +33,9 @@ function tipBox(ctx, lines0, ax, ay, s, W, H, border) {
   x = Math.max(6, Math.min(W - w - 6, x)); y = Math.max(6, Math.min(H - h - 6, y));
   ctx.fillStyle = 'rgba(10,8,8,0.95)'; rrect(ctx, x, y, w, h, 6 * s); ctx.fill();
   ctx.strokeStyle = border; ctx.lineWidth = 1.5; ctx.stroke();
+  lastClose = { x: x + w - 11 * s, y: y + 11 * s, r: 9 * s };     // ปุ่มปิดมุมขวาบน (ทุกกล่องรายละเอียด)
+  circle(ctx, lastClose.x, lastClose.y, lastClose.r, 'rgba(120,30,20,0.9)', C.gold, 1.2);
+  text(ctx, '✕', lastClose.x, lastClose.y + 0.5, 10 * s, '#fff', 'center');
   let cy = y + pad;
   for (const l of lines) {
     const lh = l.h || (l.size || 10) * s * 1.45;

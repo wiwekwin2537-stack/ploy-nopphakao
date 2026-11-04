@@ -56,6 +56,13 @@ export function currencyIcon(ctx, kind, x, y, r) {
     ctx.strokeStyle = '#a3262a'; ctx.beginPath(); ctx.moveTo(x - r * 0.4, y - r * 0.2); ctx.lineTo(x, y + r * 0.2); ctx.lineTo(x + r * 0.4, y - r * 0.1); ctx.stroke();
     return;
   }
+  if (kind === 'regret') {                                     // ใบลานล้างกรรม: ใบลานจารอักษร ผูกด้ายแดง
+    ctx.fillStyle = '#e8d090'; ctx.fillRect(x - r * 0.95, y - r * 0.32, r * 1.9, r * 0.64);
+    ctx.strokeStyle = '#7a5a20'; ctx.lineWidth = 1; ctx.strokeRect(x - r * 0.95, y - r * 0.32, r * 1.9, r * 0.64);
+    ctx.fillStyle = '#5a3a10'; for (let i = 0; i < 3; i++) ctx.fillRect(x - r * 0.7, y - r * 0.18 + i * r * 0.16, r * 1.4, r * 0.05);
+    ctx.fillStyle = '#c8302a'; ctx.fillRect(x - r * 0.08, y - r * 0.45, r * 0.16, r * 0.9);
+    return;
+  }
   if (kind === 'gild') {                                       // ทองคำเปลว: แผ่นทองบาง
     poly(ctx, [x - r * 0.8, y - r * 0.5, x + r * 0.6, y - r * 0.8, x + r * 0.8, y + r * 0.5, x - r * 0.6, y + r * 0.8], '#f2c230', C.ink, 1);
     ctx.fillStyle = 'rgba(255,250,200,0.8)'; ctx.fillRect(x - r * 0.4, y - r * 0.3, r * 0.5, r * 0.15); return;

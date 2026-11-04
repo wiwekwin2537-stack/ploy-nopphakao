@@ -109,7 +109,7 @@ function findPath(game, m, tx, ty) {
 // เดินไปหาเป้า: ตรงไปก่อน ถ้าติดให้หาทางอ้อมด้วยตาราง แล้วเดินตามทางนั้นครู่หนึ่ง
 function seek(game, m, dx, dy, speed, dt) {
   const want = speed * dt;
-  if (m.def.flying) { const d = Math.hypot(dx, dy) || 1; step(game, m, dx / d * speed, dy / d * speed, dt); return; }
+  if (m.def.flying && !game.world.zone.walls.length) { const d = Math.hypot(dx, dy) || 1; step(game, m, dx / d * speed, dy / d * speed, dt); return; }
   m.pathCd = Math.max(0, (m.pathCd || 0) - dt);
   if (m.path && m.path.length) {
     const wp = m.path[0], wx = wp.x - m.x, wy = wp.y - m.y, wd = Math.hypot(wx, wy);
@@ -124,7 +124,7 @@ function seek(game, m, dx, dy, speed, dt) {
 
 function step(game, m, vx, vy, dt) {
   const ox = m.x, oy = m.y;
-  if (m.def.flying) {
+  if (m.def.flying && !game.world.zone.walls.length) {          // บินข้ามของได้ — แต่ในด่านมีกำแพง (วัดร้าง/ถ้ำ) ห้ามบินเข้ากำแพง ไม่งั้นตีไม่ถึง
     m.x = Math.max(10, Math.min(game.world.zone.W - 10, m.x + vx * dt));
     m.y = Math.max(30, Math.min(game.world.zone.H - 10, m.y + vy * dt));
   } else {

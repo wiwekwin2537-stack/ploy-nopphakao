@@ -1,6 +1,6 @@
 // ผู้เล่น: ค่าสถานะ การเดิน (ปุ่ม/จอย/คลิก) การฟัน การหลบ การใช้สกิล
 import { meleeArc } from './combat.js';
-import { castSkill } from './skills.js';
+import { castSkill, faceAngle } from './skills.js';
 import { playerStats } from './stats.js';
 import { emptyEquip } from './items.js';
 
@@ -38,11 +38,6 @@ function nearestMob(game, x, y, maxD) {
   return best;
 }
 
-function faceAngle(p, a) {
-  p.aim = a;
-  const c = Math.cos(a), s = Math.sin(a);
-  p.dir = Math.abs(c) > Math.abs(s) ? (c > 0 ? 3 : 2) : (s > 0 ? 0 : 1);
-}
 
 export function doAttack(game) {
   const p = game.player, B = game.data.balance.player;
