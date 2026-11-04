@@ -1,7 +1,9 @@
 // ไอเท็มสุ่มค่า: ฐานไอเท็ม + ค่าสุ่มหน้า (prefix) / หลัง (suffix) ตามระดับไอเท็ม — ตัวเลขทั้งหมดอยู่ใน data/items.json
 // กติกา: ทุกชิ้นมี uid ไม่ซ้ำ สวม/ถอด/ทิ้ง ย้ายชิ้นเดิม ไม่สร้างของใหม่
 
-export const EQUIP_SLOTS = ['weapon', 'head', 'body', 'amulet', 'ring1', 'ring2'];
+// ช่องชุดครบแบบเอโดเรีย
+export const EQUIP_SLOTS = ['weapon', 'head', 'body', 'legs', 'arms', 'amulet', 'ring'];
+export const RARITY_ORDER = ['normal', 'green', 'purple', 'red'];
 
 export function emptyEquip() { return Object.fromEntries(EQUIP_SLOTS.map((s) => [s, null])); }
 const slotKind = (I, s) => I.slots[s].kind || s;
@@ -17,7 +19,10 @@ export function rollItem(I, rng, ilvl, opts = {}) {
   if (!bases.length) return null;
   const [baseId, base] = rng.pick(bases);
   let rarity = opts.rarity;
-  if (!rarity) rarity = rng.chance(I.rarity.rare.chance) ? 'rare' : rng.chance(I.rarity.magic.chance) ? 'magic' : 'normal';
+  if (!rarity) {                                              // ลองจากหายากสุดลงมา: แดง → ม่วง → เขียว → ทั่วไป
+    rarity = 'normal';
+    for (const r of ['red', 'purple', 'green']) if (rng.chance(I.rarity[r].chance)) { rarity = r; break; }
+  }
   const [lo, hi] = I.rarity[rarity].affixes;
   const want = rng.int(lo, hi);
   const mods = [];
@@ -32,14 +37,15 @@ export function rollItem(I, rng, ilvl, opts = {}) {
     if (a.type === 'prefix') prefixes++; else suffixes++;
   }
   let rareName = null;
-  if (rarity === 'rare') rareName = rng.pick(I.rareNames.first) + rng.pick(I.rareNames.second);
+  if (rarity === 'purple' || rarity === 'red') rareName = rng.pick(I.rareNames.first) + rng.pick(I.rareNames.second);
   return { uid: 0, base: baseId, rarity, ilvl, mods, rareName };
 }
 
 export function itemName(I, it) {
   const b = I.bases[it.base];
-  if (it.rarity === 'rare') return it.rareName + ' · ' + b.name;
-  if (it.rarity === 'magic') {
+  if (it.rarity === 'red') return '【' + it.rareName + '】 ' + b.name;
+  if (it.rarity === 'purple') return it.rareName + ' · ' + b.name;
+  if (it.rarity === 'green') {
     const pre = it.mods.map((m) => I.affixes[m.id]).filter((a) => a.type === 'prefix')[0];
     const suf = it.mods.map((m) => I.affixes[m.id]).filter((a) => a.type === 'suffix')[0];
     return [b.name, pre && pre.word, suf && suf.word].filter(Boolean).join(' ');

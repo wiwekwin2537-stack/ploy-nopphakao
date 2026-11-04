@@ -200,7 +200,7 @@ await check('ต้นพาสซีฟ: กด P → แตะนักรบ�
 
 await check('ของสวมใส่: เก็บดาบหายากจากพื้น → แถบชุด → แตะสองครั้งสวม → ดาเมจเพิ่ม สีดาบเปลี่ยน', async () => {
   await G(page, () => { const g = __ploy.game, p = g.player; p.level = Math.max(p.level, 4);
-    g.drops.push({ id: 9002, kind: 'item', x: p.x + 14, y: p.y, t: 1, z: 0, vz: 0, vx: 0, vy: 0, item: { uid: 0, base: 'silver_kris', rarity: 'rare', ilvl: 4, mods: [{ id: 'heavy', tier: 1, value: 6 }, { id: 'tiger', tier: 1, value: 3 }, { id: 'sharp', tier: 1, value: 15 }], rareName: 'เขี้ยวพญาเสือ' } }); });
+    g.drops.push({ id: 9002, kind: 'item', x: p.x + 14, y: p.y, t: 1, z: 0, vz: 0, vx: 0, vy: 0, item: { uid: 0, base: 'silver_kris', rarity: 'purple', ilvl: 4, mods: [{ id: 'heavy', tier: 1, value: 6 }, { id: 'tiger', tier: 1, value: 3 }, { id: 'sharp', tier: 1, value: 15 }], rareName: 'เขี้ยวพญาเสือ' } }); });
   await wait(page, () => __ploy.game.player.items.some((x) => x.base === 'silver_kris'), null, 3000);
   await page.screenshot({ path: SHOTS + '/10d-loot.png' });
   const d0 = await G(page, () => Math.round(__ploy.game.player.equip.weapon ? 1 : 0));

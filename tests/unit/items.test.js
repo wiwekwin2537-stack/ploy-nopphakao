@@ -11,7 +11,7 @@ import { updateLoot } from '../../src/systems/loot.js';
 
 test('สุ่มของ 3000 ชิ้น: ค่าอยู่ในช่วงเทียร์ ไม่มีค่าซ้ำ หน้า/หลังไม่เกิน 2 และไม่เกินระดับของ', () => {
   const I = makeGame().data.items, rng = createRng(7);
-  const counts = { normal: 0, magic: 0, rare: 0 };
+  const counts = { normal: 0, green: 0, purple: 0, red: 0 };
   for (let i = 0; i < 3000; i++) {
     const lvl = 1 + (i % 10), it = rollItem(I, rng, lvl);
     counts[it.rarity]++;
@@ -22,19 +22,20 @@ test('สุ่มของ 3000 ชิ้น: ค่าอยู่ในช่
     for (const m of it.mods) { const t = I.affixes[m.id].tiers[m.tier]; assert.ok(m.value >= t[1] && m.value <= t[2] && t[0] <= lvl); }
     assert.ok(itemName(I, it).length > 0);
   }
-  assert.ok(counts.rare > 100 && counts.magic > 500 && counts.normal > 1000, JSON.stringify(counts));
+  assert.ok(counts.red > 5 && counts.purple > 100 && counts.green > 500 && counts.normal > 1000, JSON.stringify(counts));
 });
 
-test('สวม/ถอด/ทิ้ง: ของไม่งอก uid ไม่ซ้ำ แหวนใส่ได้สองวง', () => {
+test('สวม/ถอด/ทิ้ง: ของไม่งอก uid ไม่ซ้ำ ใส่ชิ้นใหม่สลับชิ้นเดิมเข้ากระเป๋า', () => {
   const g = makeGame(), I = g.data.items, p = g.player, rng = createRng(3);
   p.level = 10;
-  for (const slot of ['weapon', 'ring', 'ring', 'ring', 'body']) giveItem(p, I, rollItem(I, rng, 8, { slot }));
+  for (const slot of ['weapon', 'ring', 'ring', 'legs', 'body']) giveItem(p, I, rollItem(I, rng, 8, { slot }));
   const uids = p.items.map((x) => x.uid);
   assert.equal(new Set(uids).size, 5);
   const ring = p.items.filter((x) => I.bases[x.base].slot === 'ring');
-  assert.equal(equipFromBag(I, p, ring[0].uid), 'ring1');
-  assert.equal(equipFromBag(I, p, ring[1].uid), 'ring2');
-  assert.equal(equipFromBag(I, p, ring[2].uid), 'ring1', 'แหวนวงที่สามสลับวงแรก');
+  assert.equal(equipFromBag(I, p, ring[0].uid), 'ring');
+  assert.equal(equipFromBag(I, p, ring[1].uid), 'ring', 'แหวนวงที่สองสลับวงแรก');
+  assert.ok(p.items.some((x) => x.uid === ring[0].uid), 'วงแรกกลับเข้ากระเป๋า');
+  assert.equal(equipFromBag(I, p, p.items.find((x) => I.bases[x.base].slot === 'legs').uid), 'legs');
   const all = () => p.items.length + EQUIP_SLOTS.filter((s) => p.equip[s]).length;
   assert.equal(all(), 5);
   EQUIP_SLOTS.forEach((s) => unequip(I, p, s));
@@ -59,7 +60,7 @@ test('ต้องเลเวลถึงถึงจะสวมได้ แ�
 test('เซฟของ: โหลดกลับได้ครบ · ของปลอม/ค่าเกินเทียร์/uid ซ้ำ ถูกปฏิเสธ', () => {
   const g = makeGame(), I = g.data.items, p = g.player; g.world.load('town');
   p.level = 5; const rng = createRng(11);
-  for (let i = 0; i < 4; i++) giveItem(p, I, rollItem(I, rng, 5, { rarity: 'rare' }));
+  for (let i = 0; i < 4; i++) giveItem(p, I, rollItem(I, rng, 5, { rarity: 'purple' }));
   equipFromBag(I, p, p.items.find((x) => I.bases[x.base].req <= 5).uid);
   const s = validate(JSON.parse(JSON.stringify(serialize(g))), g.data);
   assert.ok(s); assert.equal(s.items.length + Object.values(s.equip).filter(Boolean).length, 4);
@@ -81,4 +82,18 @@ test('ของดรอปจากมอนได้ครั้งเดี�
   for (let i = 0; i < 60; i++) updateLoot(g, 0.05);
   assert.equal(p.items.length, 1);
   assert.equal(g.drops.filter((d) => d.kind === 'item').length, 1, 'ชิ้นที่เก็บไม่ได้ต้องยังอยู่ที่พื้น');
+});
+
+test('เซฟรุ่น 4 (แหวน 2 วง สีเดิม) แปลงเป็นช่องชุดแบบเอโดเรียได้ ของไม่หาย', () => {
+  const g = makeGame(); g.world.load('town');
+  const it = (uid, base, rarity, mods = []) => ({ uid, base, rarity, ilvl: 5, mods, rareName: rarity === 'rare' ? 'เงาไพร' : null });
+  const old = { v: 4, zone: 'town', x: 300, y: 300, level: 5, xp: 0, coins: 0, hp: 50, mp: 50, flags: {}, passives: [], bag: [], sockets: [[null, null, null], [null, null, null]], nextUid: 4,
+    items: [it(1, 'iron_sword', 'magic', [{ id: 'sharp', tier: 0, value: 8 }])],
+    equip: { weapon: it(2, 'bamboo_sword', 'normal'), head: null, body: null, amulet: null, ring1: it(3, 'brass_ring', 'normal'), ring2: it(4, 'naga_ring', 'normal') } };
+  const s = validate(old, g.data);
+  assert.ok(s, 'ต้องแปลงได้');
+  assert.equal(s.equip.ring.uid, 3);
+  assert.ok(s.items.some((x) => x.uid === 4), 'แหวนวงสองเข้ากระเป๋า');
+  assert.equal(s.items.find((x) => x.uid === 1).rarity, 'green');
+  assert.ok('legs' in s.equip && 'arms' in s.equip);
 });

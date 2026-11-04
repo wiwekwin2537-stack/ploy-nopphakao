@@ -76,7 +76,7 @@ export function updateLoot(game, dt) {
         }
         const col = I.rarity[d.item.rarity].color;
         game.fx.text(p.x, p.y - 74, itemName(I, d.item), col, d.item.rarity !== 'normal');
-        game.audio.play(d.item.rarity === 'rare' ? 'gem' : 'coin');
+        game.audio.play(d.item.rarity === 'purple' || d.item.rarity === 'red' ? 'gem' : 'coin');
         if (!game.flags.gearHint) { game.flags.gearHint = true; game.notice = { text: 'ได้ของสวมใส่! เปิดกระเป๋า แตะแถบ "ชุด" เพื่อสวม', t: 6 }; }
         game.events.emit('itemPicked', { uid: d.item.uid });
       }

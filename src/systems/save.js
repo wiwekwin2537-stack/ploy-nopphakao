@@ -2,7 +2,7 @@
 import { validTree } from './passives.js';
 import { validItems, emptyEquip } from './items.js';
 
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 const KEY = 'ploy.save';
 
 // ตัวแปลงเซฟรุ่นเก่า → รุ่นใหม่ (เพิ่มที่นี่เมื่อเปลี่ยนรูปแบบเซฟ)
@@ -17,7 +17,15 @@ const MIGRATIONS = {
   // v2 → v3: เพิ่มต้นพาสซีฟ (ว่าง)
   2: (d) => ({ ...d, v: 3, passives: [] }),
   // v3 → v4: เพิ่มไอเท็ม (กระเป๋าของ + ช่องสวมใส่)
-  3: (d) => ({ ...d, v: 4, items: [], equip: emptyEquip(), nextUid: 0 }),
+  3: (d) => ({ ...d, v: 4, items: [], equip: { weapon: null, head: null, body: null, amulet: null, ring1: null, ring2: null }, nextUid: 0 }),
+  // v4 → v5: ช่องชุดแบบเอโดเรีย (แหวนวงเดียว + กางเกง + ปลอกแขน) และสีระดับ ขาว/เขียว/ม่วง/แดง
+  4: (d) => {
+    const rmap = (it) => it && ({ ...it, rarity: it.rarity === 'magic' ? 'green' : it.rarity === 'rare' ? (it.mods.length >= 4 ? 'red' : 'purple') : it.rarity });
+    const e = d.equip || {}, items = (d.items || []).map(rmap);
+    if (e.ring2) items.push(rmap(e.ring2));
+    const equip = { ...emptyEquip(), weapon: rmap(e.weapon), head: rmap(e.head), body: rmap(e.body), amulet: rmap(e.amulet), ring: rmap(e.ring1) };
+    return { ...d, v: 5, items: items.slice(0, 30), equip };
+  },
 };
 
 export function serialize(game) {

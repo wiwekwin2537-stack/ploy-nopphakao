@@ -9,7 +9,7 @@ export function equipLayout(B, I) {
   const s = B.s, slots = {};
   EQUIP_SLOTS.forEach((id, i) => {
     const col = i % 2, row = Math.floor(i / 2);
-    slots[id] = { id, x: B.x + 22 * s + col * 70 * s, y: B.y + 56 * s + row * 62 * s, w: 58 * s, h: 50 * s };
+    slots[id] = { id, x: B.x + 22 * s + col * 70 * s, y: B.y + 44 * s + row * 52 * s, w: 58 * s, h: 46 * s };
   });
   const gx = B.x + 175 * s, gy = B.y + 52 * s, cell = Math.min(44 * s, (B.x + B.w - gx - 14 * s) / COLS);
   const info = { x: B.x + 14 * s, y: B.y + B.h - 78 * s, w: B.w - 28 * s, h: 66 * s };
@@ -23,6 +23,8 @@ function itemIcon(ctx, I, it, x, y, r) {
   if (b.slot === 'weapon') { ctx.rotate(-0.8); ctx.fillStyle = col; ctx.fillRect(-r * 0.12, -r * 0.8, r * 0.24, r * 1.2); ctx.fillStyle = C.gold; ctx.fillRect(-r * 0.4, r * 0.35, r * 0.8, r * 0.14); ctx.fillStyle = '#5a2f1a'; ctx.fillRect(-r * 0.1, r * 0.48, r * 0.2, r * 0.35); }
   else if (b.slot === 'head') { poly(ctx, [-r * 0.8, r * 0.3, 0, -r * 0.6, r * 0.8, r * 0.3], col, C.ink, 1.2); ctx.fillStyle = C.gold; ctx.fillRect(-r * 0.6, r * 0.2, r * 1.2, r * 0.15); }
   else if (b.slot === 'body') { poly(ctx, [-r * 0.7, -r * 0.5, -r * 0.25, -r * 0.7, r * 0.25, -r * 0.7, r * 0.7, -r * 0.5, r * 0.55, r * 0.7, -r * 0.55, r * 0.7], col, C.ink, 1.2); }
+  else if (b.slot === 'legs') { ctx.fillStyle = col; ctx.fillRect(-r * 0.5, -r * 0.6, r * 0.42, r * 1.3); ctx.fillRect(r * 0.08, -r * 0.6, r * 0.42, r * 1.3); ctx.fillStyle = C.gold; ctx.fillRect(-r * 0.5, -r * 0.6, r, r * 0.15); }
+  else if (b.slot === 'arms') { ctx.fillStyle = col; ctx.fillRect(-r * 0.6, -r * 0.4, r * 0.45, r * 0.9); ctx.fillRect(r * 0.15, -r * 0.4, r * 0.45, r * 0.9); ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(-r * 0.6, 0, r * 1.2, r * 0.12); }
   else if (b.slot === 'ring') { circle(ctx, 0, r * 0.1, r * 0.5, null, col, r * 0.22); circle(ctx, 0, -r * 0.42, r * 0.2, '#e84a5a', C.ink, 1); }
   else { ctx.strokeStyle = col; ctx.lineWidth = r * 0.12; ctx.beginPath(); ctx.arc(0, -r * 0.3, r * 0.55, 0.2, Math.PI - 0.2); ctx.stroke(); poly(ctx, [0, r * 0.25, r * 0.22, r * 0.55, 0, r * 0.85, -r * 0.22, r * 0.55], col, C.ink, 1); }
   ctx.restore();
@@ -59,17 +61,17 @@ export function drawEquip(ctx, game, B) {
   ctx.fillStyle = 'rgba(0,0,0,0.4)'; rrect(ctx, N.x, N.y, N.w, N.h, 8 * s); ctx.fill();
   const it = sel ? (sel.uid ? p.items.find((x) => x.uid === sel.uid) : p.equip[sel.slot]) : null;
   if (!it) {
-    text(ctx, 'แตะของเพื่อดูค่า แตะซ้ำเพื่อสวม · ของสีฟ้า = เวทมนต์ · สีเหลือง = หายาก', N.x + 10 * s, N.y + 20 * s, 10 * s, C.cream, 'left', 'normal');
+    text(ctx, 'แตะของเพื่อดูค่า แตะซ้ำเพื่อสวม · ขาว ทั่วไป · เขียว ดี · ม่วง หายาก · แดง ตำนาน', N.x + 10 * s, N.y + 20 * s, 10 * s, C.cream, 'left', 'normal');
     text(ctx, 'ของดรอปจากมอนในทุ่ง ค่าสุ่มทุกชิ้น ยิ่งมอนเลเวลสูง ค่ายิ่งแรง', N.x + 10 * s, N.y + 42 * s, 10 * s, 'rgba(244,230,200,0.7)', 'left', 'normal');
     return;
   }
   const b = I.bases[it.base], col = I.rarity[it.rarity].color;
   text(ctx, itemName(I, it), N.x + 10 * s, N.y + 13 * s, 12 * s, col);
-  text(ctx, `${I.rarity[it.rarity].name} · ${I.slots[EQUIP_SLOTS.find((q) => (I.slots[q].kind || q) === b.slot)].name} · ต้องเลเวล ${b.req} · ระดับของ ${it.ilvl}`, N.x + 10 * s, N.y + 30 * s, 9 * s, 'rgba(244,230,200,0.7)', 'left', 'normal');
+  text(ctx, `${I.rarity[it.rarity].name} · ${I.slots[b.slot].name} · ต้องเลเวล ${b.req} · ระดับของ ${it.ilvl}`, N.x + 10 * s, N.y + 30 * s, 9 * s, 'rgba(244,230,200,0.7)', 'left', 'normal');
   text(ctx, statLines(I, P, it).join(' · '), N.x + 10 * s, N.y + 46 * s, 10 * s, C.cream, 'left', 'normal');
   let hint;
   if (sel.uid) {
-    const cur = EQUIP_SLOTS.filter((q) => (I.slots[q].kind || q) === b.slot).map((q) => p.equip[q]).find(Boolean);
+    const cur = p.equip[b.slot];
     if (cur) {                                                  // เทียบค่ากับของที่สวมอยู่
       const a = itemStats(I, it), c = itemStats(I, cur), keys = [...new Set([...Object.keys(a), ...Object.keys(c)])];
       const diff = keys.map((k) => [k, (a[k] || 0) - (c[k] || 0)]).filter(([, v]) => v);

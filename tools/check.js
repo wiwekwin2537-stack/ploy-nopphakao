@@ -49,6 +49,31 @@ for (const f of src) {
   });
 }
 
+// ทุกชื่อที่ import จากไฟล์ในโปรเจกต์ต้องมี export อยู่จริง (กันไฟล์ว่าง/ชื่อหาย/เขียนทับผิดไฟล์)
+import { dirname, resolve } from 'node:path';
+const exportsOf = new Map();
+function exportedNames(file) {
+  if (exportsOf.has(file)) return exportsOf.get(file);
+  let text = '';
+  try { text = readFileSync(file, 'utf8'); } catch { exportsOf.set(file, null); return null; }
+  const names = new Set();
+  for (const m of text.matchAll(/^export\s+(?:async\s+)?(?:function|const|let|class)\s+([A-Za-z_$][\w$]*)/gm)) names.add(m[1]);
+  for (const m of text.matchAll(/^export\s*\{([^}]*)\}/gm)) m[1].split(',').forEach((n) => { const k = n.trim().split(/\s+as\s+/).pop(); if (k) names.add(k); });
+  exportsOf.set(file, names);
+  return names;
+}
+for (const f of src.concat(all.filter((x) => x.includes(join('tests', 'unit')) && x.endsWith('.js')))) {
+  const text = readFileSync(f, 'utf8');
+  for (const m of text.matchAll(/import\s*\{([^}]*)\}\s*from\s*'(\.[^']+\.js)'/g)) {
+    const target = resolve(dirname(f), m[2]), names = exportedNames(target);
+    if (!names) { bad(relative(root, f), `import จากไฟล์ที่ไม่มี: ${m[2]}`); continue; }
+    for (const n of m[1].split(',')) {
+      const k = n.trim().split(/\s+as\s+/)[0].trim();
+      if (k && !names.has(k)) bad(relative(root, f), `import "${k}" แต่ ${m[2]} ไม่มี export ชื่อนี้`);
+    }
+  }
+}
+
 // ตรวจข้อมูลเกม
 const J = (p) => JSON.parse(readFileSync(join(root, 'data', p), 'utf8'));
 const monsters = J('monsters.json'), zones = J('zones.json'), dialogue = J('dialogue.json'), balance = J('balance.json');
