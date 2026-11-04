@@ -1,0 +1,19 @@
+{
+  "name": "ploy-nopphakao",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "node tools/build.js",
+    "check": "node tools/check.js",
+    "test": "node tools/check.js && node --test tests/unit/*.test.js && node tools/build.js && node tests/browser/run.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "playwright-core": "^1.64.1"
+  },
+  "type": "module"
+}

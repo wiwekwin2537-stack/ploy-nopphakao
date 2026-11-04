@@ -1,0 +1,199 @@
+// มอนสเตอร์: เกิด เกิดใหม่ และ AI (ประชิด / พุ่งชน / ร่ายระยะไกล)
+import { hurtPlayer, spawnShot } from './combat.js';
+import { monsterHeight } from '../art/monsters.js';
+
+let nextId = 1;
+
+export function makeMob(game, type, level, x, y, group = -1) {
+  const def = game.data.monsters[type];
+  const S = game.data.balance.monsterScale, l = level - 1;
+  const hp = Math.round(def.hp * (1 + S.hpPerLevel * l));
+  return {
+    id: nextId++, type, def, level, group, x, y, homeX: x, homeY: y,
+    hp, maxHp: hp, damage: Math.round(def.damage * (1 + S.damagePerLevel * l)), xp: Math.round(def.xp * (1 + S.xpPerLevel * l)),
+    radius: def.radius, height: monsterHeight(type), speed: def.speed,
+    state: 'idle', t: Math.random() * 10, face: 1, flash: 0, dying: 0, dead: false, aggroed: false,
+    attackCd: 0.5, chargeCd: 1.5, stateT: 0, dirX: 0, dirY: 0, windup: 0, wanderT: Math.random() * 2, tx: x, ty: y,
+    hitThisCharge: false, dodged: false, moving: false,
+  };
+}
+
+function freeSpot(game, area, r, avoidX, avoidY, minD) {
+  for (let i = 0; i < 40; i++) {
+    const x = area.x + Math.random() * area.w, y = area.y + Math.random() * area.h;
+    if (game.world.blocked(x, y, r + 2)) continue;
+    if (avoidX !== undefined && Math.hypot(x - avoidX, y - avoidY) < minD) continue;
+    return { x, y };
+  }
+  return null;
+}
+
+export function spawnZoneMobs(game) {
+  game.mobs.length = 0;
+  game.spawnTimers = [];
+  const z = game.world.zone, p = game.player;
+  z.spawns.forEach((s, gi) => {
+    game.spawnTimers[gi] = [];
+    if (s.afterFlag && !game.flags[s.afterFlag]) return;
+    for (let i = 0; i < s.count; i++) spawnOne(game, s, gi, p.x, p.y, 280);
+  });
+}
+
+function spawnOne(game, s, gi, ax, ay, minD) {
+  const lv = s.level[0] + Math.floor(Math.random() * (s.level[1] - s.level[0] + 1));
+  const spot = freeSpot(game, s.area, game.data.monsters[s.type].radius, ax, ay, minD);
+  if (!spot) return null;
+  const m = makeMob(game, s.type, lv, spot.x, spot.y, gi);
+  game.mobs.push(m);
+  return m;
+}
+
+// เดินไปหาเป้าแบบอ้อมสิ่งกีดขวาง: ถ้าเดินตรงแล้วติด ให้ลองเฉียงซ้าย/ขวา แล้วจำทางอ้อมไว้ครู่หนึ่ง
+function seek(game, m, dx, dy, speed, dt) {
+  const d = Math.hypot(dx, dy) || 1;
+  let ux = dx / d, uy = dy / d;
+  if (m.detourT > 0) { m.detourT -= dt; const c = Math.cos(m.detourA), s = Math.sin(m.detourA); [ux, uy] = [ux * c - uy * s, ux * s + uy * c]; }
+  const want = speed * dt;
+  if (step(game, m, ux * speed, uy * speed, dt) > want * 0.35 || m.def.flying) return;
+  for (const a of [1.0, -1.0, 1.6, -1.6, 2.3, -2.3]) {
+    const c = Math.cos(a), s = Math.sin(a);
+    const tx = (dx / d) * c - (dy / d) * s, ty = (dx / d) * s + (dy / d) * c;
+    if (!game.world.blocked(m.x + tx * (m.radius + 6), m.y + ty * (m.radius + 6), m.radius)) {
+      m.detourA = a; m.detourT = 0.6;
+      step(game, m, tx * speed, ty * speed, dt);
+      return;
+    }
+  }
+}
+
+function step(game, m, vx, vy, dt) {
+  const ox = m.x, oy = m.y;
+  if (m.def.flying) {
+    m.x = Math.max(10, Math.min(game.world.zone.W - 10, m.x + vx * dt));
+    m.y = Math.max(30, Math.min(game.world.zone.H - 10, m.y + vy * dt));
+  } else {
+    const r = game.world.moveCircle(m.x, m.y, m.radius, vx * dt, vy * dt);
+    m.x = r.x; m.y = r.y;
+  }
+  if (Math.abs(vx) > 1) m.face = vx > 0 ? 1 : -1;
+  const moved = Math.hypot(m.x - ox, m.y - oy);
+  m.moving = moved > 0.2;
+  return moved;
+}
+
+function updateAI(game, m, dt) {
+  const p = game.player, def = m.def;
+  const dx = p.x - m.x, dy = p.y - m.y, d = Math.hypot(dx, dy) || 1;
+  const canSee = !p.dead && game.mode === 'play';
+  m.attackCd -= dt; m.chargeCd -= dt; m.stateT -= dt;
+  if (!m.aggroed && canSee && d < def.aggro) m.aggroed = true;
+  if (m.aggroed && (!canSee || Math.hypot(m.x - m.homeX, m.y - m.homeY) > def.aggro * 2.6)) { m.aggroed = false; m.state = 'return'; m.stateT = 0; }
+
+  if (m.state === 'windup') {
+    m.windup = Math.max(0, m.stateT);
+    if (m.stateT <= 0) {
+      m.windup = 0;
+      if (def.ai === 'charger' && m.chargeNext) { m.state = 'charge'; m.stateT = def.chargeTime; m.hitThisCharge = false; m.dodged = false; m.chargeNext = false; }
+      else if (def.ai === 'caster') {
+        const a = Math.atan2(p.y - 14 - (m.y - 24), p.x - m.x);
+        spawnShot(game, { x: m.x, y: m.y - 24, vx: Math.cos(a) * def.shotSpeed, vy: Math.sin(a) * def.shotSpeed, life: 2.2, radius: 6, from: 'mob', damage: m.damage, kind: 'ghostfire', flying: true });
+        m.state = 'chase'; m.attackCd = def.attackCooldown;
+      } else {
+        if (d < def.attackRange + p.radius + 12) hurtPlayer(game, m.damage, m.x, m.y);
+        m.state = 'chase'; m.attackCd = def.attackCooldown;
+      }
+    }
+    return;
+  }
+  if (m.state === 'charge') {
+    const moved = step(game, m, m.dirX * def.chargeSpeed, m.dirY * def.chargeSpeed, dt);
+    if (Math.random() < 0.7) game.fx.trail(m.x, m.y - 4, 'rgba(200,170,120,0.8)', 4, 0.35);
+    const nd = Math.hypot(p.x - m.x, p.y - m.y);
+    if (!m.hitThisCharge && nd < m.radius + p.radius + 4) {
+      if (p.invuln > 0 && p.dashT > 0) { if (!m.dodged) { m.dodged = true; game.events.emit('chargeDodged', { mob: m }); } }
+      else if (hurtPlayer(game, Math.round(m.damage * 1.5), m.x, m.y)) m.hitThisCharge = true;
+    }
+    if (!m.hitThisCharge && !m.dodged && p.dashT > 0 && nd < m.radius + p.radius + 26) { m.dodged = true; game.events.emit('chargeDodged', { mob: m }); }
+    if (m.stateT <= 0 || moved < def.chargeSpeed * dt * 0.3) { m.state = 'stun'; m.stateT = 0.7; m.chargeCd = def.chargeCooldown; game.camera.shake = Math.max(game.camera.shake, 1.5); }
+    return;
+  }
+  if (m.state === 'stun') { m.moving = false; if (m.stateT <= 0) m.state = 'chase'; return; }
+
+  if (m.aggroed) {
+    m.state = 'chase';
+    if (def.ai === 'charger' && m.chargeCd <= 0 && d > 70 && d < 290 && game.world.lineClear(m.x, m.y, p.x, p.y)) {
+      m.state = 'windup'; m.stateT = def.chargeWindup; m.chargeNext = true; m.dirX = dx / d; m.dirY = dy / d;
+      m.face = dx > 0 ? 1 : -1;
+      game.audio.play('warn');
+      return;
+    }
+    if (def.ai === 'caster') {
+      const want = def.keepDistance;
+      let vx = 0, vy = 0;
+      if (d < want - 30) { vx = -dx / d; vy = -dy / d; } else if (d > want + 40) { vx = dx / d; vy = dy / d; }
+      vx += -dy / d * 0.45 * Math.sin(m.t * 0.7); vy += dx / d * 0.45 * Math.sin(m.t * 0.7);
+      step(game, m, vx * m.speed, vy * m.speed, dt);
+      m.face = dx > 0 ? 1 : -1;
+      if (m.attackCd <= 0 && d < def.attackRange) { m.state = 'windup'; m.stateT = 0.55; }
+      return;
+    }
+    if (d > def.attackRange + p.radius) seek(game, m, dx, dy, m.speed, dt);
+    else { m.moving = false; m.face = dx > 0 ? 1 : -1; if (m.attackCd <= 0) { m.state = 'windup'; m.stateT = 0.32; } }
+    return;
+  }
+  // เดินเล่นรอบถิ่น / กลับบ้าน
+  if (m.state === 'return') {
+    const hx = m.homeX - m.x, hy = m.homeY - m.y, hd = Math.hypot(hx, hy);
+    m.hp = Math.min(m.maxHp, m.hp + m.maxHp * 0.5 * dt);
+    if (hd < 10) m.state = 'idle'; else seek(game, m, hx, hy, m.speed * 1.3, dt);
+    if (m.stateT < -8) { m.x = m.homeX; m.y = m.homeY; m.state = 'idle'; } // กลับบ้านไม่ได้นานเกิน ให้กลับเลย
+    return;
+  }
+  m.wanderT -= dt;
+  if (m.wanderT <= 0) { m.wanderT = 2 + Math.random() * 3; m.tx = m.homeX + (Math.random() - 0.5) * 120; m.ty = m.homeY + (Math.random() - 0.5) * 120; }
+  const wx = m.tx - m.x, wy = m.ty - m.y, wd = Math.hypot(wx, wy);
+  if (wd > 6) step(game, m, wx / wd * m.speed * 0.35, wy / wd * m.speed * 0.35, dt); else m.moving = false;
+}
+
+export function updateMonsters(game, dt) {
+  const z = game.world.zone;
+  for (let i = game.mobs.length - 1; i >= 0; i--) {
+    const m = game.mobs[i];
+    m.t += dt; m.flash = Math.max(0, m.flash - dt);
+    if (m.dead) {
+      m.dying += dt * 1.8;
+      if (m.dying >= 1) {
+        game.mobs.splice(i, 1);
+        if (m.group >= 0 && z.spawns[m.group]) game.spawnTimers[m.group].push(z.spawns[m.group].respawn);
+      }
+      continue;
+    }
+    updateAI(game, m, dt);
+  }
+  // ดันมอนไม่ให้ซ้อนกัน
+  const ms = game.mobs;
+  for (let i = 0; i < ms.length; i++) {
+    const a = ms[i]; if (a.dead || a.def.flying || a.state === 'charge') continue;
+    for (let j = i + 1; j < ms.length; j++) {
+      const b = ms[j]; if (b.dead || b.def.flying) continue;
+      const dx = b.x - a.x, dy = b.y - a.y, min = a.radius + b.radius;
+      if (Math.abs(dx) > min || Math.abs(dy) > min) continue;
+      const d = Math.hypot(dx, dy) || 0.01;
+      if (d < min) {
+        const push = (min - d) / 2, nx = dx / d, ny = dy / d;
+        const ra = game.world.moveCircle(a.x, a.y, a.radius, -nx * push, -ny * push); a.x = ra.x; a.y = ra.y;
+        const rb = game.world.moveCircle(b.x, b.y, b.radius, nx * push, ny * push); b.x = rb.x; b.y = rb.y;
+      }
+    }
+  }
+  // เกิดใหม่
+  (game.spawnTimers || []).forEach((timers, gi) => {
+    for (let k = timers.length - 1; k >= 0; k--) {
+      timers[k] -= dt;
+      if (timers[k] <= 0) {
+        const s = z.spawns[gi];
+        if (spawnOne(game, s, gi, game.player.x, game.player.y, 320)) timers.splice(k, 1); else timers[k] = 2;
+      }
+    }
+  });
+}

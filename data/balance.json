@@ -1,0 +1,21 @@
+{
+  "tile": 32,
+  "maxLevel": 10,
+  "xpToNext": [0, 30, 70, 130, 210, 320, 460, 640, 860, 1130],
+  "player": {
+    "hp": 100, "hpPerLevel": 14,
+    "mp": 50, "mpPerLevel": 4,
+    "damage": 10, "damagePerLevel": 2.2,
+    "speed": 150,
+    "attackCooldown": 0.42, "attackRange": 46, "attackArc": 1.9,
+    "dashSpeed": 620, "dashTime": 0.17, "dashCooldown": 0.8,
+    "mpRegen": 3, "hpRegen": 1, "townHpRegen": 15,
+    "hurtInvuln": 0.35
+  },
+  "skills": {
+    "fireball": { "mp": 8, "cooldown": 0.45, "damageMult": 1.7, "speed": 380, "life": 1.1, "radius": 42 }
+  },
+  "monsterScale": { "hpPerLevel": 0.28, "damagePerLevel": 0.16, "xpPerLevel": 0.22 },
+  "deathCoinLoss": 0.1,
+  "autosaveSeconds": 10
+}

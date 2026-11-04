@@ -1,0 +1,139 @@
+// ผู้เล่น: ค่าสถานะ การเดิน (ปุ่ม/จอย/คลิก) การฟัน การหลบ การใช้สกิล
+import { meleeArc } from './combat.js';
+import { castFireball } from './skills.js';
+
+export function playerStats(p, balance) {
+  const B = balance.player, lv = p.level - 1;
+  return {
+    maxHp: Math.round(B.hp + B.hpPerLevel * lv),
+    maxMp: Math.round(B.mp + B.mpPerLevel * lv),
+    damage: B.damage + B.damagePerLevel * lv,
+    speed: B.speed,
+  };
+}
+
+export function createPlayer(balance) {
+  const p = {
+    x: 0, y: 0, radius: 10, level: 1, xp: 0, coins: 0, hp: 1, mp: 1,
+    gems: [], dir: 0, aim: 0, walk: 0, moving: false,
+    attackCd: 0, swing: -1, dashCd: 0, dashT: 0, dashVx: 0, dashVy: 0, skillCd: 0, castT: 0,
+    invuln: 0, hurt: 0, dead: false, combatTimer: 0, moveTarget: null, targetMob: null, movedDist: 0,
+  };
+  const s = playerStats(p, balance);
+  p.hp = s.maxHp; p.mp = s.maxMp;
+  return p;
+}
+
+function nearestMob(game, x, y, maxD) {
+  let best = null, bd = maxD;
+  for (const m of game.mobs) {
+    if (m.dead) continue;
+    const d = Math.hypot(m.x - x, m.y - y);
+    if (d < bd) { bd = d; best = m; }
+  }
+  return best;
+}
+
+function faceAngle(p, a) {
+  p.aim = a;
+  const c = Math.cos(a), s = Math.sin(a);
+  p.dir = Math.abs(c) > Math.abs(s) ? (c > 0 ? 3 : 2) : (s > 0 ? 0 : 1);
+}
+
+export function doAttack(game) {
+  const p = game.player, B = game.data.balance.player;
+  if (p.attackCd > 0 || p.dashT > 0) return false;
+  const target = (p.targetMob && !p.targetMob.dead) ? p.targetMob : nearestMob(game, p.x, p.y, B.attackRange * 1.8);
+  if (target) faceAngle(p, Math.atan2(target.y - target.height * 0.3 - (p.y - 10), target.x - p.x));
+  p.attackCd = B.attackCooldown;
+  p.swing = 0;
+  game.fx.slash(p.x, p.y, p.aim, B.attackRange, B.attackArc);
+  game.audio.play('swing');
+  const hits = meleeArc(game, p.x, p.y, p.aim, B.attackRange, B.attackArc, playerStats(p, game.data.balance).damage);
+  if (hits) { p.combatTimer = 4; game.camera.shake = Math.max(game.camera.shake, 2); }
+  game.events.emit('playerAttacked', { hits });
+  return true;
+}
+
+export function doDash(game) {
+  const p = game.player, B = game.data.balance.player;
+  if (p.dashCd > 0 || p.dashT > 0) return false;
+  let dx = game.input.move.x, dy = game.input.move.y;
+  if (!dx && !dy) { dx = Math.cos(p.aim); dy = Math.sin(p.aim); }
+  const d = Math.hypot(dx, dy) || 1;
+  p.dashVx = dx / d * B.dashSpeed; p.dashVy = dy / d * B.dashSpeed;
+  p.dashT = B.dashTime; p.dashCd = B.dashCooldown;
+  p.invuln = Math.max(p.invuln, B.dashTime + 0.08);
+  p.moveTarget = null;
+  game.fx.burst(p.x, p.y, '#d8c49a', 8, 60, 0.4, 3);
+  game.audio.play('dash');
+  game.events.emit('playerDashed', {});
+  return true;
+}
+
+export function updatePlayer(game, dt) {
+  const p = game.player, input = game.input, B = game.data.balance.player;
+  const st = playerStats(p, game.data.balance);
+  p.attackCd = Math.max(0, p.attackCd - dt);
+  p.dashCd = Math.max(0, p.dashCd - dt);
+  p.skillCd = Math.max(0, p.skillCd - dt);
+  p.invuln = Math.max(0, p.invuln - dt);
+  p.hurt = Math.max(0, p.hurt - dt);
+  p.castT = Math.max(0, p.castT - dt);
+  p.combatTimer = Math.max(0, p.combatTimer - dt);
+  if (p.swing >= 0) { p.swing += dt / 0.2; if (p.swing > 1) p.swing = -1; }
+
+  // ฟื้นพลัง
+  const regen = game.world.zone.safe ? B.townHpRegen : (p.combatTimer > 0 ? 0 : B.hpRegen * 2);
+  p.hp = Math.min(st.maxHp, p.hp + regen * dt);
+  p.mp = Math.min(st.maxMp, p.mp + B.mpRegen * dt);
+  if (p.dead) return;
+
+  // คลิกเมาส์: ถ้าโดนมอน = ล็อกเป้าแล้วเดินไปตี ถ้าโดนพื้น = เดินไปจุดนั้น
+  for (const tap of input.taps) {
+    if (tap.consumed || tap.kind !== 'mouse') continue;
+    const w = game.camera.toWorld(tap.sx, tap.sy);
+    const m = game.mobs.find((q) => !q.dead && Math.hypot(q.x - w.x, q.y - q.height * 0.5 - w.y) < q.radius + 14);
+    if (m) { p.targetMob = m; p.moveTarget = null; } else { p.moveTarget = { x: w.x, y: w.y }; p.targetMob = null; }
+    tap.consumed = true;
+  }
+  if (input.mouseHeld && !p.targetMob) { const w = game.camera.toWorld(input.mouseHeld.sx, input.mouseHeld.sy); p.moveTarget = { x: w.x, y: w.y }; }
+
+  // ทิศทางเดิน
+  let mx = input.move.x, my = input.move.y;
+  if (mx || my) { p.moveTarget = null; p.targetMob = null; }
+  if (p.targetMob) {
+    if (p.targetMob.dead) p.targetMob = null;
+    else {
+      const t = p.targetMob, d = Math.hypot(t.x - p.x, t.y - p.y);
+      if (d > B.attackRange + t.radius - 6) { mx = (t.x - p.x) / d; my = (t.y - p.y) / d; } else doAttack(game);
+    }
+  } else if (p.moveTarget) {
+    const d = Math.hypot(p.moveTarget.x - p.x, p.moveTarget.y - p.y);
+    if (d < 4) p.moveTarget = null; else { mx = (p.moveTarget.x - p.x) / d; my = (p.moveTarget.y - p.y) / d; }
+  }
+
+  if (input.pressed.attack) doAttack(game);
+  if (input.pressed.dash) doDash(game);
+  if (input.held.skill || input.pressed.skill) castFireball(game);
+
+  const ox = p.x, oy = p.y;
+  if (p.dashT > 0) {
+    p.dashT -= dt;
+    const m = game.world.moveCircle(p.x, p.y, p.radius, p.dashVx * dt, p.dashVy * dt);
+    p.x = m.x; p.y = m.y;
+    if (Math.random() < 0.6) game.fx.trail(p.x, p.y - 4, 'rgba(230,220,190,0.8)', 4, 0.25);
+  } else if (mx || my) {
+    const slow = p.swing >= 0 ? 0.55 : 1;
+    const m = game.world.moveCircle(p.x, p.y, p.radius, mx * st.speed * slow * dt, my * st.speed * slow * dt);
+    p.x = m.x; p.y = m.y;
+    if (p.swing < 0) faceAngle(p, Math.atan2(my, mx));
+  }
+  const moved = Math.hypot(p.x - ox, p.y - oy);
+  p.movedDist += moved;
+  p.moving = moved > 0.3;
+  if (p.moving) p.walk = (p.walk + moved / 34) % 1;
+  if (p.moveTarget && moved < 0.05 && !(mx === 0 && my === 0)) p.moveTarget = null; // ติดกำแพง
+}
+
+export function nearestMobTo(game, x, y, maxD) { return nearestMob(game, x, y, maxD); }
