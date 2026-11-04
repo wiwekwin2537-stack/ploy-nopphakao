@@ -38,7 +38,7 @@ const game = {
   data: { balance, monsters, zones, dialogue },
   events: createEvents(), camera: createCamera(), audio: createAudio(), fx: createFx(), rng: createRng(Date.now() & 0xffff),
   flags: {}, mobs: [], shots: [], drops: [], later: [], spawnTimers: [],
-  mode: 'title', dialog: null, time: 0, toast: null, debug: params.has('debug'),
+  mode: 'title', dialog: null, time: 0, hitStop: 0, toast: null, debug: params.has('debug'),
 };
 game.world = createWorld(zones, (f) => !!game.flags[f]);
 game.input = createInput(canvas, () => layout);
@@ -97,6 +97,8 @@ function update(dt) {
   } else if (game.mode === 'dead') {
     game.deadT += dt;
     if (game.deadT > 1.2 && (input.taps.length || input.pressed.attack || input.pressed.interact || input.pressed.dash)) { respawn(game); writeSave(game); }
+  } else if (game.mode === 'play' && game.hitStop > 0) {
+    game.hitStop -= dt;                     // หยุดภาพแวบหนึ่งตอนดาบโดน ให้รู้สึกถึงแรงกระแทก
   } else if (game.mode === 'play') {
     updateNpcs(game);
     if (game.mode === 'play') {

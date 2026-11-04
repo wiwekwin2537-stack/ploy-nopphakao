@@ -10,6 +10,8 @@ import { tutorialTarget } from '../systems/tutorial.js';
 export function createScene(game) {
   let ground = null, sprites = null, scale = 0;
   const list = [];
+  const ghosts = [];   // ภาพติดตาตอนหลบ (เอฟเฟกต์ภาพเท่านั้น)
+  let lastT = 0;
 
   function ensure(dpr) {
     const want = Math.max(1, Math.min(2.5, Math.round(dpr * game.camera.zoom * 2) / 2));
@@ -131,18 +133,25 @@ export function createScene(game) {
       for (const d of game.drops) if (inView(d.x, d.y)) list.push({ key: d.y - 1, drop: d });
       list.push({ key: game.player.y, player: true });
       list.sort((a, b2) => a.key - b2.key);
-      const p = game.player, t = game.time;
+      const p = game.player, t = game.time, dtv = Math.min(0.05, Math.max(0, t - lastT)); lastT = t;
+      for (let i = ghosts.length - 1; i >= 0; i--) { ghosts[i].life -= dtv; if (ghosts[i].life <= 0) ghosts.splice(i, 1); }
+      if (p.dashT > 0 && dtv > 0) ghosts.push({ x: p.x, y: p.y, dir: p.dir, walk: p.walk, life: 0.22 });
       for (const it of list) {
         if (it.o) sprites.draw(ctx, it.o);
         else if (it.mob) {
           const mo = it.mob;
-          drawMonster(ctx, mo.type, mo.x, mo.y, { t: mo.t, moving: mo.moving, face: mo.face, charging: mo.state === 'charge', windup: mo.state === 'windup' ? 1 : 0, flash: mo.flash, dying: mo.dying });
+          drawMonster(ctx, mo.type, mo.x, mo.y, { t: mo.t, moving: mo.moving, face: mo.face, charging: mo.state === 'charge', windup: mo.state === 'windup' ? 1 : 0, flash: mo.flash, dying: mo.dying, recoil: mo.recoil || 0, kbx: mo.kbx || 0, kby: mo.kby || 0, stun: mo.state === 'stun' });
         } else if (it.npc) {
           const n = it.npc;
           drawHuman(ctx, n.look, n.x, n.y, { dir: n.face ? (n.face < 0 ? 2 : 3) : 0, t: t + n.x, moving: false, swing: -1 });
         } else if (it.drop) drawDrop(ctx, it.drop);
         else if (it.player && !(p.dead && game.mode === 'dead' && game.deadT > 0.6)) {
-          drawHuman(ctx, 'hero', p.x, p.y, { dir: p.dir, walk: p.walk, moving: p.moving, swing: p.swing, aim: p.aim, hurt: p.hurt, t, dash: p.dashT > 0, cast: p.castT > 0 });
+          for (const gh of ghosts) {                                   // เงาซ้อนตอนหลบ
+            ctx.globalAlpha = Math.max(0, gh.life / 0.22) * 0.3;
+            drawHuman(ctx, 'hero', gh.x, gh.y, { dir: gh.dir, walk: gh.walk, moving: true, swing: -1, t, dash: true });
+          }
+          ctx.globalAlpha = 1;
+          drawHuman(ctx, 'hero', p.x, p.y, { dir: p.dir, walk: p.walk, moving: p.moving, swing: p.swing, combo: p.combo, aim: p.aim, hurt: p.hurt, t, dash: p.dashT > 0, cast: p.castT > 0 });
         }
       }
       for (const s of game.shots) drawShot(ctx, s);

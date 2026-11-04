@@ -4,8 +4,9 @@ import { C, shadow, box, poly, circle } from './draw.js';
 
 function pig(ctx, s, o, colors) {
   const { body, dark, mane } = colors;
-  const run = o.moving ? Math.sin(o.t * 16) : 0;
+  const run = o.moving ? Math.sin(o.t * (o.charging ? 30 : 16)) : 0;
   const lean = o.charging ? 3 : 0;
+  if (o.moving) ctx.translate(0, -Math.abs(Math.cos(o.t * (o.charging ? 30 : 16))) * 1.6 * s);   // วิ่งกระเด้ง
   // ขา
   ctx.fillStyle = dark;
   [-7, -2, 4, 8].forEach((lx, i) => ctx.fillRect(lx * s, -5 * s + (i % 2 ? run : -run) * s, 2.6 * s, 5 * s));
@@ -77,11 +78,14 @@ export function drawMonster(ctx, type, x, y, o) {
   if (o.dying > 0) ctx.globalAlpha = Math.max(0, 1 - o.dying);
   if (type === 'krasue') shadow(ctx, x, y, 8, 3, 0.18);
   else shadow(ctx, x, y, 13 * big, 4.5 * big);
+  if (o.recoil > 0) ctx.translate(o.kbx * o.recoil * 30, o.kby * o.recoil * 20);   // สะดุ้งถอยตอนโดนฟัน
   ctx.translate(x, y);
-  ctx.scale(SCALE, SCALE);                                    // ขยายให้สมกับตัวละครสูงแบบเอโดเรีย
+  ctx.scale(SCALE, SCALE);
+  if (o.recoil > 0) ctx.scale(1 + o.recoil * 0.8, 1 - o.recoil * 0.8);
+  if (o.stun) ctx.rotate(Math.sin(o.t * 30) * 0.06);                                    // ขยายให้สมกับตัวละครสูงแบบเอโดเรีย
   if (o.windup > 0 && type !== 'krasue') ctx.translate(Math.sin(o.t * 60) * 1.2, 0);
   ctx.scale(o.face < 0 ? -1 : 1, 1);
-  if (o.dying > 0) ctx.scale(1 + o.dying * 0.2, 1 - o.dying * 0.5);
+  if (o.dying > 0) { const k = Math.min(1, o.dying * 2.2); ctx.translate(-4 * k, -6 * Math.sin(k * Math.PI)); ctx.rotate(-k * 1.4); } // ล้มตะแคง
   if (o.flash > 0 && Math.floor(o.t * 30) % 2) ctx.globalAlpha *= 0.55;
   if (type === 'piglet') pig(ctx, big, o, { body: '#7a5236', dark: '#4e321f', mane: '#3a2416' });
   else if (type === 'boar') pig(ctx, 1, o, { body: '#5e4030', dark: '#3a2618', mane: '#26170e' });

@@ -64,16 +64,22 @@ await check('บทนำ 2: ฟันลูกหมูป่าด้วยป
 });
 
 await check('บทนำ 3: พญาหมูป่าพุ่งชน → กด Space หลบทัน → ไม่เสียเลือด', async () => {
-  await G(page, () => { const g = __ploy.game, m = g.mobs.find((q) => q.type === 'bigboar'); g.player.x = m.x - 180; g.player.y = m.y; m.aggroed = true; m.chargeCd = 0; });
-  await wait(page, () => __ploy.game.mobs.some((m) => m.type === 'bigboar' && m.state === 'charge'), null, 6000);
+  // วางหมูและผู้เล่นบนช่วงทางที่โล่ง (ไม่มีเกวียนขวาง) เพื่อให้หมูพุ่งได้จริง
+  await G(page, () => { const g = __ploy.game, m = g.mobs.find((q) => q.type === 'bigboar'); m.x = m.homeX = 31 * 32; m.y = m.homeY = 10 * 32; g.player.x = 25 * 32; g.player.y = 10 * 32; m.state = 'chase'; m.aggroed = true; m.chargeCd = 0; });
+  await wait(page, () => __ploy.game.mobs.some((m) => m.type === 'bigboar' && m.state === 'charge'), null, 6000).catch(async () => { throw new Error('หมูไม่พุ่ง · ' + await G(page, () => { const g = __ploy.game, m = g.mobs.find((q) => q.type === 'bigboar'), p = g.player; return `หมู ${Math.round(m.x)},${Math.round(m.y)} ${m.state} cd ${m.chargeCd.toFixed(1)} ผู้เล่น ${Math.round(p.x)},${Math.round(p.y)} เส้นตรงว่าง ${g.world.lineClear(m.x, m.y, p.x, p.y)} mode ${g.mode} hs ${g.hitStop} st ${m.stateT.toFixed(2)} tut ${g.flags.tutStep} dlg ${g.dialog && g.dialog.speaker}`; })); });
   await page.screenshot({ path: SHOTS + '/03-charge.png' });
   const hp0 = (await state(page)).hp;
-  await wait(page, () => { const g = __ploy.game, m = g.mobs.find((q) => q.type === 'bigboar'); return m && Math.hypot(m.x - g.player.x, m.y - g.player.y) < 70; }, null, 3000);
-  await page.keyboard.press('Space');
+  // รอในหน้าเว็บเอง (ทุกเฟรม) แล้วกด Space ผ่านช่องทางคีย์บอร์ดจริงทันทีที่หมูเข้าใกล้ — ไม่ขึ้นกับความหน่วงของตัวเทสต์
+  await page.evaluate(() => new Promise((res) => {
+    const tick = () => { const g = __ploy.game, m = g.mobs.find((q) => q.type === 'bigboar');
+      if (m && Math.hypot(m.x - g.player.x, m.y - g.player.y) < 75) { dispatchEvent(new KeyboardEvent('keydown', { code: 'Space' })); setTimeout(() => { dispatchEvent(new KeyboardEvent('keyup', { code: 'Space' })); res(); }, 60); }
+      else requestAnimationFrame(tick); };
+    tick(); }));
   await page.waitForTimeout(600);
   const s = await state(page);
   const dodged = await G(page, () => __ploy.game.tutDodged === true);
-  assert(dodged, 'ระบบต้องนับว่าหลบได้');
+  const dbg = await G(page, () => { const g = __ploy.game, m = g.mobs.find((q) => q.type === 'bigboar'), p = g.player; return m ? `หมู ${Math.round(m.x)},${Math.round(m.y)} ${m.state} ผู้เล่น ${Math.round(p.x)},${Math.round(p.y)} hp ${Math.round(p.hp)}` : 'ไม่มีหมู'; });
+  assert(dodged, 'ระบบต้องนับว่าหลบได้ · ' + dbg);
   assert(s.hp >= hp0 - 0.5, `เสียเลือด ${hp0}→${s.hp}`);
 });
 

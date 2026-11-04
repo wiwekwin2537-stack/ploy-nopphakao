@@ -63,3 +63,27 @@ test('มอนเดินอ้อมเกวียนมาหาผู้�
   for (let i = 0; i < 400; i++) updateMonsters(g, 1 / 60);
   assert.ok(Math.hypot(m.x - p.x, m.y - p.y) < 60, `ยังติดอยู่ที่ ${Math.round(m.x)},${Math.round(m.y)}`);
 });
+
+test('พญาหมูป่าตัวใหญ่เดินอ้อมเกวียนได้ด้วยการหาทาง (ช่องแคบกว่าตัว)', async () => {
+  const { updateMonsters } = await import('../../src/systems/monsters.js');
+  const g = makeGame(); g.world.load('road'); g.flags.tutorialDone = true;
+  const p = g.player; p.x = 222; p.y = 320; p.invuln = 999;
+  const m = makeMob(g, 'bigboar', 1, 402, 300); m.aggroed = true; m.chargeCd = 999; g.mobs.push(m);
+  for (let i = 0; i < 600; i++) updateMonsters(g, 1 / 60);
+  assert.ok(Math.hypot(m.x - p.x, m.y - p.y) < 70, `ยังติดอยู่ที่ ${Math.round(m.x)},${Math.round(m.y)}`);
+});
+
+test('คอมโบฟัน: ดาบโดนหลังจังหวะง้าง และกดต่อเนื่องได้ท่า 1→2→3', async () => {
+  const { doAttack, updatePlayer } = await import('../../src/systems/player.js');
+  const g = makeGame(); g.world.load('field');
+  const p = g.player; p.x = 300; p.y = 300;
+  const m = makeMob(g, 'boar', 1, 330, 300); m.hp = 9999; m.maxHp = 9999; g.mobs.push(m);
+  const combos = [];
+  for (let i = 0; i < 3; i++) {
+    p.attackCd = 0; doAttack(g); combos.push(p.combo);
+    assert.equal(m.hp, 9999, 'ยังไม่ควรโดนตอนเพิ่งกด');
+    for (let f = 0; f < 10; f++) updatePlayer(g, 0.016);
+    assert.ok(m.hp < 9999, 'ต้องโดนหลังง้างเสร็จ'); m.hp = 9999;
+  }
+  assert.deepEqual(combos, [0, 1, 2]);
+});

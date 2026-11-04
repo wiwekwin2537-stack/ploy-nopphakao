@@ -11,6 +11,13 @@ export function damageMob(game, mob, amount, crit = false, element = 'phys') {
   mob.hp -= amount;
   mob.flash = 0.18;
   mob.aggroed = true;
+  // สะดุ้งถอยจากผู้เล่นเล็กน้อย (ท่าโดนตี)
+  const p = game.player, dx = mob.x - p.x, dy = mob.y - p.y, d = Math.hypot(dx, dy) || 1;
+  mob.recoil = 0.14; mob.kbx = dx / d; mob.kby = dy / d;
+  if (mob.state !== 'charge' && mob.type !== 'bigboar') {
+    const r = mob.def.flying ? { x: mob.x + dx / d * 5, y: mob.y + dy / d * 5 } : game.world.moveCircle(mob.x, mob.y, mob.radius, dx / d * 5, dy / d * 5);
+    mob.x = r.x; mob.y = r.y;
+  }
   game.fx.text(mob.x, mob.y - mob.height, String(amount), crit ? '#ffd24a' : element === 'fire' ? '#ffae5a' : '#ffffff', crit);
   game.fx.burst(mob.x, mob.y - mob.height * 0.5, element === 'fire' ? '#ff8a2a' : '#f4e6c8', 5, 80, 0.35, 2.5);
   game.audio.play('hit');

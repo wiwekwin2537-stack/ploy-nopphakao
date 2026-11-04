@@ -16,7 +16,7 @@ export function createPlayer(balance) {
   const p = {
     x: 0, y: 0, radius: 10, level: 1, xp: 0, coins: 0, hp: 1, mp: 1,
     gems: [], dir: 0, aim: 0, walk: 0, moving: false,
-    attackCd: 0, swing: -1, dashCd: 0, dashT: 0, dashVx: 0, dashVy: 0, skillCd: 0, castT: 0,
+    attackCd: 0, swing: -1, combo: 0, comboT: 0, pendingHit: null, dashCd: 0, dashT: 0, dashVx: 0, dashVy: 0, skillCd: 0, castT: 0,
     invuln: 0, hurt: 0, dead: false, combatTimer: 0, moveTarget: null, targetMob: null, movedDist: 0,
   };
   const s = playerStats(p, balance);
@@ -46,13 +46,34 @@ export function doAttack(game) {
   const target = (p.targetMob && !p.targetMob.dead) ? p.targetMob : nearestMob(game, p.x, p.y, B.attackRange * 1.8);
   if (target) faceAngle(p, Math.atan2(target.y - target.height * 0.3 - (p.y - 10), target.x - p.x));
   p.attackCd = B.attackCooldown;
+  // คอมโบ 3 จังหวะ: ฟันขวา→ซ้าย, ซ้าย→ขวา, แทงตรง (กดต่อเนื่องภายใน 0.7 วิ)
+  p.combo = p.comboT > 0 ? (p.combo + 1) % 3 : 0;
+  p.comboT = 0.7;
   p.swing = 0;
-  game.fx.slash(p.x, p.y, p.aim, B.attackRange, B.attackArc);
   game.audio.play('swing');
-  const hits = meleeArc(game, p.x, p.y, p.aim, B.attackRange, B.attackArc, playerStats(p, game.data.balance).damage);
-  if (hits) { p.combatTimer = 4; game.camera.shake = Math.max(game.camera.shake, 2); }
-  game.events.emit('playerAttacked', { hits });
+  // ดาบโดนตอนจังหวะฟันจริง (หลังง้าง) ไม่ใช่ตอนกดปุ่ม
+  p.pendingHit = { t: SWING_TIME * 0.3, aim: p.aim, combo: p.combo };
   return true;
+}
+
+export const SWING_TIME = 0.34;
+
+function applyPendingHit(game, dt) {
+  const p = game.player, B = game.data.balance.player, h = p.pendingHit;
+  if (!h) return;
+  h.t -= dt;
+  if (h.t > 0) return;
+  p.pendingHit = null;
+  const thrust = h.combo === 2;
+  const range = thrust ? B.attackRange * 1.25 : B.attackRange, arc = thrust ? 0.9 : B.attackArc;
+  if (!thrust) game.fx.slash(p.x, p.y, h.aim, range, arc, h.combo === 1 ? -1 : 1);
+  const dmg = playerStats(p, game.data.balance).damage * (thrust ? 1.25 : 1);
+  const hits = meleeArc(game, p.x, p.y, h.aim, range, arc, dmg);
+  // ก้าวเข้าหาเป้านิดหนึ่งตอนฟัน ให้ดูมีน้ำหนัก
+  const m = game.world.moveCircle(p.x, p.y, p.radius, Math.cos(h.aim) * (thrust ? 7 : 4), Math.sin(h.aim) * (thrust ? 7 : 4));
+  p.x = m.x; p.y = m.y;
+  if (hits) { p.combatTimer = 4; game.camera.shake = Math.max(game.camera.shake, thrust ? 3 : 2); game.hitStop = thrust ? 0.07 : 0.045; }
+  game.events.emit('playerAttacked', { hits });
 }
 
 export function doDash(game) {
@@ -81,7 +102,9 @@ export function updatePlayer(game, dt) {
   p.hurt = Math.max(0, p.hurt - dt);
   p.castT = Math.max(0, p.castT - dt);
   p.combatTimer = Math.max(0, p.combatTimer - dt);
-  if (p.swing >= 0) { p.swing += dt / 0.2; if (p.swing > 1) p.swing = -1; }
+  if (p.swing >= 0) { p.swing += dt / SWING_TIME; if (p.swing > 1) p.swing = -1; }
+  p.comboT = Math.max(0, (p.comboT || 0) - dt);
+  applyPendingHit(game, dt);
 
   // ฟื้นพลัง
   const regen = game.world.zone.safe ? B.townHpRegen : (p.combatTimer > 0 ? 0 : B.hpRegen * 2);

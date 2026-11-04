@@ -48,22 +48,47 @@ function spawnOne(game, s, gi, ax, ay, minD) {
   return m;
 }
 
-// เดินไปหาเป้าแบบอ้อมสิ่งกีดขวาง: ถ้าเดินตรงแล้วติด ให้ลองเฉียงซ้าย/ขวา แล้วจำทางอ้อมไว้ครู่หนึ่ง
-function seek(game, m, dx, dy, speed, dt) {
-  const d = Math.hypot(dx, dy) || 1;
-  let ux = dx / d, uy = dy / d;
-  if (m.detourT > 0) { m.detourT -= dt; const c = Math.cos(m.detourA), s = Math.sin(m.detourA); [ux, uy] = [ux * c - uy * s, ux * s + uy * c]; }
-  const want = speed * dt;
-  if (step(game, m, ux * speed, uy * speed, dt) > want * 0.35 || m.def.flying) return;
-  for (const a of [1.0, -1.0, 1.6, -1.6, 2.3, -2.3]) {
-    const c = Math.cos(a), s = Math.sin(a);
-    const tx = (dx / d) * c - (dy / d) * s, ty = (dx / d) * s + (dy / d) * c;
-    if (!game.world.blocked(m.x + tx * (m.radius + 6), m.y + ty * (m.radius + 6), m.radius)) {
-      m.detourA = a; m.detourT = 0.6;
-      step(game, m, tx * speed, ty * speed, dt);
-      return;
+// หาทางเดินแบบตาราง (BFS) เมื่อเดินตรงไปแล้วติดสิ่งกีดขวาง — คืนรายการจุดเดิน
+const CELL = 16;
+function findPath(game, m, tx, ty) {
+  const r = 14, x0 = Math.floor(Math.min(m.x, tx) / CELL) - r, y0 = Math.floor(Math.min(m.y, ty) / CELL) - r;
+  const w = Math.floor(Math.max(m.x, tx) / CELL) + r - x0 + 1, h = Math.floor(Math.max(m.y, ty) / CELL) + r - y0 + 1;
+  if (w * h > 6000) return null;
+  const sx = Math.floor(m.x / CELL) - x0, sy = Math.floor(m.y / CELL) - y0, gx = Math.floor(tx / CELL) - x0, gy = Math.floor(ty / CELL) - y0;
+  const prev = new Int32Array(w * h).fill(-1), seen = new Uint8Array(w * h);
+  const q = [sy * w + sx]; seen[q[0]] = 1;
+  const free = (cx, cy) => !game.world.blocked((cx + x0) * CELL + CELL / 2, (cy + y0) * CELL + CELL / 2, m.radius - 2);
+  for (let qi = 0; qi < q.length; qi++) {
+    const cur = q[qi], cx = cur % w, cy = (cur / w) | 0;
+    if (Math.abs(cx - gx) <= 1 && Math.abs(cy - gy) <= 1) {
+      const pts = []; let c = cur;
+      while (c >= 0 && c !== q[0]) { pts.push({ x: (c % w + x0) * CELL + CELL / 2, y: (((c / w) | 0) + y0) * CELL + CELL / 2 }); c = prev[c]; }
+      return pts.reverse().filter((_, i, arr) => i % 2 === 1 || i === arr.length - 1);
+    }
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, 1], [1, -1], [-1, -1]]) {
+      const nx = cx + dx, ny = cy + dy, ni = ny * w + nx;
+      if (nx < 0 || ny < 0 || nx >= w || ny >= h || seen[ni]) continue;
+      seen[ni] = 1;
+      if (free(nx, ny)) { prev[ni] = cur; q.push(ni); }
     }
   }
+  return null;
+}
+
+// เดินไปหาเป้า: ตรงไปก่อน ถ้าติดให้หาทางอ้อมด้วยตาราง แล้วเดินตามทางนั้นครู่หนึ่ง
+function seek(game, m, dx, dy, speed, dt) {
+  const want = speed * dt;
+  if (m.def.flying) { const d = Math.hypot(dx, dy) || 1; step(game, m, dx / d * speed, dy / d * speed, dt); return; }
+  m.pathCd = Math.max(0, (m.pathCd || 0) - dt);
+  if (m.path && m.path.length) {
+    const wp = m.path[0], wx = wp.x - m.x, wy = wp.y - m.y, wd = Math.hypot(wx, wy);
+    if (wd < 6) { m.path.shift(); if (!m.path.length) m.path = null; return; }
+    if (step(game, m, wx / wd * speed, wy / wd * speed, dt) < want * 0.2) m.path = null;
+    return;
+  }
+  const d = Math.hypot(dx, dy) || 1;
+  if (step(game, m, dx / d * speed, dy / d * speed, dt) > want * 0.35) return;
+  if (m.pathCd <= 0) { m.pathCd = 0.5; m.path = findPath(game, m, m.x + dx, m.y + dy); }
 }
 
 function step(game, m, vx, vy, dt) {
@@ -159,7 +184,7 @@ export function updateMonsters(game, dt) {
   const z = game.world.zone;
   for (let i = game.mobs.length - 1; i >= 0; i--) {
     const m = game.mobs[i];
-    m.t += dt; m.flash = Math.max(0, m.flash - dt);
+    m.t += dt; m.flash = Math.max(0, m.flash - dt); m.recoil = Math.max(0, (m.recoil || 0) - dt);
     if (m.dead) {
       m.dying += dt * 1.8;
       if (m.dying >= 1) {

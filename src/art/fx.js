@@ -19,7 +19,7 @@ export function createFx() {
       if (parts.length < MAX) parts.push({ x: x + (Math.random() - 0.5) * 4, y: y + (Math.random() - 0.5) * 4, vx: 0, vy: -10, life, max: life, color, size, g: 0 });
     },
     text(x, y, str, color = '#fff', big = false) { texts.push({ x, y, str, color, life: 0.9, max: 0.9, big }); },
-    slash(x, y, ang, range, arc) { slashes.push({ x, y, ang, range, arc, life: 0.16, max: 0.16 }); },
+    slash(x, y, ang, range, arc, dir = 1) { slashes.push({ x, y, ang, range, arc, dir, life: 0.18, max: 0.18 }); },
     ring(x, y, r, color) { rings.push({ x, y, r, color, life: 0.35, max: 0.35 }); },
     update(dt) {
       for (let i = parts.length - 1; i >= 0; i--) {
@@ -37,16 +37,16 @@ export function createFx() {
         ctx.beginPath(); ctx.arc(r.x, r.y, r.r * (0.4 + k * 0.6), 0, Math.PI * 2); ctx.stroke();
       }
       ctx.globalAlpha = 1;
-      for (const s of slashes) {
-        const k = 1 - s.life / s.max;
-        ctx.save(); ctx.translate(s.x, s.y - 10);
-        ctx.globalAlpha = 1 - k;
-        ctx.fillStyle = 'rgba(255,245,210,0.9)';
-        ctx.beginPath();
-        ctx.arc(0, 0, s.range, s.ang - s.arc / 2, s.ang - s.arc / 2 + s.arc * Math.min(1, k * 2.2));
-        ctx.arc(0, 0, s.range * 0.62, s.ang - s.arc / 2 + s.arc * Math.min(1, k * 2.2), s.ang - s.arc / 2, true);
-        ctx.closePath(); ctx.fill();
-        ctx.strokeStyle = C.gold; ctx.lineWidth = 1.5; ctx.stroke();
+      for (const s of slashes) {                              // รอยดาบโค้งบางๆ ไล่ตามทิศที่ฟัน
+        const k = 1 - s.life / s.max, a0 = s.ang - s.dir * s.arc / 2, sweep = s.dir * s.arc * Math.min(1, k * 2.4);
+        ctx.save(); ctx.translate(s.x, s.y - 20);
+        ctx.globalAlpha = Math.max(0, 1 - k * 1.1);
+        for (let i = 0; i < 3; i++) {
+          const r = s.range * (0.72 + i * 0.12);
+          ctx.strokeStyle = i === 1 ? 'rgba(255,255,255,0.95)' : 'rgba(255,236,180,0.55)';
+          ctx.lineWidth = i === 1 ? 3 : 2;
+          ctx.beginPath(); ctx.arc(0, 0, r, Math.min(a0, a0 + sweep), Math.max(a0, a0 + sweep)); ctx.stroke();
+        }
         ctx.restore();
       }
       ctx.globalAlpha = 1;

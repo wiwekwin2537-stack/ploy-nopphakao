@@ -8,7 +8,7 @@ const bad = (file, msg) => problems.push(`${file}: ${msg}`);
 
 function walk(dir, out = []) {
   for (const f of readdirSync(dir)) {
-    if (['node_modules', '.git', 'dist'].includes(f)) continue;
+    if (['node_modules', '.git', 'dist', 'shots'].includes(f)) continue; // shots = ภาพจากเทสต์ (ไม่ขึ้นเว็บ)
     const p = join(dir, f);
     if (statSync(p).isDirectory()) walk(p, out); else out.push(p);
   }
