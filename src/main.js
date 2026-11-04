@@ -33,6 +33,8 @@ import { drawBag, updateBag, profileHit, bagLayout } from './ui/bag.js';
 import { drawTree, updateTree, openTree } from './ui/tree.js';
 import { drawShop, updateShop } from './ui/shop.js';
 import { gemLayout } from './ui/gemtab.js';
+import { drawWarp, updateWarp } from './ui/warp.js';
+import { updateWaypoints } from './systems/waypoint.js';
 import { updatePotion } from './systems/shop.js';
 
 // สองชั้น: โลกวาดความละเอียดต่ำแล้วขยายแบบพิกเซล (สไตล์เอโดเรีย) · หน้าจอซ้อน/ตัวหนังสือวาดคมเต็มความละเอียด
@@ -88,7 +90,7 @@ function update(dt) {
   input.beginFrame();
   const lk = input.mode === 'touch' ? 't' : 'k';          // สลับจอสัมผัส ↔ คีย์บอร์ด: จัดปุ่มใหม่
   if (lk !== layoutKey) { layoutKey = lk; layout = computeLayout(game.camera.viewW || innerWidth, game.camera.viewH || innerHeight, lk === 't'); }
-  layout.near = !!game.nearNpc;
+  layout.near = !!(game.nearNpc || game.nearWaypoint);
   input.setUiMode(game.mode !== 'play');                   // หน้าต่าง/บทพูด/หน้าแรก: แตะ = กดปุ่ม ไม่ใช่จอยเดิน
   game.audio.update();
   if (game.toast) game.toast.t -= dt;
@@ -119,6 +121,8 @@ function update(dt) {
     if (r) { game.mode = r === 'back' ? 'bag' : 'play'; input.setUiMode(false); writeSave(game); }
   } else if (game.mode === 'play' && input.pressed.tree) {
     game.mode = 'tree'; openTree(game); game.audio.play('click');
+  } else if (game.mode === 'warp') {
+    if (updateWarp(game, layout, game.camera.viewW, game.camera.viewH)) game.mode = 'play';
   } else if (game.mode === 'shop') {
     if (updateShop(game, layout, game.camera.viewW, game.camera.viewH)) { game.mode = 'play'; writeSave(game); }
   } else if (game.mode === 'bag') {
@@ -134,6 +138,7 @@ function update(dt) {
     game.hitStop -= dt;                     // หยุดภาพแวบหนึ่งตอนดาบโดน ให้รู้สึกถึงแรงกระแทก
   } else if (game.mode === 'play') {
     updateNpcs(game);
+    updateWaypoints(game);
     if (game.mode === 'play') {
       updatePotion(game, dt);
       updateSkillTimers(game, dt);
@@ -173,6 +178,7 @@ function render() {
     if (game.mode === 'bag') drawBag(ctx, game, layout, w, h);
     if (game.mode === 'tree') drawTree(ctx, game, layout, w, h);
     if (game.mode === 'shop') drawShop(ctx, game, layout, w, h);
+    if (game.mode === 'warp') drawWarp(ctx, game, layout, w, h);
   }
 }
 

@@ -93,7 +93,7 @@ export function clearSave() { try { localStorage.removeItem(KEY); } catch { /* à
 
 export function setupAutosave(game) {
   const save = () => { if (game.mode !== 'title') writeSave(game); };
-  ['zoneChanged', 'levelUp', 'gemPicked', 'metChan', 'gemsChanged', 'passivesChanged', 'itemPicked', 'gearChanged', 'bossKilled', 'shopChanged', 'currencyPicked', 'currencyUsed'].forEach((e) => game.events.on(e, save));
+  ['zoneChanged', 'levelUp', 'gemPicked', 'metChan', 'gemsChanged', 'passivesChanged', 'itemPicked', 'gearChanged', 'bossKilled', 'shopChanged', 'currencyPicked', 'currencyUsed', 'waypointUnlocked'].forEach((e) => game.events.on(e, save));
   game.autosaveT = 0;
 }
 

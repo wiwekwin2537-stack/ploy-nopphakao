@@ -417,6 +417,23 @@ await check('สวรรค์ดาวดึงส์: ล้มครุฑ�
   assert(await G(page, () => !!__ploy.game.flags.vessavanaSlain), 'ล้มท้าวเวสสุวรรณไม่ได้');
 });
 
+await check('ศาลวาร์ป: เดินถึงศาลในเวียง → กด E → เลือกป่าหิมพานต์ด้วยเมาส์ → วาร์ปไปจริง', async () => {
+  await G(page, () => { const g = __ploy.game; g.flags.wp_himmapan = true; const wp = g.world.zone && g.data.zones.town.objects.find((o) => o.type === 'waypoint'); __ploy.enterZone(g, 'town', (wp.x + 0.5) * 32, (wp.y + 2.2) * 32); });
+  await page.waitForTimeout(300);
+  await hold(page, 'KeyW', 300);
+  await page.waitForTimeout(150);
+  assert(await G(page, () => !!__ploy.game.flags.wp_town), 'เดินถึงศาลแล้วไม่ปลดล็อก');
+  await page.keyboard.press('KeyE'); await page.waitForTimeout(200);
+  assert((await state(page)).mode === 'warp', 'กด E แล้วไม่เปิดหน้าวาร์ป: ' + (await state(page)).mode);
+  await page.screenshot({ path: SHOTS + '/21-warp.png' });
+  const row = await G(page, () => { const g = __ploy.game, L = __ploy.layout(), ids = Object.entries(g.data.zones).filter(([, z]) => z.objects.some((o) => o.type === 'waypoint')).map(([id]) => id), i = ids.indexOf('himmapan');
+    const s = L.s, w = g.camera.viewW, h = g.camera.viewH, pw = Math.min(w - 20, 340 * s), rh = 34 * s, ph = Math.min(h - 16, 70 * s + ids.length * rh), x = w / 2 - pw / 2, y = h / 2 - ph / 2;
+    return { x: x + pw / 2, y: y + 46 * s + i * rh + rh / 2 - 2 * s }; });
+  await page.mouse.click(row.x, row.y); await page.waitForTimeout(300);
+  const s = await state(page);
+  assert(s.zone === 'himmapan' && s.mode === 'play', 'วาร์ปไม่ได้: ' + s.zone + ' ' + s.mode);
+});
+
 await check('ความเร็ว: มอน 100 ตัวไล่ล้อม ใช้เวลาคำนวณ+วาดต่อเฟรมไม่เกิน 8ms', async () => {
   await G(page, () => { const g = __ploy.game, p = g.player; const types = ['boar', 'monkey', 'krasue', 'piglet']; for (let i = 0; i < 2000 && g.mobs.length < 100; i++) { const m = __ploy.makeMob(g, types[i % 4], 3, p.x + (Math.random() - 0.5) * 700, p.y + (Math.random() - 0.5) * 400, -1); if (!g.world.blocked(m.x, m.y, m.radius)) g.mobs.push(m); } g.mobs.forEach((m) => { m.aggroed = true; }); p.invuln = 99; });
   await page.waitForTimeout(1500);

@@ -22,6 +22,18 @@ export const HEAVEN = {
     box(g, -3, -74, fw + 6, 8, '#f3d27a', C.line, 1.2);
     poly(g, [-3, -74, fw / 2, -80, fw + 3, -74], C.gold, C.line, 1);
   } },
+  waypoint: { pad: [16, 60, 16, 4], draw(g, fw) {               // ศาลวาร์ป: ศาลทองเล็กบนแท่นหิน มีผลึกฟ้าเรืองแสง
+    const cx = fw / 2;
+    const gl = g.createRadialGradient(cx, -30, 2, cx, -30, 26); gl.addColorStop(0, 'rgba(140,220,255,0.55)'); gl.addColorStop(1, 'rgba(140,220,255,0)');
+    g.fillStyle = gl; g.fillRect(cx - 26, -56, 52, 52);
+    shadow(g, cx, -1, 16, 5, 0.25);
+    box(g, cx - 13, -8, 26, 8, '#8a8a92', C.line, 1.2);
+    box(g, cx - 2, -26, 4, 18, C.red, C.line, 1);
+    box(g, cx - 10, -40, 20, 14, '#f3d27a', C.line, 1.2);
+    poly(g, [cx - 12, -40, cx, -52, cx + 12, -40], C.red, C.line, 1.2);
+    poly(g, [cx, -38, cx + 5, -33, cx, -28, cx - 5, -33], '#8ad8ff', '#2a6aa8', 1);
+    g.fillStyle = '#ffffff'; g.fillRect(cx - 1, -36, 2, 3);
+  } },
   cloud_puff: { pad: [16, 26, 16, 4], draw(g, fw, fh, seed) {     // ก้อนเมฆนุ่ม กั้นทาง
     const cx = fw / 2;
     g.fillStyle = 'rgba(150,130,200,0.18)'; g.beginPath(); g.ellipse(cx, -2, fw / 2 + 10, 6, 0, 0, Math.PI * 2); g.fill();
