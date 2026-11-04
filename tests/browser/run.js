@@ -434,6 +434,20 @@ await check('ศาลวาร์ป: เดินถึงศาลในเ�
   assert(s.zone === 'himmapan' && s.mode === 'play', 'วาร์ปไม่ได้: ' + s.zone + ' ' + s.mode);
 });
 
+await check('ถ้ำลายแทง: ยืนที่แท่นในเวียง → กด E → คลิกขั้น 1 → เข้าถ้ำสุ่ม มอนครบ ลายแทงหมด', async () => {
+  await G(page, () => { const g = __ploy.game, a = g.data.zones.town.objects.find((o) => o.type === 'map_altar'); g.player.currency.map1 = 1; __ploy.enterZone(g, 'town', (a.x + 0.7) * 32, (a.y + a.h + 0.6) * 32); });
+  await page.waitForTimeout(300);
+  await page.keyboard.press('KeyE'); await page.waitForTimeout(200);
+  assert((await state(page)).mode === 'mapmenu', 'ไม่เปิดหน้าแท่นลายแทง: ' + (await state(page)).mode);
+  await page.screenshot({ path: SHOTS + '/22-map-altar.png' });
+  const row = await G(page, () => { const g = __ploy.game, s = __ploy.layout().s, w = g.camera.viewW, h = g.camera.viewH, pw = Math.min(w - 20, 380 * s), rh = 36 * s, ph = Math.min(h - 16, 96 * s + 5 * rh); return { x: w / 2, y: h / 2 - ph / 2 + 46 * s + rh / 2 - 2 * s }; });
+  await page.mouse.click(row.x, row.y); await page.waitForTimeout(500);
+  const r = await G(page, () => ({ zone: __ploy.game.world.zone.id, mobs: __ploy.game.mobs.length, left: __ploy.game.player.currency.map1, boss: __ploy.game.mobs.some((m) => m.def.boss) }));
+  assert(r.zone === 'map' && r.mobs > 5 && r.left === 0 && r.boss, JSON.stringify(r));
+  await page.screenshot({ path: SHOTS + '/23-map.png' });
+  return 'มอน ' + r.mobs;
+});
+
 await check('ความเร็ว: มอน 100 ตัวไล่ล้อม ใช้เวลาคำนวณ+วาดต่อเฟรมไม่เกิน 8ms', async () => {
   await G(page, () => { const g = __ploy.game, p = g.player; const types = ['boar', 'monkey', 'krasue', 'piglet']; for (let i = 0; i < 2000 && g.mobs.length < 100; i++) { const m = __ploy.makeMob(g, types[i % 4], 3, p.x + (Math.random() - 0.5) * 700, p.y + (Math.random() - 0.5) * 400, -1); if (!g.world.blocked(m.x, m.y, m.radius)) g.mobs.push(m); } g.mobs.forEach((m) => { m.aggroed = true; }); p.invuln = 99; });
   await page.waitForTimeout(1500);

@@ -36,7 +36,8 @@ export function spawnZoneMobs(game) {
   z.spawns.forEach((s, gi) => {
     game.spawnTimers[gi] = [];
     if (s.afterFlag && !game.flags[s.afterFlag]) return;
-    for (let i = 0; i < s.count; i++) spawnOne(game, s, gi, p.x, p.y, 280);
+    const n = game.data.monsters[s.type].boss ? s.count : Math.round(s.count * ((z.def.mobMods && z.def.mobMods.count) || 1));   // บอสไม่ทวีจำนวน
+    for (let i = 0; i < n; i++) spawnOne(game, s, gi, p.x, p.y, 280);
   });
 }
 
@@ -45,6 +46,8 @@ function spawnOne(game, s, gi, ax, ay, minD) {
   const spot = freeSpot(game, s.area, game.data.monsters[s.type].radius, ax, ay, minD);
   if (!spot) return null;
   const m = makeMob(game, s.type, lv, spot.x, spot.y, gi);
+  const M = game.world.zone.def.mobMods;                        // ค่าปรับของถ้ำลายแทง (เลือดหนา/ตีแรง/เร็ว)
+  if (M) { m.hp = m.maxHp = Math.round(m.maxHp * (M.hp || 1)); m.damage = Math.round(m.damage * (M.damage || 1)); m.speed = m.baseSpeed = m.baseSpeed * (M.speed || 1); }
   game.mobs.push(m);
   return m;
 }
@@ -113,7 +116,7 @@ function updateAI(game, m, dt) {
   const dx = p.x - m.x, dy = p.y - m.y, d = Math.hypot(dx, dy) || 1;
   const canSee = !p.dead && game.mode === 'play';
   m.attackCd -= dt; m.chargeCd -= dt; m.stateT -= dt;
-  if (!m.aggroed && canSee && d < def.aggro) m.aggroed = true;
+  if (!m.aggroed && canSee && d < def.aggro && (!def.boss || game.world.lineClear(m.x, m.y - 10, p.x, p.y - 10))) m.aggroed = true;   // บอสตื่นเมื่อมองเห็นผู้เล่น (ไม่ทะลุกำแพงถ้ำ)
   if (m.aggroed && (!canSee || Math.hypot(m.x - m.homeX, m.y - m.homeY) > def.aggro * 2.6)) { m.aggroed = false; m.state = 'return'; m.stateT = 0; }
 
   if (def.ai === 'boss') { updateBoss(game, m, dt, { seek, step, makeMob }); return; }

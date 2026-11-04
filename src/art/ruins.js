@@ -101,5 +101,16 @@ export const RUINS = {
     for (let i = 0; i < 6; i++) { const x = -6 + i * (fw + 12) / 5; g.beginPath(); g.moveTo(x, 0); g.quadraticCurveTo(x + 6, -40 - fh / 2, x - 2, -78 - fh); g.stroke(); }
     for (let i = 0; i < 5; i++) circle(g, hash2(i, 3, 1) * fw, -10 - hash2(i, 4, 1) * (60 + fh), 2, '#f3d27a', null);   // อักขระยันต์ลอย
   } },
+  map_altar: { pad: [14, 50, 14, 4], draw(g, fw, fh) {         // แท่นลายแทง: แท่นหินจารึก มีม้วนลายแทงวางบน
+    const cx = fw / 2;
+    shadow(g, cx, -1, fw / 2 + 8, 5, 0.25);
+    box(g, 0, -14, fw, 14, '#8a8076', C.line, 1.3);
+    box(g, 4, -30, fw - 8, 16, '#a89c90', C.line, 1.3);
+    g.fillStyle = '#6a6058'; for (let i = 0; i < 3; i++) g.fillRect(8, -26 + i * 4, fw - 16, 1.5);   // อักษรจารึก
+    box(g, cx - 12, -36, 24, 7, '#f0e2c0', C.line, 1.1);
+    g.fillStyle = '#a3262a'; g.fillRect(cx - 14, -37, 4, 9); g.fillRect(cx + 10, -37, 4, 9);
+    const gl = g.createRadialGradient(cx, -40, 1, cx, -40, 16); gl.addColorStop(0, 'rgba(255,220,140,0.6)'); gl.addColorStop(1, 'rgba(255,220,140,0)');
+    g.fillStyle = gl; g.fillRect(cx - 16, -56, 32, 32);
+  } },
   portal: { hidden: true },                                          // ประตูมิติวาดสดใน scene.js (ขยับได้)
 };

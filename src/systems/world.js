@@ -120,6 +120,8 @@ export function createWorld(zonesData, hasFlag, isAlive = () => false) {
 
   return {
     get zone() { return zone; },
+    // พื้นที่สุ่ม (ถ้ำลายแทง): ล้างแคชเพื่อสร้างใหม่ทุกครั้งที่เปิด
+    forget(id) { cache.delete(id); },
     load(id) {
       if (!zonesData[id]) throw new Error('ไม่มีพื้นที่ ' + id);
       if (!cache.has(id)) cache.set(id, buildZone(id, zonesData[id]));

@@ -48,5 +48,61 @@
   "xpPerLevel": 0.22
  },
  "deathCoinLoss": 0.1,
- "autosaveSeconds": 10
+ "autosaveSeconds": 10,
+ "maps": {
+  "levelBase": 18,
+  "levelPerTier": 2,
+  "monsters": [
+   "phi_pob",
+   "phi_phong",
+   "kumbhan",
+   "kinnorn",
+   "garuda_chick",
+   "deva_warrior",
+   "apsara",
+   "erawan_calf",
+   "khotchasi",
+   "naga_noi"
+  ],
+  "bosses": [
+   "yak",
+   "khotchasi_king",
+   "garuda_king",
+   "vessavana"
+  ],
+  "mods": [
+   {
+    "id": "hp",
+    "name": "มอนเลือดหนา +40%",
+    "hp": 1.4,
+    "qty": 0.15
+   },
+   {
+    "id": "dmg",
+    "name": "มอนตีแรง +25%",
+    "damage": 1.25,
+    "qty": 0.15
+   },
+   {
+    "id": "fast",
+    "name": "มอนเร็ว +20%",
+    "speed": 1.2,
+    "qty": 0.1
+   },
+   {
+    "id": "pack",
+    "name": "มอนฝูงใหญ่ +50%",
+    "count": 1.5,
+    "qty": 0.2
+   }
+  ],
+  "modsPerTier": [
+   0,
+   1,
+   1,
+   2,
+   2,
+   3
+  ]
+ }
 }

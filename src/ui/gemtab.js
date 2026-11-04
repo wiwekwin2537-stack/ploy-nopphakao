@@ -30,6 +30,14 @@ export function gemIcon(ctx, G, id, x, y, r, dim) {
 
 // ไอคอนของเชื่อม/เจาะ: ศิลา (หินเทามีรู) · ด้ายสายสิญจน์ (ม้วนด้ายขาว)
 export function currencyIcon(ctx, kind, x, y, r) {
+  if (kind.startsWith('map')) {                                // ลายแทง: ม้วนหนังสือ สีตามขั้น
+    const col = ['#e8d8a8', '#a8e070', '#70b8f0', '#c890f0', '#ff7a5a'][Number(kind.slice(3)) - 1] || '#e8d8a8';
+    ctx.fillStyle = '#f0e2c0'; ctx.fillRect(x - r * 0.8, y - r * 0.55, r * 1.6, r * 1.1);
+    ctx.strokeStyle = '#6a4a20'; ctx.lineWidth = 1; ctx.strokeRect(x - r * 0.8, y - r * 0.55, r * 1.6, r * 1.1);
+    ctx.fillStyle = col; ctx.fillRect(x - r, y - r * 0.7, r * 0.35, r * 1.4); ctx.fillRect(x + r * 0.65, y - r * 0.7, r * 0.35, r * 1.4);
+    ctx.strokeStyle = '#a3262a'; ctx.beginPath(); ctx.moveTo(x - r * 0.4, y - r * 0.2); ctx.lineTo(x, y + r * 0.2); ctx.lineTo(x + r * 0.4, y - r * 0.1); ctx.stroke();
+    return;
+  }
   if (kind === 'jeweller') {
     poly(ctx, [x - r * 0.8, y + r * 0.5, x - r * 0.6, y - r * 0.5, x + r * 0.2, y - r * 0.8, x + r * 0.8, y - r * 0.2, x + r * 0.6, y + r * 0.6], '#b8b0a0', C.ink, 1.2);
     circle(ctx, x, y, r * 0.22, '#3a3430', null);

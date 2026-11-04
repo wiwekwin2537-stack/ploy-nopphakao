@@ -20,7 +20,7 @@ export function setupLoot(game) {
       if (g) spawnDrop(game, { kind: 'gem', gem: g, x: mob.x, y: mob.y });
       const I = game.data.items;
       for (const [k, c] of Object.entries(I.currency)) if (mob.level >= c.minLevel && rng.chance(c.dropChance)) spawnDrop(game, { kind: 'currency', cur: k, x: mob.x, y: mob.y });
-      if (rng.chance(I.dropChance)) {
+      if (rng.chance(I.dropChance * (1 + (game.world.zone.def.itemQty || 0)))) {
         const it = rollItem(I, rng, mob.level);
         if (it) spawnDrop(game, { kind: 'item', item: it, x: mob.x, y: mob.y });
       }
@@ -37,7 +37,10 @@ function bossLoot(game, mob) {
   }
   const pool = G.drops.filter((d) => mob.level >= d.minLevel).map((d) => d.gem);
   for (let i = 0; i < L.gems && pool.length; i++) spawnDrop(game, { kind: 'gem', gem: rng.pick(pool), x: mob.x, y: mob.y + 10 });
-  for (const k of Object.keys(I.currency)) spawnDrop(game, { kind: 'currency', cur: k, x: mob.x, y: mob.y - 10 });
+  for (const [k, c] of Object.entries(I.currency)) if (c.bossGift) spawnDrop(game, { kind: 'currency', cur: k, x: mob.x, y: mob.y - 10 });
+  const mt = game.world.zone.def.mapTier;                       // บอสในถ้ำลายแทง: ได้ลายแทงขั้นถัดไป (สูงสุดขั้น 5)
+  if (mt) spawnDrop(game, { kind: 'currency', cur: 'map' + Math.min(5, mt + 1), x: mob.x + 20, y: mob.y });
+  else if (mob.level >= 13) spawnDrop(game, { kind: 'currency', cur: 'map1', x: mob.x + 20, y: mob.y });
   game.flags[mob.type + 'Slain'] = true;
   game.notice = { text: 'ล้ม' + mob.def.name + 'สำเร็จ! ประตูมิติกลับทุ่งนาเปิดแล้ว', t: 6 };
   game.audio.play('level');
