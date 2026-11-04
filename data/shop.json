@@ -10,6 +10,14 @@
  },
  "stock": [
   {
+   "currency": "jeweller",
+   "price": 40
+  },
+  {
+   "currency": "fusing",
+   "price": 70
+  },
+  {
    "base": "iron_sword",
    "price": 120
   },

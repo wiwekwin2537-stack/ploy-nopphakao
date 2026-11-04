@@ -3,6 +3,7 @@ import { createGround } from '../art/ground.js';
 import { createSpriteCache } from '../art/sprites.js';
 import { drawHuman } from '../art/characters.js';
 import { heroLook, heroGear } from './herolook.js';
+import { currencyIcon } from './gemtab.js';
 import { itemName } from '../systems/items.js';
 import { drawMonster } from '../art/monsters.js';
 import { C, shadow, circle, poly, rrect } from '../art/draw.js';
@@ -27,6 +28,12 @@ export function createScene(game) {
   }
 
   function drawDrop(ctx, d) {
+    if (d.kind === 'currency') {                                   // ศิลาเจาะ / ด้ายสายสิญจน์ บนพื้น
+      const y = d.y - d.z - 10 + Math.sin(d.t * 3) * 1.5;
+      shadow(ctx, d.x, d.y, 6, 2.5);
+      currencyIcon(ctx, d.cur, d.x, y, 7);
+      return;
+    }
     if (d.kind === 'item') {                                       // ของสวมใส่บนพื้น: ห่อผ้าเรืองแสงตามระดับ
       const col = game.data.items.rarity[d.item.rarity].color, y = d.y - d.z, bob = Math.sin(d.t * 3) * 1.5;
       if (d.item.rarity !== 'normal') { const gl = ctx.createRadialGradient(d.x, y - 8, 1, d.x, y - 8, 22); gl.addColorStop(0, col + '88'); gl.addColorStop(1, col + '00'); ctx.fillStyle = gl; ctx.fillRect(d.x - 22, y - 30, 44, 44); }
@@ -171,6 +178,7 @@ export function createScene(game) {
       }
     }
     for (const d of game.drops) {                                   // ป้ายชื่อของบนพื้นแบบ PoE
+      if (d.kind === 'currency' && vis(d.x, d.y)) { const c = game.data.items.currency[d.cur]; plate(ctx, c.name, d.x, d.y - 24, 10, '#f4e6c8', 'rgba(244,240,232,0.6)'); continue; }
       if (d.kind !== 'item' || !vis(d.x, d.y)) continue;
       const I = game.data.items, col = I.rarity[d.item.rarity].color;
       plate(ctx, itemName(I, d.item), d.x, d.y - 26, 10, col, col + 'aa');

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { makeGame } from './helpers.js';
+import { giveStarterGear } from '../../src/systems/player.js';
 import { enterZone } from '../../src/systems/travel.js';
 import { updateTutorial } from '../../src/systems/tutorial.js';
 import { updateDialog, talkTo } from '../../src/systems/npc.js';
@@ -14,7 +15,7 @@ function closeDialog(g) {
 }
 
 test('บทนำเล่นได้ครบทุกขั้นตั้งแต่ทางเกวียนถึงพ่อเฒ่าจันทร์', () => {
-  const g = makeGame();
+  const g = makeGame(); giveStarterGear(g.player, g.data);
   enterZone(g, 'road');
   assert.equal(g.mode, 'dialog'); closeDialog(g);
   assert.equal(g.flags.tutStep, 'move');
@@ -34,7 +35,7 @@ test('บทนำเล่นได้ครบทุกขั้นตั้�
   g.player.x = gem.x; g.player.y = gem.y; gem.t = 1;
   updateLoot(g, 0.1);
   assert.ok(ownsGem(g.player, 'ruby'));
-  assert.equal(g.player.sockets[0][0], 'ruby', 'ทับทิมต้องฝังชุดแรกให้เลย');
+  assert.equal(g.player.equip.weapon.gems[0], 'ruby', 'ทับทิมต้องฝังช่องอาวุธให้เลย');
   assert.equal(g.world.blocked(42.5 * 32, 10 * 32, 10), false, 'ท่อนไม้ต้องหาย');
   closeDialog(g);
   assert.equal(g.flags.tutStep, 'skill');

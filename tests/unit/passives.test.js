@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { giveStarterGear } from '../../src/systems/player.js';
 import assert from 'node:assert/strict';
 import { makeGame } from './helpers.js';
 import { allocate, refund, pointsLeft, canAllocate, validTree, connected } from '../../src/systems/passives.js';
@@ -52,7 +53,7 @@ test('ค่าสถานะ: เพิ่ม% บวกรวม และค
 test('มนต์เลือดแลก: สกิลกินเลือดแทนมานา', async () => {
   const { castSkill } = await import('../../src/systems/skills.js');
   const g = makeGame(); g.world.load('field');
-  const p = g.player; p.level = 10; p.passives = ['shaman', 'shaman_k0', 'shaman_k1', 'shaman_K']; p.sockets[0][0] = 'ruby';
+  const p = g.player; p.level = 10; p.passives = ['shaman', 'shaman_k0', 'shaman_k1', 'shaman_K']; giveStarterGear(p, g.data); p.equip.weapon.gems[0] = 'ruby';
   p.hp = 100; p.mp = 0;
   assert.ok(castSkill(g, 0));
   assert.ok(p.hp < 100 && p.mp === 0);

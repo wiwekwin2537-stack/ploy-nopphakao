@@ -31,6 +31,8 @@ function wrap(ctx, str, maxW) {
   return out;
 }
 
+const SKILL_BTN = { skill: 0, skill2: 1, skill3: 2 };   // ปุ่มสกิล → สกิลลำดับที่ (อาวุธก่อน แล้วเสื้อ)
+
 function icon(ctx, id, x, y, r, game) {
   ctx.save(); ctx.translate(x, y);
   if (id === 'attack') {
@@ -41,8 +43,8 @@ function icon(ctx, id, x, y, r, game) {
     ctx.strokeStyle = C.cream; ctx.lineWidth = r * 0.14; ctx.lineCap = 'round';
     for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo(-r * 0.5, (i - 1) * r * 0.28); ctx.lineTo(r * 0.15 - i * r * 0.12, (i - 1) * r * 0.28); ctx.stroke(); }
     poly(ctx, [r * 0.15, -r * 0.4, r * 0.55, 0, r * 0.15, r * 0.4], C.cream, null);
-  } else if (id === 'skill' || id === 'skill2') {
-    const sk = skillOf(game, id === 'skill' ? 0 : 1);
+  } else if (SKILL_BTN[id] !== undefined) {
+    const sk = skillOf(game, SKILL_BTN[id]);
     poly(ctx, [0, -r * 0.55, r * 0.5, -r * 0.18, r * 0.3, r * 0.5, -r * 0.3, r * 0.5, -r * 0.5, -r * 0.18], sk ? sk.color : '#555', C.ink, 1.5);
     poly(ctx, [0, -r * 0.55, r * 0.2, -r * 0.18, -r * 0.2, -r * 0.18], sk ? sk.hi : '#777', null);
     if (sk && sk.supports.length) sk.supports.forEach((sid, i) => circle(ctx, -r * 0.45 + i * r * 0.9, r * 0.62, r * 0.17, game.data.gems.support[sid].color, C.ink, 1));
@@ -56,7 +58,7 @@ function icon(ctx, id, x, y, r, game) {
 
 function roundButton(ctx, b, id, game, cdK = 0, dim = false) {
   ctx.globalAlpha = dim ? 0.45 : 0.95;
-  const pal = id === 'attack' ? ['#d8503a', '#7a1a14', '#f3d27a'] : id === 'dash' ? ['#cfe8ff', '#5a8ac8', '#ffffff'] : (id === 'skill' || id === 'skill2') ? ['#5a2030', '#2a0c14', '#f3d27a'] : ['#4a3a2a', '#2a1a10', '#f3d27a'];
+  const pal = id === 'attack' ? ['#d8503a', '#7a1a14', '#f3d27a'] : id === 'dash' ? ['#cfe8ff', '#5a8ac8', '#ffffff'] : SKILL_BTN[id] !== undefined ? ['#5a2030', '#2a0c14', '#f3d27a'] : ['#4a3a2a', '#2a1a10', '#f3d27a'];
   const g = ctx.createRadialGradient(b.x - b.r * 0.35, b.y - b.r * 0.35, 2, b.x, b.y, b.r);
   g.addColorStop(0, pal[0]); g.addColorStop(1, pal[1]);
   circle(ctx, b.x, b.y, b.r, g, 'rgba(0,0,0,0.5)', 2);
@@ -220,8 +222,8 @@ export function drawHud(ctx, game, L, w, h) {
     const sx = SL.x + (i - 1.5) * SL.gap, sy = SL.y;
     ctx.fillStyle = 'rgba(14,12,18,0.7)'; rrect(ctx, sx - SL.r - 3 * s, sy - SL.r - 3 * s, (SL.r + 3 * s) * 2, (SL.r + 3 * s) * 2, 8 * s); ctx.fill();
     circle(ctx, sx, sy, SL.r, 'rgba(0,0,0,0.35)', 'rgba(217,166,48,0.6)', 1.5);
-    const ssk = i < 2 ? skillOf(game, i) : null;
-    if (ssk) { icon(ctx, i ? 'skill2' : 'skill', sx, sy, SL.r * 0.9, game); if (p.skillCd[i] > 0) { ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.arc(sx, sy, SL.r, -Math.PI / 2, -Math.PI / 2 + PHI * p.skillCd[i] / ssk.cooldown); ctx.fill(); } }
+    const si = [0, 1, -1, 2][i], ssk = si >= 0 ? skillOf(game, si) : null;        // ช่อง 1,2,4 = สกิล · ช่อง 3 = ยาหม้อ
+    if (ssk) { icon(ctx, ['skill', 'skill2', '', 'skill3'][i], sx, sy, SL.r * 0.9, game); if (p.skillCd[si] > 0) { ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.arc(sx, sy, SL.r, -Math.PI / 2, -Math.PI / 2 + PHI * p.skillCd[si] / ssk.cooldown); ctx.fill(); } }
     if (i === 2) potionIcon(ctx, sx, sy, SL.r, p, game.data.shop.potion, s);
     text(ctx, String(i + 1), sx - SL.r - 1 * s, sy - SL.r + 3 * s, 9 * s, '#f4e6c8', 'center', '600');
   }
@@ -229,12 +231,12 @@ export function drawHud(ctx, game, L, w, h) {
   for (const b of L.buttons) {
     if (b.onlyNear && !game.nearNpc) continue;
     if (b.locked) { lockButton(ctx, b, s); continue; }
-    const gi = b.id === 'skill' ? 0 : b.id === 'skill2' ? 1 : -1, bsk = gi >= 0 ? skillOf(game, gi) : null;
+    const gi = SKILL_BTN[b.id] ?? -1, bsk = gi >= 0 ? skillOf(game, gi) : null;
     if (gi >= 0 && !bsk) { lockButton(ctx, b, s); continue; }
     const cd = gi >= 0 ? p.skillCd[gi] / bsk.cooldown : b.id === 'dash' ? p.dashCd / st.dashCooldown : 0;
     roundButton(ctx, b, b.id, game, cd, false);
     if (game.input.mode !== 'touch') {
-      const key = game.input.mode === 'pad' ? { attack: 'A', dash: 'B', skill: 'X', skill2: 'LT', interact: 'Y' }[b.id] : { attack: 'J', dash: 'Space', skill: 'K', skill2: 'L', interact: 'E' }[b.id];
+      const key = game.input.mode === 'pad' ? { attack: 'A', dash: 'B', skill: 'X', skill2: 'LT', interact: 'Y' }[b.id] : { attack: 'J', dash: 'Space', skill: 'K', skill2: 'L', skill3: 'U', interact: 'E' }[b.id];
       if (key) text(ctx, key, b.x + b.r * 0.72, b.y + b.r * 0.78, 9 * s, '#f4e6c8', 'center', '600');
     }
   }

@@ -6,7 +6,7 @@ import { heroLook, heroGear } from './herolook.js';
 import { playerStats } from '../systems/stats.js';
 import { startOf, pointsLeft } from '../systems/passives.js';
 import { xpNeeded } from '../systems/progress.js';
-import { computeSkill } from '../systems/gems.js';
+import { skillsOf } from '../systems/gems.js';
 
 export function drawProfileStats(ctx, game, B) {
   const s = B.s, p = game.player, D = game.data, st = playerStats(p, D), PS = D.passives;
@@ -53,8 +53,8 @@ export function drawProfileStats(ctx, game, B) {
   });
   // ล่างขวา: สกิลที่ฝัง + คีย์สโตน + แต้มพาสซีฟ
   let y = by + Math.ceil(rows.length / 2) * rh + 10 * s;
-  const skills = [0, 1].map((gi) => computeSkill(D.gems, p.sockets, gi)).map((sk, i) => (sk ? `ชุด ${i + 1}: ${sk.name}` : `ชุด ${i + 1}: (ว่าง)`));
-  text(ctx, 'สกิล — ' + skills.join(' · '), rx, y, 10 * s, C.cream, 'left', 'normal'); y += 18 * s;
+  const skills = skillsOf(D.gems, p).slice(0, 3).map((sk, i) => `${i + 1}. ${sk.name}${sk.supports.length ? ' +' + sk.supports.length : ''}`);
+  text(ctx, 'สกิล — ' + (skills.length ? skills.join(' · ') : 'ยังไม่มี (ฝังพลอยหลักในช่องอาวุธ/เสื้อ)'), rx, y, 10 * s, C.cream, 'left', 'normal'); y += 18 * s;
   const ks = p.passives.filter((id) => PS.nodes[id] && PS.nodes[id].kind === 'keystone').map((id) => PS.nodes[id].name);
   if (ks.length) { text(ctx, 'คีย์สโตน — ' + ks.join(' · '), rx, y, 10 * s, '#ffb070', 'left', '600'); y += 18 * s; }
   const left = pointsLeft(p, PS);

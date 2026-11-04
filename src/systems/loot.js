@@ -1,5 +1,5 @@
 // ของดรอป: เบี้ยและพลอย — เก็บได้ครั้งเดียว แล้วหายจากพื้นทันที
-import { rollGemDrop, ownsGem, gemType, gemInfo } from './gems.js';
+import { rollGemDrop, ownsGem, gemType, gemInfo, autoSocket } from './gems.js';
 import { rollItem, giveItem, itemName } from './items.js';
 
 let nextDropId = 1;
@@ -19,6 +19,7 @@ export function setupLoot(game) {
       const g = rollGemDrop(G, rng, mob.level);
       if (g) spawnDrop(game, { kind: 'gem', gem: g, x: mob.x, y: mob.y });
       const I = game.data.items;
+      for (const [k, c] of Object.entries(I.currency)) if (mob.level >= c.minLevel && rng.chance(c.dropChance)) spawnDrop(game, { kind: 'currency', cur: k, x: mob.x, y: mob.y });
       if (rng.chance(I.dropChance)) {
         const it = rollItem(I, rng, mob.level);
         if (it) spawnDrop(game, { kind: 'item', item: it, x: mob.x, y: mob.y });
@@ -36,6 +37,7 @@ function bossLoot(game, mob) {
   }
   const pool = G.drops.filter((d) => mob.level >= d.minLevel).map((d) => d.gem);
   for (let i = 0; i < L.gems && pool.length; i++) spawnDrop(game, { kind: 'gem', gem: rng.pick(pool), x: mob.x, y: mob.y + 10 });
+  for (const k of Object.keys(I.currency)) spawnDrop(game, { kind: 'currency', cur: k, x: mob.x, y: mob.y - 10 });
   game.flags[mob.type + 'Slain'] = true;
   game.notice = { text: 'ล้ม' + mob.def.name + 'สำเร็จ! ประตูมิติกลับทุ่งนาเปิดแล้ว', t: 6 };
   game.audio.play('level');
@@ -49,8 +51,8 @@ export function spawnDrop(game, d) {
 
 function pickGem(game, gem) {
   const p = game.player, G = game.data.gems;
-  // ทับทิมเม็ดแรกฝังลงชุดสกิลที่ 1 ให้เลย (บทนำ)
-  if (gem === 'ruby' && !p.sockets[0][0] && !ownsGem(p, 'ruby')) p.sockets[0][0] = 'ruby';
+  // ทับทิมเม็ดแรกฝังลงช่องอาวุธให้เลย (บทนำ)
+  if (gem === 'ruby' && !ownsGem(p, 'ruby')) autoSocket(p, 'ruby');
   else p.bag.push(gem);
   if (gem === 'ruby') game.flags.gotRuby = true;
   game.world.refreshFlags();
@@ -83,6 +85,14 @@ export function updateLoot(game, dt) {
         game.audio.play('coin');
         game.events.emit('coinsPicked', { amount: d.amount });
       } else if (d.kind === 'gem') pickGem(game, d.gem);
+      else if (d.kind === 'currency') {
+        const c = game.data.items.currency[d.cur];
+        p.currency[d.cur] = (p.currency[d.cur] || 0) + 1;
+        game.fx.text(p.x, p.y - 74, 'ได้' + c.name, c.color, true);
+        game.audio.play('gem');
+        if (!game.flags.curHint) { game.flags.curHint = true; game.notice = { text: `ได้${c.name}! ใช้เจาะ/เชื่อมช่องพลอยในโปรไฟล์ → แถบพลอย`, t: 7 }; }
+        game.events.emit('currencyPicked', { cur: d.cur });
+      }
       else if (d.kind === 'item') {
         const I = game.data.items;
         if (!giveItem(p, I, d.item)) {                       // กระเป๋าเต็ม: ของยังอยู่ที่พื้น

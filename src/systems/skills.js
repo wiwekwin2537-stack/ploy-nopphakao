@@ -1,9 +1,9 @@
-// ใช้สกิลจากชุดพลอย (กดปุ่มสกิล 1 = ชุดที่ 1, สกิล 2 = ชุดที่ 2)
+// ใช้สกิลจากพลอยที่ฝังในของ (ปุ่มสกิล 1/2/3 = สกิลที่ 1/2/3 ตามลำดับ อาวุธ → เสื้อ)
 import { spawnShot } from './combat.js';
 import { playerStats } from './stats.js';
-import { computeSkill } from './gems.js';
+import { skillsOf } from './gems.js';
 
-export function skillOf(game, group) { return computeSkill(game.data.gems, game.player.sockets, group); }
+export function skillOf(game, i) { return skillsOf(game.data.gems, game.player)[i] || null; }
 
 function pickTarget(game, p) {
   if (p.targetMob && !p.targetMob.dead) return p.targetMob;

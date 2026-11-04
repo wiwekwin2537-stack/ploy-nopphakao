@@ -15,7 +15,7 @@ async function check(name, fn) {
   if (currentPage) await currentPage.evaluate(() => { const g = globalThis.__ploy && __ploy.game; if (g && (g.mode === 'bag' || g.mode === 'tree')) { g.mode = 'play'; g.input.setUiMode(false); } }).catch(() => {});
 }
 const assert = (c, msg) => { if (!c) throw new Error(msg); };
-const state = (page) => G(page, () => { const g = __ploy.game, p = g.player; return { mode: g.mode, step: g.flags.tutStep, zone: g.world.zone.id, x: p.x, y: p.y, hp: p.hp, lv: p.level, xp: p.xp, coins: p.coins, gems: p.sockets.flat().filter(Boolean), pas: p.passives.join(','), gear: Object.values(p.equip).filter(Boolean).map((q) => q.uid).join(','), bagN: p.items.length, mobs: g.mobs.length, done: !!g.flags.tutorialDone }; });
+const state = (page) => G(page, () => { const g = __ploy.game, p = g.player; return { mode: g.mode, step: g.flags.tutStep, zone: g.world.zone.id, x: p.x, y: p.y, hp: p.hp, lv: p.level, xp: p.xp, coins: p.coins, gems: ['weapon', 'body'].flatMap((k) => (p.equip[k] && p.equip[k].gems) || []).filter(Boolean), allGems: [...p.bag, ...[...Object.values(p.equip).filter(Boolean), ...p.items].flatMap((it) => it.gems || []).filter(Boolean)].sort().join(','), pas: p.passives.join(','), gear: Object.values(p.equip).filter(Boolean).map((q) => q.uid).join(','), bagN: p.items.length, mobs: g.mobs.length, done: !!g.flags.tutorialDone }; });
 const wait = (page, fn, arg, ms = 8000) => page.waitForFunction(fn, arg, { timeout: ms });
 async function closeDialogs(page) {
   for (let i = 0; i < 20; i++) {
@@ -89,10 +89,10 @@ await check('บทนำ 3: พญาหมูป่าพุ่งชน → �
 
 await check('บทนำ 4: ฆ่าพญาหมูป่า → ทับทิมตก → เดินไปเก็บ → ได้สกิล', async () => {
   await killTutorialMob(page, 'bigboar');
-  await wait(page, () => __ploy.game.drops.some((d) => d.gem === 'ruby') || __ploy.game.player.sockets[0][0] === 'ruby');
+  await wait(page, () => __ploy.game.drops.some((d) => d.gem === 'ruby') || (__ploy.game.player.equip.weapon.gems || [])[0] === 'ruby');
   await page.screenshot({ path: SHOTS + '/04-ruby.png' });
   await G(page, () => { const g = __ploy.game, d = g.drops.find((q) => q.gem === 'ruby'); if (d) { g.player.x = d.x - 30; g.player.y = d.y; } });
-  await wait(page, () => __ploy.game.player.sockets[0][0] === 'ruby', null, 3000);
+  await wait(page, () => (__ploy.game.player.equip.weapon.gems || [])[0] === 'ruby', null, 3000);
   await closeDialogs(page);
   const s = await state(page);
   assert(s.step === 'skill', 'ขั้น = ' + s.step);
@@ -171,7 +171,7 @@ await check('พลอยเสริม: เก็บจากพื้น → 
   await page.mouse.click(cell.x, cell.y); await page.waitForTimeout(120);
   await page.mouse.click(cell.x, cell.y); await page.waitForTimeout(120);
   await page.screenshot({ path: SHOTS + '/10b-bag.png' });
-  const sock = await G(page, () => __ploy.game.player.sockets[0].slice());
+  const sock = await G(page, () => __ploy.game.player.equip.weapon.gems.slice());
   assert(sock[0] === 'ruby' && sock.includes('multi'), 'ฝังไม่ได้ ' + JSON.stringify(sock));
   await page.keyboard.press('KeyB'); await page.waitForTimeout(150);
   assert((await state(page)).mode === 'play', 'ปิดกระเป๋าไม่ได้');
@@ -205,6 +205,25 @@ await check('ต้นพาสซีฟ: กด P → แตะนักรบ�
   // เดินได้ปกติหลังปิด (จอย/คีย์ไม่ค้าง)
   const x0 = (await state(page)).x; await hold(page, 'KeyD', 400); assert((await state(page)).x > x0 + 20, 'เดินไม่ได้หลังปิดต้น');
   return 'เลเวล ' + dmg0;
+});
+
+await check('ช่องพลอยบนอาวุธ: แถบพลอย → แตะด้ายสายสิญจน์สองครั้ง → การเชื่อมเปลี่ยน ด้ายลด 1 → ถอดพลอยจากช่องกลับกระเป๋า', async () => {
+  await G(page, () => { const p = __ploy.game.player; p.currency.fusing = 2; p.equip.weapon.sockets = 4; p.equip.weapon.links = [false, false, false]; p.equip.weapon.gems = ['ruby', 'multi', null, null]; __ploy.game.bagTab = 'gems'; __ploy.game.bagGroup = 0; });
+  await page.keyboard.press('KeyB'); await wait(page, () => __ploy.game.mode === 'bag', null, 2000);
+  const GL = await G(page, () => __ploy.gemLayout());
+  const f = GL.cur.find((c) => c.kind === 'fusing');
+  await page.mouse.click(f.x + f.w / 2, f.y + f.h / 2); await page.waitForTimeout(100);
+  await page.mouse.click(f.x + f.w / 2, f.y + f.h / 2); await page.waitForTimeout(150);
+  const r = await G(page, () => ({ links: __ploy.game.player.equip.weapon.links.join(), fus: __ploy.game.player.currency.fusing }));
+  assert(r.fus === 1 && r.links !== 'false,false,false', 'ใช้ด้ายไม่ได้ ' + JSON.stringify(r));
+  await page.screenshot({ path: SHOTS + '/10f-sockets.png' });
+  const so = GL.rows[0].sockets[1];
+  await page.mouse.click(so.x, so.y); await page.waitForTimeout(100);
+  const g2 = await G(page, () => ({ w: __ploy.game.player.equip.weapon.gems.join(), bag: __ploy.game.player.bag.includes('multi') }));
+  assert(g2.bag && !g2.w.includes('multi'), 'ถอดพลอยไม่ได้ ' + JSON.stringify(g2));
+  await G(page, () => { const p = __ploy.game.player, i = p.bag.indexOf('multi'); p.bag.splice(i, 1); p.equip.weapon.gems[1] = 'multi'; p.equip.weapon.links = [true, true, true]; });
+  await page.keyboard.press('KeyB'); await page.waitForTimeout(100);
+  return 'เชื่อม ' + r.links;
 });
 
 await check('โปรไฟล์: แตะรูปตัวละคร → แถบพาสซีฟเปิดต้นเต็มจอ → ปุ่ม "โปรไฟล์" กลับมา → ปิดแล้วเดินได้', async () => {
@@ -257,7 +276,8 @@ await check('เซฟแล้วรีเฟรชหน้า → กด "เ
   const after = await state(page);
   assert(after.mode === 'play', 'โหมด ' + after.mode);
   for (const k of ['zone', 'lv', 'xp', 'coins', 'done', 'pas', 'gear', 'bagN']) assert(before[k] === after[k], `${k}: ${before[k]} → ${after[k]}`);
-  assert(after.gems.includes('ruby') && after.gems.includes('multi'), 'พลอยที่ฝังหายหลังโหลด');
+  assert(before.allGems === after.allGems && after.allGems.includes('ruby') && after.allGems.includes('multi'), 'พลอยหายหลังโหลด ' + before.allGems + ' → ' + after.allGems);
+  assert(before.gems.join() === after.gems.join(), 'พลอยในช่องเปลี่ยนหลังโหลด');
 });
 
 await check('ร้านแม่ค้า: กด E คุย → เปิดร้าน → คลิกยาหม้อสองครั้งซื้อ → ขายของในกระเป๋า → กด 3 ดื่มยา', async () => {

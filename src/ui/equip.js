@@ -1,7 +1,7 @@
 // แถบ "ชุด" ในกระเป๋า: ช่องสวมใส่ 6 ช่อง + กระเป๋าของ · แตะของ 1 ครั้งดู/เทียบค่า แตะซ้ำเพื่อสวม · แตะช่องที่สวมแล้วซ้ำเพื่อถอด
 import { C, rrect, circle, poly } from '../art/draw.js';
 import { uiText as text } from './hud.js';
-import { EQUIP_SLOTS, itemName, itemStats, equipFromBag, unequip, discard } from '../systems/items.js';
+import { EQUIP_SLOTS, itemName, itemStats, equipFromBag, unequip, discard, longestLink } from '../systems/items.js';
 
 const COLS = 6;
 
@@ -32,7 +32,9 @@ export function itemIcon(ctx, I, it, x, y, r) {
 
 function statLines(I, P, it) {
   const names = P.statNames;
-  return Object.entries(itemStats(I, it)).map(([k, v]) => (names[k] || k + ' {}').replace('{}', String(v)));
+  const out = Object.entries(itemStats(I, it)).map(([k, v]) => (names[k] || k + ' {}').replace('{}', String(v)));
+  if (it.sockets) out.push(`ช่องพลอย ${it.sockets} (เชื่อมยาวสุด ${longestLink(it)})`);   // แบบ PoE: ●=●-●
+  return out;
 }
 
 export function drawEquip(ctx, game, B) {

@@ -12,7 +12,7 @@ export function computeLayout(w, h) {
       { id: 'dash', x: atk.x - 76 * s, y: h - 34 * s, r: 24 * s },
       { id: 'skill', x: atk.x - 76 * s, y: atk.y - 62 * s, r: 25 * s },
       { id: 'skill2', x: atk.x - 8 * s, y: atk.y - 84 * s, r: 23 * s },
-      { id: 'lock2', x: atk.x + 26 * s, y: atk.y - 152 * s, r: 20 * s, locked: true },
+      { id: 'skill3', x: atk.x + 26 * s, y: atk.y - 152 * s, r: 20 * s },
       { id: 'interact', x: atk.x - 150 * s, y: atk.y - 40 * s, r: 26 * s, onlyNear: true },
     ],
     slots: { x: w / 2, y: h - 26 * s, r: 15 * s, gap: 42 * s },

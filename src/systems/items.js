@@ -1,5 +1,7 @@
 // ไอเท็มสุ่มค่า: ฐานไอเท็ม + ค่าสุ่มหน้า (prefix) / หลัง (suffix) ตามระดับไอเท็ม — ตัวเลขทั้งหมดอยู่ใน data/items.json
 // กติกา: ทุกชิ้นมี uid ไม่ซ้ำ สวม/ถอด/ทิ้ง ย้ายชิ้นเดิม ไม่สร้างของใหม่
+// อาวุธ/เสื้อมีช่องพลอย (sockets/links/gems) แบบ PoE — ทิ้ง/ขายของ พลอยในช่องกลับเข้ากระเป๋าเสมอ
+import { returnGems } from './gems.js';
 
 // ช่องชุดครบแบบเอโดเรีย
 export const EQUIP_SLOTS = ['weapon', 'head', 'body', 'legs', 'arms', 'amulet', 'ring'];
@@ -38,7 +40,68 @@ export function rollItem(I, rng, ilvl, opts = {}) {
   }
   let rareName = null;
   if (rarity === 'purple' || rarity === 'red') rareName = rng.pick(I.rareNames.first) + rng.pick(I.rareNames.second);
-  return { uid: 0, base: baseId, rarity, ilvl, mods, rareName };
+  return rollSockets(I, rng, { uid: 0, base: baseId, rarity, ilvl, mods, rareName });
+}
+
+// ช่องพลอยสูงสุดของชิ้นนี้: ตามชนิด (อาวุธ/เสื้อ 6) และเลเวลของ (ของเลเวลต่ำมีช่องน้อย)
+export function socketMax(I, it) {
+  const S = I.sockets, b = I.bases[it.base], slotMax = b ? S.slots[b.slot] || 0 : 0;
+  let lv = 0;
+  for (const [minIlvl, n] of S.ilvlMax) if ((it.ilvl || 1) >= minIlvl) lv = n;
+  return Math.min(slotMax, lv);
+}
+
+function rollCount(I, rng, max, not) {
+  const W = I.sockets.countWeights;
+  for (let tries = 0; tries < 20; tries++) {
+    let total = 0; for (let n = 1; n <= max; n++) total += W[n];
+    let r = rng.next() * total, n = 1;
+    for (; n < max; n++) { r -= W[n]; if (r < 0) break; }
+    if (n !== not || max <= 1) return n;
+  }
+  return not === 1 ? Math.min(2, max) : 1;
+}
+function rollLinks(I, rng, n, old) {
+  for (let tries = 0; tries < 20; tries++) {
+    const l = Array.from({ length: Math.max(0, n - 1) }, () => rng.chance(I.sockets.linkChance));
+    if (!old || n < 2 || l.some((v, i) => v !== old[i])) return l;
+  }
+  return old.map((v) => !v);
+}
+
+// ใส่ช่องพลอยให้ของที่เพิ่งสุ่ม/ซื้อ (ของที่ไม่มีช่องได้ค่าว่าง)
+export function rollSockets(I, rng, it) {
+  const max = socketMax(I, it);
+  if (!max) return it;
+  const n = rollCount(I, rng, max);
+  return Object.assign(it, { sockets: n, links: rollLinks(I, rng, n), gems: Array(n).fill(null) });
+}
+
+// ใช้ของเชื่อม/เจาะ: jeweller = สุ่มจำนวนช่องใหม่ (ไม่ซ้ำเดิม) · fusing = สุ่มการเชื่อมใหม่ (ไม่ซ้ำเดิม)
+// พลอยในช่องที่หายไปกลับเข้ากระเป๋า · คืนข้อความผล หรือ null ถ้าใช้ไม่ได้ (ไม่เสียของ)
+export function useCurrency(I, rng, p, kind, it) {
+  if (!it || !I.currency[kind] || !(p.currency && p.currency[kind] > 0)) return null;
+  const max = socketMax(I, it);
+  if (!max || !it.sockets) return null;
+  if (kind === 'jeweller') {
+    if (max < 2) return null;
+    const n = rollCount(I, rng, max, it.sockets);
+    for (let i = n; i < it.sockets; i++) if (it.gems[i]) p.bag.push(it.gems[i]);
+    const gems = Array.from({ length: n }, (_, i) => it.gems[i] || null);
+    const links = Array.from({ length: Math.max(0, n - 1) }, (_, i) => !!it.links[i]);
+    Object.assign(it, { sockets: n, gems, links });
+  } else if (kind === 'fusing') {
+    if (it.sockets < 2) return null;
+    it.links = rollLinks(I, rng, it.sockets, it.links);
+  } else return null;
+  p.currency[kind]--;
+  return kind === 'jeweller' ? `ได้ ${it.sockets} ช่อง` : `เชื่อมกันยาวสุด ${longestLink(it)} ช่อง`;
+}
+
+export function longestLink(it) {
+  let best = it.sockets ? 1 : 0, run = 1;
+  (it.links || []).forEach((l) => { run = l ? run + 1 : 1; best = Math.max(best, run); });
+  return best;
 }
 
 export function itemName(I, it) {
@@ -97,6 +160,7 @@ export function unequip(I, p, slot) {
 export function discard(p, uid) {
   const i = p.items.findIndex((x) => x.uid === uid);
   if (i < 0) return false;
+  returnGems(p, p.items[i]);
   p.items.splice(i, 1);
   return true;
 }
@@ -113,7 +177,17 @@ export function equipTotals(I, p) {
 }
 
 // ตรวจไอเท็มจากเซฟ: ฐาน/ค่าสุ่มมีจริง ค่าอยู่ในช่วงของเทียร์ uid ไม่ซ้ำ (กันแก้เซฟ/ปั๊มของ)
-export function validItems(I, items, equip, nextUid) {
+// ช่องพลอยถูกต้อง: เฉพาะชนิดที่มีช่อง ไม่เกินสูงสุด links/gems ยาวพอดี พลอยมีจริง
+function validSockets(I, it, G) {
+  const slotMax = I.sockets.slots[I.bases[it.base].slot] || 0;
+  if (it.sockets === undefined) return it.links === undefined && it.gems === undefined;
+  if (!Number.isInteger(it.sockets) || it.sockets < 0 || it.sockets > slotMax) return false;
+  if (!Array.isArray(it.links) || it.links.length !== Math.max(0, it.sockets - 1) || !it.links.every((l) => typeof l === 'boolean')) return false;
+  if (!Array.isArray(it.gems) || it.gems.length !== it.sockets) return false;
+  return it.gems.every((g) => g === null || (typeof g === 'string' && (!G || G.main[g] || G.support[g])));
+}
+
+export function validItems(I, items, equip, nextUid, G) {
   const all = [...(items || []), ...Object.values(equip || {}).filter(Boolean)];
   if (!Array.isArray(items) || items.length > I.bagSize) return false;
   const uids = new Set();
@@ -121,6 +195,7 @@ export function validItems(I, items, equip, nextUid) {
     if (!it || !I.bases[it.base] || !I.rarity[it.rarity] || !Number.isInteger(it.uid) || it.uid < 1 || it.uid > nextUid || uids.has(it.uid)) return false;
     uids.add(it.uid);
     if (!Array.isArray(it.mods) || it.mods.length > I.rarity[it.rarity].affixes[1]) return false;
+    if (!validSockets(I, it, G)) return false;
     for (const m of it.mods) {
       const a = I.affixes[m.id], tier = a && a.tiers[m.tier];
       if (!tier || !a.slots.includes(I.bases[it.base].slot) || !(m.value >= tier[1] && m.value <= tier[2])) return false;

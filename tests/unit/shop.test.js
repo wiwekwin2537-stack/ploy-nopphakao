@@ -22,16 +22,17 @@ test('ซื้อยาหม้อ: เบี้ยลดตามราคา
 test('ซื้อของ: ได้ของธรรมดา uid ใหม่ไม่ซ้ำ เบี้ยไม่พอ/กระเป๋าเต็มแล้วไม่เสียเบี้ย', () => {
   const g = makeGame(), p = g.player, S = g.data.shop, I = g.data.items;
   p.coins = 10000;
-  assert.equal(buyItem(g, 0), 'ok'); assert.equal(buyItem(g, 0), 'ok');
+  const k = S.stock.findIndex((x) => x.base), k2 = S.stock.findIndex((x, i) => x.base && i > k);
+  assert.equal(buyItem(g, k), 'ok'); assert.equal(buyItem(g, k), 'ok');
   assert.equal(p.items.length, 2);
   assert.notEqual(p.items[0].uid, p.items[1].uid);
   assert.equal(p.items[0].rarity, 'normal');
-  assert.equal(p.coins, 10000 - S.stock[0].price * 2);
+  assert.equal(p.coins, 10000 - S.stock[k].price * 2);
   while (p.items.length < I.bagSize) giveItem(p, I, rollItem(I, g.rng, 3));
   const c = p.coins;
-  assert.equal(buyItem(g, 1), 'bagFull'); assert.equal(p.coins, c);
+  assert.equal(buyItem(g, k2), 'bagFull'); assert.equal(p.coins, c);
   p.coins = 0; p.items.length = 0;
-  assert.equal(buyItem(g, 1), 'poor'); assert.equal(p.items.length, 0);
+  assert.equal(buyItem(g, k2), 'poor'); assert.equal(p.items.length, 0);
 });
 
 test('ขายของ: ได้เบี้ยครั้งเดียว ของหายจากกระเป๋า ขายซ้ำไม่ได้ ขายของที่สวมอยู่ไม่ได้', () => {
@@ -49,6 +50,7 @@ test('ขายของ: ได้เบี้ยครั้งเดียว
 test('ซื้อแล้วขายคืนทันที ขาดทุนเสมอ (ปั๊มเงินไม่ได้) ทุกชิ้นในร้าน', () => {
   const g = makeGame(), p = g.player, S = g.data.shop;
   S.stock.forEach((st, i) => {
+    if (!st.base) return;                              // ศิลา/ด้าย ขายคืนไม่ได้อยู่แล้ว
     p.coins = 1000; p.items.length = 0;
     buyItem(g, i); sellItem(g, p.items[0].uid);
     assert.ok(p.coins < 1000, `${st.base} ซื้อแล้วขายได้กำไร`);
@@ -73,4 +75,13 @@ test('เซฟรุ่น 6: เก็บยาหม้อ เซฟเก่
   const old = { ...s, v: 5 }; delete old.potions;
   assert.equal(validate(old, g.data).potions, 0);
   assert.equal(validate({ ...s, potions: 999 }, g.data), null);
+});
+
+test('ซื้อศิลาเจาะ/ด้ายสายสิญจน์: ได้ 1 ชิ้น เบี้ยลดตามราคา เบี้ยไม่พอไม่ได้', () => {
+  const g = makeGame(), p = g.player, S = g.data.shop;
+  const j = S.stock.findIndex((x) => x.currency === 'jeweller'), f = S.stock.findIndex((x) => x.currency === 'fusing');
+  p.coins = S.stock[j].price + S.stock[f].price;
+  assert.equal(buyItem(g, j), 'ok'); assert.equal(buyItem(g, f), 'ok');
+  assert.deepEqual([p.currency.jeweller, p.currency.fusing, p.coins], [1, 1, 0]);
+  assert.equal(buyItem(g, j), 'poor'); assert.equal(p.currency.jeweller, 1);
 });

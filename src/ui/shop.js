@@ -2,6 +2,7 @@
 import { C, kanokFrame, rrect, circle } from '../art/draw.js';
 import { uiText as text, potionIcon } from './hud.js';
 import { itemIcon } from './equip.js';
+import { currencyIcon } from './gemtab.js';
 import { itemName, itemStats } from '../systems/items.js';
 import { buyPotion, buyItem, sellItem, sellPrice } from '../systems/shop.js';
 
@@ -39,6 +40,10 @@ export function drawShop(ctx, game, L, w, h) {
     if (g.kind === 'potion') {
       potionIcon(ctx, ix, iy, r, { potions: p.potions, potionCd: 0 }, S.potion, s * 0.8);
       name = `${S.potion.name} (${p.potions}/${S.potion.max})`; price = S.potion.price; ok = p.potions < S.potion.max;
+    } else if (S.stock[g.idx].currency) {
+      const st = S.stock[g.idx], c = I.currency[st.currency];
+      currencyIcon(ctx, st.currency, ix, iy, r);
+      name = `${c.name} (มี ${p.currency[st.currency] || 0})`; price = st.price; ok = true;
     } else {
       const st = S.stock[g.idx], it = { base: st.base };
       itemIcon(ctx, I, it, ix, iy, r);
@@ -64,7 +69,8 @@ export function drawShop(ctx, game, L, w, h) {
   let info = 'แตะของที่จะซื้อ แล้วแตะซ้ำเพื่อยืนยัน · แตะของในกระเป๋าสองครั้งเพื่อขาย', col = C.goldHi;
   if (sel && sel.side === 'buy') {
     const g = B.goods[sel.i];
-    info = g.kind === 'potion' ? `${S.potion.name}: ${S.potion.desc} — แตะซ้ำเพื่อซื้อ` : `${I.bases[S.stock[g.idx].base].name}: ${goodsText(I, game.data.passives.statNames, { base: S.stock[g.idx].base, mods: [] })} — แตะซ้ำเพื่อซื้อ`;
+    const st = g.kind === 'item' ? S.stock[g.idx] : null;
+    info = g.kind === 'potion' ? `${S.potion.name}: ${S.potion.desc} — แตะซ้ำเพื่อซื้อ` : st.currency ? `${I.currency[st.currency].name}: ${I.currency[st.currency].desc} — แตะซ้ำเพื่อซื้อ` : `${I.bases[st.base].name}: ${goodsText(I, game.data.passives.statNames, { base: st.base, mods: [] })} — แตะซ้ำเพื่อซื้อ`;
   } else if (sel && sel.side === 'sell') {
     const it = p.items.find((x) => x.uid === sel.uid);
     if (it) { info = `${itemName(I, it)} · ขายได้ ${sellPrice(S, it)} เบี้ย — แตะซ้ำเพื่อขาย`; col = I.rarity[it.rarity].color; }

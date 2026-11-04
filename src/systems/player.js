@@ -1,7 +1,6 @@
 // ผู้เล่น: ค่าสถานะ การเดิน (ปุ่ม/จอย/คลิก) การฟัน การหลบ การใช้สกิล
 import { meleeArc } from './combat.js';
 import { castSkill } from './skills.js';
-import { emptySockets } from './gems.js';
 import { playerStats } from './stats.js';
 import { emptyEquip } from './items.js';
 
@@ -9,13 +8,23 @@ export function createPlayer(data) {
   const gemsData = data.gems;
   const p = {
     x: 0, y: 0, radius: 10, level: 1, xp: 0, coins: 0, hp: 1, mp: 1,
-    bag: [], sockets: emptySockets(gemsData), dir: 0, aim: 0, walk: 0, moving: false,
-    attackCd: 0, swing: -1, combo: 0, comboT: 0, pendingHit: null, dashCd: 0, dashT: 0, dashVx: 0, dashVy: 0, skillCd: Array(gemsData.groups).fill(0), castT: 0,
+    bag: [], currency: { jeweller: 0, fusing: 0 }, dir: 0, aim: 0, walk: 0, moving: false,
+    attackCd: 0, swing: -1, combo: 0, comboT: 0, pendingHit: null, dashCd: 0, dashT: 0, dashVx: 0, dashVy: 0, skillCd: Array(gemsData.skillButtons).fill(0), castT: 0,
     passives: [], items: [], equip: emptyEquip(), nextUid: 0, potions: 0, potionCd: 0, invuln: 0, hurt: 0, dead: false, combatTimer: 0, moveTarget: null, targetMob: null, movedDist: 0,
   };
   const s = playerStats(p, data);
   p.hp = s.maxHp; p.mp = s.maxMp;
   return p;
+}
+
+// ของเริ่มต้น: ดาบไม้ไผ่ 3 ช่องเชื่อมกันหมด + เสื้อผ้าฝ้าย 2 ช่อง + ผ้าคาดหัว + ยาหม้อ
+export function giveStarterGear(p, data) {
+  const mk = (base, extra = {}) => ({ uid: ++p.nextUid, base, rarity: 'normal', ilvl: 1, mods: [], rareName: null, ...extra });
+  p.equip.weapon = mk('bamboo_sword', { sockets: 3, links: [true, true], gems: [null, null, null] });
+  p.equip.body = mk('cotton_shirt', { sockets: 2, links: [false], gems: [null, null] });
+  p.equip.head = mk('cloth_band');
+  p.potions = data.shop ? data.shop.potion.starter : 0;
+  p.currency = { jeweller: 1, fusing: 1 };
 }
 
 function nearestMob(game, x, y, maxD) {
@@ -136,6 +145,7 @@ export function updatePlayer(game, dt) {
   if (input.pressed.dash) doDash(game);
   if (input.held.skill || input.pressed.skill) castSkill(game, 0);
   if (input.held.skill2 || input.pressed.skill2) castSkill(game, 1);
+  if (input.held.skill3 || input.pressed.skill3) castSkill(game, 2);
 
   const ox = p.x, oy = p.y;
   if (p.dashT > 0) {

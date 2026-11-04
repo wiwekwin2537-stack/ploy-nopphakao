@@ -14,7 +14,7 @@ import { createCamera } from './core/camera.js';
 import { createAudio } from './core/audio.js';
 import { createRng } from './core/rng.js';
 import { createWorld } from './systems/world.js';
-import { createPlayer, updatePlayer } from './systems/player.js';
+import { createPlayer, updatePlayer, giveStarterGear } from './systems/player.js';
 import { updateMonsters, makeMob } from './systems/monsters.js';
 import { updateHazards } from './systems/boss.js';
 import { updateShots } from './systems/combat.js';
@@ -32,6 +32,7 @@ import { drawHud, drawDialog, drawDeath, drawTitle, titleButtons } from './ui/hu
 import { drawBag, updateBag, profileHit, bagLayout } from './ui/bag.js';
 import { drawTree, updateTree, openTree } from './ui/tree.js';
 import { drawShop, updateShop } from './ui/shop.js';
+import { gemLayout } from './ui/gemtab.js';
 import { updatePotion, drinkPotion } from './systems/shop.js';
 
 // สองชั้น: โลกวาดความละเอียดต่ำแล้วขยายแบบพิกเซล (สไตล์เอโดเรีย) · หน้าจอซ้อน/ตัวหนังสือวาดคมเต็มความละเอียด
@@ -61,26 +62,16 @@ function startNew(skip) {
   clearSave();
   game.flags = {};
   game.player = createPlayer(game.data);
-  giveStarterGear(game);
+  giveStarterGear(game.player, game.data);
   if (skip) { skipTutorial(game); enterZone(game, 'town', 20.5 * 32, 17.5 * 32); } else enterZone(game, 'road');
   game.mode = game.dialog ? 'dialog' : 'play';
   writeSave(game);
 }
-// ของเริ่มต้น: ดาบไม้ไผ่ + ผ้าคาดหัว (ธรรมดา) สวมให้เลย
-function giveStarterGear(game) {
-  const p = game.player, I = game.data.items;
-  for (const [base, slot] of [['bamboo_sword', 'weapon'], ['cloth_band', 'head']]) {
-    p.equip[slot] = { uid: ++p.nextUid, base, rarity: 'normal', ilvl: 1, mods: [], rareName: null };
-  }
-  p.potions = game.data.shop.potion.starter;
-  return I;
-}
-
 function continueGame() {
   const s = readSave(game.data);
   if (!s) return startNew(false);
   const p = game.player = createPlayer(game.data);
-  Object.assign(p, { level: s.level, xp: s.xp, coins: s.coins, bag: s.bag.slice(), sockets: s.sockets.map((r) => r.slice()), passives: s.passives.slice(), items: s.items, equip: { ...p.equip, ...s.equip }, nextUid: s.nextUid, potions: s.potions, hp: s.hp, mp: s.mp });
+  Object.assign(p, { level: s.level, xp: s.xp, coins: s.coins, bag: s.bag.slice(), currency: { ...p.currency, ...s.currency }, passives: s.passives.slice(), items: s.items, equip: { ...p.equip, ...s.equip }, nextUid: s.nextUid, potions: s.potions, hp: s.hp, mp: s.mp });
   game.flags = { ...s.flags };
   game.mode = 'play';
   enterZone(game, s.zone, s.x, s.y);
@@ -200,4 +191,4 @@ game.loopStats = loop.stats;
 loop.start();
 
 // test-hook: เปิดเฉพาะเมื่อมี ?test ใน URL ใช้ในเทสต์อัตโนมัติเท่านั้น
-if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, layout: () => layout, bagLayout: () => bagLayout(game.camera.viewW, game.camera.viewH, layout.s, game.data.gems) }; // test-hook
+if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, layout: () => layout, bagLayout: () => bagLayout(game.camera.viewW, game.camera.viewH, layout.s), gemLayout: () => gemLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s)) }; // test-hook

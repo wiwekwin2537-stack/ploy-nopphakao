@@ -1,5 +1,6 @@
 // ร้านค้าในเวียง + ยาหม้อ: ซื้อ/ขายย้ายเบี้ยกับของแบบจำนวนตรงกันเสมอ (ไม่มีทางปั๊มเงิน/ของ) — ราคาอยู่ใน data/shop.json
-import { giveItem } from './items.js';
+import { giveItem, rollSockets } from './items.js';
+import { returnGems } from './gems.js';
 import { playerStats } from './stats.js';
 
 // ราคาขายคืน: ตามระดับความหายาก × เลเวลของ (ต่ำกว่าราคาซื้อเสมอ)
@@ -18,10 +19,16 @@ export function buyPotion(game) {
 
 export function buyItem(game, idx) {
   const p = game.player, S = game.data.shop, I = game.data.items, g = S.stock[idx];
+  if (g && g.currency && I.currency[g.currency]) {                 // ศิลาเจาะ / ด้ายสายสิญจน์
+    if (p.coins < g.price) return 'poor';
+    p.coins -= g.price; p.currency[g.currency] = (p.currency[g.currency] || 0) + 1;
+    game.events.emit('shopChanged', { kind: 'currency' });
+    return 'ok';
+  }
   if (!g || !I.bases[g.base]) return 'none';
   if (p.coins < g.price) return 'poor';
   if (p.items.length >= I.bagSize) return 'bagFull';
-  const it = { uid: 0, base: g.base, rarity: 'normal', ilvl: I.bases[g.base].req, mods: [], rareName: null };
+  const it = rollSockets(I, game.rng, { uid: 0, base: g.base, rarity: 'normal', ilvl: I.bases[g.base].req, mods: [], rareName: null });
   if (!giveItem(p, I, it)) return 'bagFull';
   p.coins -= g.price;
   game.events.emit('shopChanged', { kind: 'buy', uid: it.uid });
@@ -33,6 +40,7 @@ export function sellItem(game, uid) {
   const p = game.player, i = p.items.findIndex((x) => x.uid === uid);
   if (i < 0) return 0;
   const [it] = p.items.splice(i, 1);
+  returnGems(p, it);                                   // พลอยในช่องกลับกระเป๋า ไม่หายไปกับของ
   const price = sellPrice(game.data.shop, it);
   p.coins += price;
   game.events.emit('shopChanged', { kind: 'sell', uid });
