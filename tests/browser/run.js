@@ -179,7 +179,7 @@ await check('มือถือ: แตะเริ่ม → ลากจอย
   await G(p, () => localStorage.clear());
   await G(p, () => __ploy.startNew(true));
   await p.waitForTimeout(300);
-  const touch = (type, x, y, id = 1) => G(p, ([type, x, y, id]) => { const c = document.getElementById('game'); c.dispatchEvent(new PointerEvent(type, { pointerId: id, pointerType: 'touch', clientX: x, clientY: y, bubbles: true, isPrimary: id === 1 })); }, [type, x, y, id]);
+  const touch = (type, x, y, id = 1) => G(p, ([type, x, y, id]) => { const c = document.getElementById('hud'); c.dispatchEvent(new PointerEvent(type, { pointerId: id, pointerType: 'touch', clientX: x, clientY: y, bubbles: true, isPrimary: id === 1 })); }, [type, x, y, id]);
   const x0 = (await state(p)).x;
   await touch('pointerdown', 110, 270); await touch('pointermove', 170, 270);
   await p.waitForTimeout(700);
@@ -189,7 +189,7 @@ await check('มือถือ: แตะเริ่ม → ลากจอย
   const L = await G(p, () => ({ mode: __ploy.game.input.mode }));
   assert(L.mode === 'touch', 'ไม่เข้าโหมดสัมผัส');
   const before = await G(p, () => __ploy.game.player.attackCd);
-  const btn = { x: 780 - 22 * 0.9 - 46 * 0.9, y: 360 - 22 * 0.9 - 46 * 0.9 };
+  const btn = await G(p, () => { const L = __ploy.layout(); const b = L.buttons.find((q) => q.id === 'attack'); return { x: b.x, y: b.y }; });
   await touch('pointerdown', btn.x, btn.y, 2);
   await p.waitForTimeout(50);
   const cd = await G(p, () => __ploy.game.player.attackCd);

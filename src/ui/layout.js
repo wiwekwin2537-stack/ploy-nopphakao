@@ -1,19 +1,22 @@
-// ตำแหน่งปุ่มบนจอ (หน่วย CSS px) ใช้ทั้งตอนวาดและตอนรับการแตะ
+// ตำแหน่งปุ่มบนจอ (หน่วย CSS px) จัดแบบเอโดเรีย ใช้ทั้งตอนวาดและตอนรับการแตะ/คลิก
 export function computeLayout(w, h) {
-  const s = Math.max(0.75, Math.min(1.25, Math.min(w, h) / 400));
-  const pad = 22 * s;
-  const atk = { id: 'attack', x: w - pad - 46 * s, y: h - pad - 46 * s, r: 46 * s };
+  const s = Math.max(0.8, Math.min(1.3, h / 390));
+  const atk = { id: 'attack', x: w - 56 * s, y: h - 54 * s, r: 34 * s };
   return {
     s,
-    joyZoneW: w * 0.45,
-    joyR: 58 * s,
-    joyHome: { x: pad + 70 * s, y: h - pad - 70 * s },
+    joyZoneW: w * 0.42,
+    joyR: 56 * s,
+    joyHome: { x: 92 * s, y: h - 86 * s },
     buttons: [
       atk,
-      { id: 'dash', x: atk.x - 108 * s, y: atk.y + 14 * s, r: 32 * s },
-      { id: 'skill', x: atk.x - 20 * s, y: atk.y - 102 * s, r: 32 * s },
-      { id: 'interact', x: atk.x - 100 * s, y: atk.y - 74 * s, r: 27 * s },
+      { id: 'dash', x: atk.x - 76 * s, y: h - 34 * s, r: 24 * s },
+      { id: 'skill', x: atk.x - 76 * s, y: atk.y - 62 * s, r: 25 * s },
+      { id: 'lock1', x: atk.x - 8 * s, y: atk.y - 84 * s, r: 23 * s, locked: true },
+      { id: 'lock2', x: atk.x + 26 * s, y: atk.y - 152 * s, r: 20 * s, locked: true },
+      { id: 'interact', x: atk.x - 150 * s, y: atk.y - 40 * s, r: 26 * s, onlyNear: true },
     ],
-    mute: { x: w - 30 * s, y: 30 * s, r: 18 * s },
+    slots: { x: w / 2, y: h - 26 * s, r: 15 * s, gap: 42 * s },
+    minimap: { x: w - 52 * s, y: 50 * s, r: 40 * s },
+    mute: { x: w - 30 * s, y: 128 * s, r: 15 * s },
   };
 }

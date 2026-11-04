@@ -55,10 +55,14 @@ export function createFx() {
         ctx.fillStyle = p.color; ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
       }
       ctx.globalAlpha = 1;
+      ctx.globalAlpha = 1;
+    },
+    // ตัวเลขลอยวาดบนชั้นหน้าจอ (คมชัด)
+    drawTexts(ctx) {
       ctx.textAlign = 'center'; ctx.lineJoin = 'round';
       for (const t of texts) {
         ctx.globalAlpha = Math.min(1, t.life / t.max * 2);
-        ctx.font = `bold ${t.big ? 15 : 11}px Kanit, sans-serif`;
+        ctx.font = `600 ${t.big ? 17 : 13}px Kanit, sans-serif`;
         ctx.lineWidth = 3; ctx.strokeStyle = C.ink; ctx.strokeText(t.str, t.x, t.y);
         ctx.fillStyle = t.color; ctx.fillText(t.str, t.x, t.y);
       }

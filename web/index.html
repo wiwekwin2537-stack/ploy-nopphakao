@@ -12,12 +12,14 @@
   :root { --bg: #140c08; --panel: #2a1d14; --cream: #f4e6c8; color-scheme: dark; }
   html, body { margin: 0; height: 100%; background: var(--bg); overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; }
   canvas { display: block; position: fixed; left: 0; right: 0; top: env(safe-area-inset-top, 0px); bottom: env(safe-area-inset-bottom, 0px); width: 100%; height: calc(100% - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); touch-action: none; }
+  #game { image-rendering: pixelated; image-rendering: crisp-edges; background: var(--bg); }
   #rotate { display: none; position: fixed; inset: 0; background: var(--panel); color: var(--cream); font: 600 18px Kanit, sans-serif; align-items: center; justify-content: center; text-align: center; padding: 24px; }
   @media (orientation: portrait) and (max-width: 700px) { #rotate { display: flex; } }
 </style>
 </head>
 <body>
 <canvas id="game"></canvas>
+<canvas id="hud"></canvas>
 <div id="rotate">หมุนโทรศัพท์เป็นแนวนอน<br>เพื่อเล่นพลอยนพเก้า</div>
 <script>/*GAME*/</script>
 </body>

@@ -4,8 +4,8 @@ export function createCamera() {
     x: 0, y: 0, zoom: 2, viewW: 0, viewH: 0, shake: 0,
     resize(w, h) {
       this.viewW = w; this.viewH = h;
-      // ให้เห็นราว 9 ช่องครึ่งในแนวตั้งบนมือถือแนวนอน ตัวละครจะได้ไม่เล็กเกิน
-      this.zoom = Math.max(1.4, Math.min(3, h / (32 * 9.5)));
+      // มองกว้างแบบเอโดเรีย: เห็นราว 14 ช่องในแนวตั้ง
+      this.zoom = Math.max(0.75, Math.min(2, h / (32 * 14)));
     },
     follow(tx, ty, worldW, worldH, dt) {
       const k = 1 - Math.pow(0.0001, dt);

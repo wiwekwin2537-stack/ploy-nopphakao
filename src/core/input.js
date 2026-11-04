@@ -5,7 +5,7 @@ const ACTIONS = ['attack', 'dash', 'skill', 'interact', 'pause'];
 const KEYMAP = {
   KeyW: 'up', ArrowUp: 'up', KeyS: 'down', ArrowDown: 'down',
   KeyA: 'left', ArrowLeft: 'left', KeyD: 'right', ArrowRight: 'right',
-  KeyJ: 'attack', Space: 'dash', ShiftLeft: 'dash', KeyK: 'skill', KeyQ: 'skill',
+  KeyJ: 'attack', Space: 'dash', ShiftLeft: 'dash', KeyK: 'skill', KeyQ: 'skill', Digit1: 'skill',
   KeyE: 'interact', Enter: 'interact', Escape: 'pause',
 };
 
@@ -41,8 +41,9 @@ export function createInput(target, getLayout) {
 
   function hitButton(x, y) {
     const L = getLayout();
-    if (!L || mode !== 'touch') return null;
+    if (!L) return null;
     for (const b of L.buttons) {
+      if (b.locked) continue;
       if ((x - b.x) ** 2 + (y - b.y) ** 2 <= (b.r * 1.15) ** 2) return b.id;
     }
     return null;
@@ -63,6 +64,8 @@ export function createInput(target, getLayout) {
       taps.push({ sx: x, sy: y, kind: 'touch' });
     } else {
       mode = mode === 'touch' ? 'keyboard' : mode;
+      const hb = e.button === 0 ? hitButton(x, y) : null;
+      if (hb) { touch.buttons.set(e.pointerId, hb); press(hb); return; }
       if (e.button === 0) { taps.push({ sx: x, sy: y, kind: 'mouse' }); mouseHeld = { sx: x, sy: y }; }
       if (e.button === 2) { press('skill'); }
     }

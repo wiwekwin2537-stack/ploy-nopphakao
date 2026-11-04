@@ -25,7 +25,11 @@ import { computeLayout } from './ui/layout.js';
 import { createScene } from './ui/scene.js';
 import { drawHud, drawDialog, drawDeath, drawTitle, titleButtons } from './ui/hud.js';
 
-const canvas = document.getElementById('game');
+// สองชั้น: โลกวาดความละเอียดต่ำแล้วขยายแบบพิกเซล (สไตล์เอโดเรีย) · หน้าจอซ้อน/ตัวหนังสือวาดคมเต็มความละเอียด
+const PIXEL = 0.62;
+const worldCanvas = document.getElementById('game');
+const wctx = worldCanvas.getContext('2d');
+const canvas = document.getElementById('hud');
 const ctx = canvas.getContext('2d');
 const params = new URLSearchParams(location.search);
 let layout = computeLayout(canvas.clientWidth || innerWidth, canvas.clientHeight || innerHeight);
@@ -117,11 +121,14 @@ function update(dt) {
 
 function render() {
   const dpr = Math.min(2, devicePixelRatio || 1), w = game.camera.viewW, h = game.camera.viewH;
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (game.mode === 'title') {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     drawTitle(ctx, game, layout, w, h);
   } else {
-    scene.draw(ctx, dpr);
+    scene.draw(wctx, PIXEL);
+    scene.drawOverlay(ctx, dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     drawHud(ctx, game, layout, w, h);
     if (game.mode === 'dialog') drawDialog(ctx, game, layout, w, h);
@@ -134,6 +141,7 @@ function resize() {
   const r = canvas.getBoundingClientRect();
   const w = Math.max(1, Math.round(r.width || innerWidth)), h = Math.max(1, Math.round(r.height || innerHeight));
   canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+  worldCanvas.width = Math.max(1, Math.round(w * PIXEL)); worldCanvas.height = Math.max(1, Math.round(h * PIXEL));
   game.camera.resize(w, h);
   layout = computeLayout(w, h);
 }
@@ -146,4 +154,4 @@ game.loopStats = loop.stats;
 loop.start();
 
 // test-hook: เปิดเฉพาะเมื่อมี ?test ใน URL ใช้ในเทสต์อัตโนมัติเท่านั้น
-if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob }; // test-hook
+if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, layout: () => layout }; // test-hook

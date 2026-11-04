@@ -12,6 +12,8 @@ const SCATTER_FOOT = {
   rock: { w: 0.8, h: 0.5, solid: true },
   haystack: { w: 1.1, h: 0.7, solid: true },
   flower: { w: 0.4, h: 0.3, solid: false },
+  jar: { w: 0.7, h: 0.4, solid: true },
+  basket: { w: 0.6, h: 0.35, solid: false },
 };
 const NON_SOLID_TYPES = new Set(['gate', 'bridge', 'lantern']);
 
@@ -23,7 +25,7 @@ export function buildZone(id, def) {
   const px = (r) => ({ x: r.x * T, y: r.y * T, w: r.w * T, h: r.h * T });
   const objects = [];
   for (const o of def.objects || []) {
-    objects.push({ type: o.type, ...px(o), solid: o.solid === undefined ? !NON_SOLID_TYPES.has(o.type) : o.solid, untilFlag: o.untilFlag || null });
+    objects.push({ type: o.type, ...px(o), solid: o.solid === undefined ? !NON_SOLID_TYPES.has(o.type) : o.solid, untilFlag: o.untilFlag || null, label: o.label || null });
   }
   const roads = (def.roads || []).map(px);
   const water = (def.water || []).map(px);

@@ -1,4 +1,5 @@
 // อสูรหิมพานต์และผีไทย วาดด้วยโค้ด
+const SCALE = 1.4;
 import { C, shadow, box, poly, circle } from './draw.js';
 
 function pig(ctx, s, o, colors) {
@@ -9,14 +10,14 @@ function pig(ctx, s, o, colors) {
   ctx.fillStyle = dark;
   [-7, -2, 4, 8].forEach((lx, i) => ctx.fillRect(lx * s, -5 * s + (i % 2 ? run : -run) * s, 2.6 * s, 5 * s));
   // ลำตัว
-  poly(ctx, [-11 * s, -12 * s, 6 * s + lean, -14 * s, 12 * s + lean, -8 * s, 11 * s + lean, -3 * s, -10 * s, -3 * s, -13 * s, -7 * s], body, C.ink, 1.4);
+  poly(ctx, [-11 * s, -12 * s, 6 * s + lean, -14 * s, 12 * s + lean, -8 * s, 11 * s + lean, -3 * s, -10 * s, -3 * s, -13 * s, -7 * s], body, C.line, 1.4);
   // แผงขนสันหลัง
   ctx.fillStyle = mane;
   for (let i = 0; i < 6; i++) poly(ctx, [(-9 + i * 3) * s, -12.5 * s, (-7.5 + i * 3) * s + (o.charging ? -2 : 0), -17 * s - (i % 2) * s, (-6 + i * 3) * s, -12.8 * s], mane, null);
   // หัว
-  poly(ctx, [7 * s + lean, -13 * s, 16 * s + lean, -10 * s, 18 * s + lean, -6 * s, 15 * s + lean, -4 * s, 8 * s + lean, -5 * s], body, C.ink, 1.4);
-  box(ctx, 16 * s + lean, -8 * s, 3.5 * s, 3.5 * s, '#d88a7a', C.ink, 1);           // จมูก
-  poly(ctx, [14 * s + lean, -5 * s, 17 * s + lean, -2 * s, 15 * s + lean, -5.5 * s], '#f4ecd8', C.ink, 0.8); // เขี้ยว
+  poly(ctx, [7 * s + lean, -13 * s, 16 * s + lean, -10 * s, 18 * s + lean, -6 * s, 15 * s + lean, -4 * s, 8 * s + lean, -5 * s], body, C.line, 1.4);
+  box(ctx, 16 * s + lean, -8 * s, 3.5 * s, 3.5 * s, '#d88a7a', C.line, 1);           // จมูก
+  poly(ctx, [14 * s + lean, -5 * s, 17 * s + lean, -2 * s, 15 * s + lean, -5.5 * s], '#f4ecd8', C.line, 0.8); // เขี้ยว
   ctx.fillStyle = o.eye || '#ff4a2a';
   ctx.fillRect(12 * s + lean, -11 * s, 2.4 * s, 2 * s);
   if (o.glowEye) { ctx.fillStyle = 'rgba(255,120,40,0.35)'; circle(ctx, 13 * s + lean, -10 * s, 4 * s, 'rgba(255,120,40,0.35)', null); }
@@ -30,17 +31,17 @@ function monkey(ctx, o) {
   ctx.translate(0, -hop);
   ctx.strokeStyle = '#6b5440'; ctx.lineWidth = 2.4;
   ctx.beginPath(); ctx.moveTo(-6, -8); ctx.bezierCurveTo(-16, -10, -14, -24, -8, -22); ctx.stroke(); // หาง
-  box(ctx, -5 + run, -6, 3, 6, '#6b5440', C.ink, 1); box(ctx, 2 - run, -6, 3, 6, '#6b5440', C.ink, 1);
-  box(ctx, -6, -16, 12, 11, '#8a6d52', C.ink, 1.3);
+  box(ctx, -5 + run, -6, 3, 6, '#6b5440', C.line, 1); box(ctx, 2 - run, -6, 3, 6, '#6b5440', C.line, 1);
+  box(ctx, -6, -16, 12, 11, '#8a6d52', C.line, 1.3);
   ctx.fillStyle = '#c9b089'; ctx.fillRect(-3, -14, 6, 7);
-  box(ctx, -9, -16 + run * 1.5, 3, 9, '#8a6d52', C.ink, 1); box(ctx, 6, -16 - run * 1.5, 3, 9, '#8a6d52', C.ink, 1);
+  box(ctx, -9, -16 + run * 1.5, 3, 9, '#8a6d52', C.line, 1); box(ctx, 6, -16 - run * 1.5, 3, 9, '#8a6d52', C.line, 1);
   ctx.fillStyle = C.gold; ctx.fillRect(-9, -11 + run * 1.5, 3, 1.6); ctx.fillRect(6, -11 - run * 1.5, 3, 1.6); // กำไลทอง
-  box(ctx, -6, -27, 12, 11, '#8a6d52', C.ink, 1.3);
+  box(ctx, -6, -27, 12, 11, '#8a6d52', C.line, 1.3);
   box(ctx, -4, -24, 8, 7, '#dcc3a0', null);
   ctx.fillStyle = '#ffd34a'; ctx.fillRect(-3, -23, 2, 2); ctx.fillRect(1, -23, 2, 2);
-  ctx.fillStyle = C.ink; ctx.fillRect(-2, -19, 4, 1);
-  box(ctx, -8.5, -25, 3, 4, '#8a6d52', C.ink, 1); box(ctx, 5.5, -25, 3, 4, '#8a6d52', C.ink, 1);
-  poly(ctx, [-4, -27, 0, -32, 4, -27], C.gold, C.ink, 1); // มงกุฎเล็กแบบหิมพานต์
+  ctx.fillStyle = C.line; ctx.fillRect(-2, -19, 4, 1);
+  box(ctx, -8.5, -25, 3, 4, '#8a6d52', C.line, 1); box(ctx, 5.5, -25, 3, 4, '#8a6d52', C.line, 1);
+  poly(ctx, [-4, -27, 0, -32, 4, -27], C.gold, C.line, 1); // มงกุฎเล็กแบบหิมพานต์
 }
 
 function krasue(ctx, o) {
@@ -59,9 +60,9 @@ function krasue(ctx, o) {
     ctx.stroke();
   }
   // ผมยาวดำ
-  poly(ctx, [-9, -10, 9, -10, 11, 8, 6, 4, 0, 9, -6, 4, -11, 8], '#141018', C.ink, 1.2);
+  poly(ctx, [-9, -10, 9, -10, 11, 8, 6, 4, 0, 9, -6, 4, -11, 8], '#141018', C.line, 1.2);
   // หน้า
-  box(ctx, -6, -8, 12, 12, '#e8e0d0', C.ink, 1.2);
+  box(ctx, -6, -8, 12, 12, '#e8e0d0', C.line, 1.2);
   ctx.fillStyle = '#141018'; ctx.fillRect(-6, -8, 12, 3);
   ctx.fillStyle = o.windup > 0 ? '#ffffff' : '#7dff8a';
   ctx.fillRect(-4, -3, 2.5, 2); ctx.fillRect(1.5, -3, 2.5, 2);
@@ -77,6 +78,7 @@ export function drawMonster(ctx, type, x, y, o) {
   if (type === 'krasue') shadow(ctx, x, y, 8, 3, 0.18);
   else shadow(ctx, x, y, 13 * big, 4.5 * big);
   ctx.translate(x, y);
+  ctx.scale(SCALE, SCALE);                                    // ขยายให้สมกับตัวละครสูงแบบเอโดเรีย
   if (o.windup > 0 && type !== 'krasue') ctx.translate(Math.sin(o.t * 60) * 1.2, 0);
   ctx.scale(o.face < 0 ? -1 : 1, 1);
   if (o.dying > 0) ctx.scale(1 + o.dying * 0.2, 1 - o.dying * 0.5);
@@ -92,5 +94,5 @@ export function drawMonster(ctx, type, x, y, o) {
 }
 
 export function monsterHeight(type) {
-  return { piglet: 18, boar: 24, bigboar: 34, monkey: 34, krasue: 50 }[type] || 26;
+  return Math.round(({ piglet: 18, boar: 24, bigboar: 34, monkey: 34, krasue: 50 }[type] || 26) * SCALE);
 }

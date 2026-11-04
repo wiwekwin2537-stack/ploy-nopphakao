@@ -1,6 +1,6 @@
 // เครื่องมือวาดพื้นฐาน ใช้ร่วมกันทุกไฟล์ใน art/
 export const C = {
-  ink: '#1b1410', gold: '#d9a630', goldHi: '#f3d27a', red: '#a3262a', redHi: '#c9433a',
+  ink: '#1b1410', line: 'rgba(34,20,10,0.55)', gold: '#d9a630', goldHi: '#f3d27a', red: '#a3262a', redHi: '#c9433a',
   leaf: '#4f7a3a', leafDark: '#355a28', leafHi: '#78a34e', indigo: '#2c4a73', teak: '#6b4423', teakDark: '#4a2e17',
   clay: '#a8643a', cream: '#f4e6c8', white: '#efe9dc', skin: '#d9a273', skinDark: '#b98257',
   grass: '#7da24a', grassDark: '#6a9140', dirt: '#b98a55', dirtDark: '#9c7144', water: '#3f7fa3', waterHi: '#6aa6c6',

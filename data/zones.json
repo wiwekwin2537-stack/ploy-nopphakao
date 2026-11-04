@@ -1,98 +1,827 @@
 {
-  "road": {
-    "name": "ทางเกวียนชายป่า", "w": 56, "h": 20, "ground": "forest", "music": "road", "safe": false, "seed": 11,
-    "roads": [{ "x": 0, "y": 7, "w": 56, "h": 6 }],
-    "water": [],
-    "objects": [
-      { "type": "wagon", "x": 9, "y": 8, "w": 3, "h": 2 },
-      { "type": "wagon_broken", "x": 15, "y": 10, "w": 3, "h": 2 },
-      { "type": "crate", "x": 12.5, "y": 11, "w": 1, "h": 1 },
-      { "type": "log", "x": 42, "y": 6.5, "w": 1, "h": 7, "untilFlag": "gotRuby" },
-      { "type": "thicket", "x": 0, "y": 0, "w": 56, "h": 6.4 },
-      { "type": "thicket", "x": 0, "y": 13.6, "w": 56, "h": 6.4 }
+ "road": {
+  "name": "ทางเกวียนชายป่า",
+  "w": 56,
+  "h": 20,
+  "ground": "forest",
+  "music": "road",
+  "safe": false,
+  "seed": 11,
+  "roads": [
+   {
+    "x": 0,
+    "y": 7,
+    "w": 56,
+    "h": 6
+   }
+  ],
+  "water": [],
+  "objects": [
+   {
+    "type": "wagon",
+    "x": 9,
+    "y": 8,
+    "w": 3,
+    "h": 2
+   },
+   {
+    "type": "wagon_broken",
+    "x": 15,
+    "y": 10,
+    "w": 3,
+    "h": 2
+   },
+   {
+    "type": "crate",
+    "x": 12.5,
+    "y": 11,
+    "w": 1,
+    "h": 1
+   },
+   {
+    "type": "log",
+    "x": 42,
+    "y": 6.5,
+    "w": 1,
+    "h": 7,
+    "untilFlag": "gotRuby"
+   },
+   {
+    "type": "thicket",
+    "x": 0,
+    "y": 0,
+    "w": 56,
+    "h": 6.4
+   },
+   {
+    "type": "thicket",
+    "x": 0,
+    "y": 13.6,
+    "w": 56,
+    "h": 6.4
+   }
+  ],
+  "scatter": [
+   {
+    "type": "tree_big",
+    "count": 46,
+    "area": {
+     "x": 0,
+     "y": 0,
+     "w": 56,
+     "h": 5.5
+    }
+   },
+   {
+    "type": "tree_big",
+    "count": 46,
+    "area": {
+     "x": 0,
+     "y": 14.5,
+     "w": 56,
+     "h": 5.5
+    }
+   },
+   {
+    "type": "bush",
+    "count": 22,
+    "area": {
+     "x": 0,
+     "y": 5,
+     "w": 56,
+     "h": 1.5
+    }
+   },
+   {
+    "type": "bush",
+    "count": 22,
+    "area": {
+     "x": 0,
+     "y": 13,
+     "w": 56,
+     "h": 1.5
+    }
+   }
+  ],
+  "exits": [
+   {
+    "x": 55.4,
+    "y": 7,
+    "w": 0.6,
+    "h": 6,
+    "to": "town",
+    "tx": 20.5,
+    "ty": 31.8
+   }
+  ],
+  "npcs": [],
+  "spawns": [
+   {
+    "type": "piglet",
+    "count": 3,
+    "level": [
+     1,
+     1
     ],
-    "scatter": [
-      { "type": "tree_big", "count": 46, "area": { "x": 0, "y": 0, "w": 56, "h": 5.5 } },
-      { "type": "tree_big", "count": 46, "area": { "x": 0, "y": 14.5, "w": 56, "h": 5.5 } },
-      { "type": "bush", "count": 22, "area": { "x": 0, "y": 5, "w": 56, "h": 1.5 } },
-      { "type": "bush", "count": 22, "area": { "x": 0, "y": 13, "w": 56, "h": 1.5 } }
-    ],
-    "exits": [{ "x": 55.4, "y": 7, "w": 0.6, "h": 6, "to": "town", "tx": 20.5, "ty": 31.8 }],
-    "npcs": [],
-    "spawns": [
-      { "type": "piglet", "count": 3, "level": [1, 1], "area": { "x": 20, "y": 7.5, "w": 16, "h": 5 }, "respawn": 20, "afterFlag": "tutorialDone" }
-    ],
-    "start": { "x": 5, "y": 10 }
-  },
-  "town": {
-    "name": "เวียงด่านหิน", "w": 40, "h": 34, "ground": "town", "music": "town", "safe": true, "seed": 22,
-    "roads": [{ "x": 18, "y": 0, "w": 5, "h": 34 }, { "x": 6, "y": 15, "w": 28, "h": 5 }],
-    "water": [{ "x": 34, "y": 28, "w": 4, "h": 4 }],
-    "objects": [
-      { "type": "wall_h", "x": 0, "y": 0, "w": 18.5, "h": 1 }, { "type": "wall_h", "x": 21.5, "y": 0, "w": 18.5, "h": 1 },
-      { "type": "wall_h", "x": 0, "y": 33, "w": 18.5, "h": 1 }, { "type": "wall_h", "x": 21.5, "y": 33, "w": 18.5, "h": 1 },
-      { "type": "wall_v", "x": 0, "y": 1, "w": 1, "h": 32 }, { "type": "wall_v", "x": 39, "y": 1, "w": 1, "h": 32 },
-      { "type": "gate", "x": 18.5, "y": 0, "w": 3, "h": 0.01, "solid": false },
-      { "type": "gate", "x": 18.5, "y": 33, "w": 3, "h": 0.01, "solid": false },
-      { "type": "temple", "x": 25, "y": 2.4, "w": 12, "h": 5 },
-      { "type": "sala", "x": 26, "y": 12, "w": 6, "h": 3 },
-      { "type": "house", "x": 3, "y": 4, "w": 5, "h": 3 }, { "type": "house", "x": 3, "y": 11, "w": 5, "h": 3 },
-      { "type": "house", "x": 3, "y": 23, "w": 5, "h": 3 }, { "type": "house", "x": 10, "y": 3, "w": 5, "h": 3 },
-      { "type": "house", "x": 32, "y": 20, "w": 5, "h": 3 },
-      { "type": "well", "x": 12, "y": 21, "w": 2, "h": 1.5 },
-      { "type": "stall", "x": 26, "y": 24, "w": 4, "h": 2 },
-      { "type": "tree_bodhi", "x": 9.3, "y": 7.6, "w": 1.4, "h": 1 },
-      { "type": "tree_palm", "x": 2, "y": 18, "w": 0.6, "h": 0.5 }, { "type": "tree_palm", "x": 37, "y": 12, "w": 0.6, "h": 0.5 },
-      { "type": "tree_palm", "x": 2.5, "y": 30, "w": 0.6, "h": 0.5 }, { "type": "tree_palm", "x": 36.5, "y": 26, "w": 0.6, "h": 0.5 },
-      { "type": "tree_banana", "x": 9, "y": 27, "w": 0.6, "h": 0.5 }, { "type": "tree_banana", "x": 13, "y": 28.5, "w": 0.6, "h": 0.5 },
-      { "type": "tree_banana", "x": 30, "y": 29, "w": 0.6, "h": 0.5 },
-      { "type": "lantern", "x": 17.3, "y": 10, "w": 0.4, "h": 0.4 }, { "type": "lantern", "x": 23.3, "y": 10, "w": 0.4, "h": 0.4 },
-      { "type": "lantern", "x": 17.3, "y": 26, "w": 0.4, "h": 0.4 }, { "type": "lantern", "x": 23.3, "y": 26, "w": 0.4, "h": 0.4 }
-    ],
-    "scatter": [
-      { "type": "flower", "count": 30, "area": { "x": 1, "y": 1, "w": 38, "h": 32 }, "solid": false }
-    ],
-    "exits": [
-      { "x": 18.5, "y": 0, "w": 3, "h": 0.55, "to": "field", "tx": 36, "ty": 57.4 },
-      { "x": 18.5, "y": 33.45, "w": 3, "h": 0.55, "to": "road", "tx": 53.5, "ty": 10 }
-    ],
-    "npcs": [
-      { "id": "chan", "name": "พ่อเฒ่าจันทร์", "look": "elder", "x": 28.8, "y": 16.4 },
-      { "id": "maen", "name": "ยายแม้น", "look": "granny", "x": 11.5, "y": 20.3 },
-      { "id": "kla", "name": "หมื่นกล้า", "look": "guard", "x": 23.6, "y": 31.2 },
-      { "id": "suea", "name": "นายเสือ", "look": "guard", "x": 23.6, "y": 2.3 }
-    ],
-    "spawns": [],
-    "start": { "x": 20.5, "y": 30 }
-  },
-  "field": {
-    "name": "ทุ่งนาร้าง", "w": 72, "h": 60, "ground": "field", "music": "field", "safe": false, "seed": 33,
-    "roads": [{ "x": 34, "y": 28, "w": 4, "h": 32 }, { "x": 2, "y": 27.5, "w": 68, "h": 3 }],
-    "water": [{ "x": 41, "y": 0, "w": 3, "h": 27 }, { "x": 41, "y": 31, "w": 3, "h": 29 }],
-    "paddies": [{ "x": 4, "y": 32, "w": 28, "h": 24, "cell": 6 }, { "x": 47, "y": 33, "w": 22, "h": 22, "cell": 5.5 }],
-    "objects": [
-      { "type": "bridge", "x": 40.5, "y": 27, "w": 4, "h": 4, "solid": false },
-      { "type": "hut", "x": 10, "y": 10, "w": 4, "h": 3 }, { "type": "hut", "x": 58, "y": 12, "w": 4, "h": 3 },
-      { "type": "hut", "x": 26, "y": 18, "w": 4, "h": 3 },
-      { "type": "shrine", "x": 30, "y": 6, "w": 2, "h": 1.5 }
-    ],
-    "scatter": [
-      { "type": "tree_palm", "count": 34, "area": { "x": 1, "y": 1, "w": 70, "h": 26 } },
-      { "type": "tree_big", "count": 14, "area": { "x": 1, "y": 1, "w": 70, "h": 24 } },
-      { "type": "bush", "count": 40, "area": { "x": 1, "y": 1, "w": 70, "h": 58 } },
-      { "type": "rock", "count": 18, "area": { "x": 1, "y": 1, "w": 70, "h": 58 } },
-      { "type": "haystack", "count": 8, "area": { "x": 4, "y": 32, "w": 28, "h": 24 } }
-    ],
-    "exits": [{ "x": 34, "y": 59.45, "w": 4, "h": 0.55, "to": "town", "tx": 20.5, "ty": 1.9 }],
-    "npcs": [],
-    "spawns": [
-      { "type": "piglet", "count": 5, "level": [1, 1], "area": { "x": 4, "y": 32, "w": 28, "h": 22 }, "respawn": 10 },
-      { "type": "boar", "count": 8, "level": [1, 2], "area": { "x": 4, "y": 32, "w": 28, "h": 24 }, "respawn": 12 },
-      { "type": "monkey", "count": 9, "level": [2, 4], "area": { "x": 46, "y": 32, "w": 22, "h": 24 }, "respawn": 12 },
-      { "type": "krasue", "count": 9, "level": [3, 5], "area": { "x": 4, "y": 2, "w": 34, "h": 22 }, "respawn": 15 },
-      { "type": "boar", "count": 5, "level": [4, 5], "area": { "x": 46, "y": 2, "w": 22, "h": 22 }, "respawn": 14 },
-      { "type": "krasue", "count": 4, "level": [4, 5], "area": { "x": 46, "y": 2, "w": 22, "h": 22 }, "respawn": 15 }
-    ],
-    "start": { "x": 36, "y": 57 }
+    "area": {
+     "x": 20,
+     "y": 7.5,
+     "w": 16,
+     "h": 5
+    },
+    "respawn": 20,
+    "afterFlag": "tutorialDone"
+   }
+  ],
+  "start": {
+   "x": 5,
+   "y": 10
   }
+ },
+ "town": {
+  "name": "เวียงด่านหิน",
+  "w": 40,
+  "h": 34,
+  "ground": "town",
+  "music": "town",
+  "safe": true,
+  "seed": 22,
+  "roads": [
+   {
+    "x": 18,
+    "y": 0,
+    "w": 5,
+    "h": 34
+   },
+   {
+    "x": 6,
+    "y": 15,
+    "w": 28,
+    "h": 5
+   }
+  ],
+  "water": [
+   {
+    "x": 34,
+    "y": 28,
+    "w": 4,
+    "h": 4
+   }
+  ],
+  "objects": [
+   {
+    "type": "wall_h",
+    "x": 0,
+    "y": 0,
+    "w": 18.5,
+    "h": 1
+   },
+   {
+    "type": "wall_h",
+    "x": 21.5,
+    "y": 0,
+    "w": 18.5,
+    "h": 1
+   },
+   {
+    "type": "wall_h",
+    "x": 0,
+    "y": 33,
+    "w": 18.5,
+    "h": 1
+   },
+   {
+    "type": "wall_h",
+    "x": 21.5,
+    "y": 33,
+    "w": 18.5,
+    "h": 1
+   },
+   {
+    "type": "wall_v",
+    "x": 0,
+    "y": 1,
+    "w": 1,
+    "h": 32
+   },
+   {
+    "type": "wall_v",
+    "x": 39,
+    "y": 1,
+    "w": 1,
+    "h": 32
+   },
+   {
+    "type": "gate",
+    "x": 18.5,
+    "y": 0,
+    "w": 3,
+    "h": 0.01,
+    "solid": false,
+    "label": "ประตูเหนือ · ทุ่งนาร้าง"
+   },
+   {
+    "type": "gate",
+    "x": 18.5,
+    "y": 33,
+    "w": 3,
+    "h": 0.01,
+    "solid": false,
+    "label": "ประตูใต้ · ทางเกวียน"
+   },
+   {
+    "type": "temple",
+    "x": 25,
+    "y": 2.4,
+    "w": 12,
+    "h": 5,
+    "label": "วัดด่านหิน"
+   },
+   {
+    "type": "sala",
+    "x": 26,
+    "y": 12,
+    "w": 6,
+    "h": 3,
+    "label": "ศาลาพ่อเฒ่าจันทร์"
+   },
+   {
+    "type": "house",
+    "x": 3,
+    "y": 4,
+    "w": 5,
+    "h": 3
+   },
+   {
+    "type": "house",
+    "x": 3,
+    "y": 11,
+    "w": 5,
+    "h": 3
+   },
+   {
+    "type": "house",
+    "x": 3,
+    "y": 23,
+    "w": 5,
+    "h": 3
+   },
+   {
+    "type": "house",
+    "x": 10,
+    "y": 3,
+    "w": 5,
+    "h": 3
+   },
+   {
+    "type": "house",
+    "x": 32,
+    "y": 20,
+    "w": 5,
+    "h": 3
+   },
+   {
+    "type": "well",
+    "x": 12,
+    "y": 21,
+    "w": 2,
+    "h": 1.5,
+    "label": "บ่อน้ำกลางเวียง"
+   },
+   {
+    "type": "stall",
+    "x": 26,
+    "y": 24,
+    "w": 4,
+    "h": 2,
+    "label": "แผงค้า (ยังไม่เปิด)"
+   },
+   {
+    "type": "tree_bodhi",
+    "x": 9.3,
+    "y": 7.6,
+    "w": 1.4,
+    "h": 1,
+    "label": "ต้นโพธิ์ศักดิ์สิทธิ์"
+   },
+   {
+    "type": "tree_palm",
+    "x": 2,
+    "y": 18,
+    "w": 0.6,
+    "h": 0.5
+   },
+   {
+    "type": "tree_palm",
+    "x": 37,
+    "y": 12,
+    "w": 0.6,
+    "h": 0.5
+   },
+   {
+    "type": "tree_palm",
+    "x": 2.5,
+    "y": 30,
+    "w": 0.6,
+    "h": 0.5
+   },
+   {
+    "type": "tree_palm",
+    "x": 36.5,
+    "y": 26,
+    "w": 0.6,
+    "h": 0.5
+   },
+   {
+    "type": "tree_banana",
+    "x": 9,
+    "y": 27,
+    "w": 0.6,
+    "h": 0.5
+   },
+   {
+    "type": "tree_banana",
+    "x": 13,
+    "y": 28.5,
+    "w": 0.6,
+    "h": 0.5
+   },
+   {
+    "type": "tree_banana",
+    "x": 30,
+    "y": 29,
+    "w": 0.6,
+    "h": 0.5
+   },
+   {
+    "type": "lantern",
+    "x": 17.3,
+    "y": 10,
+    "w": 0.4,
+    "h": 0.4
+   },
+   {
+    "type": "lantern",
+    "x": 23.3,
+    "y": 10,
+    "w": 0.4,
+    "h": 0.4
+   },
+   {
+    "type": "lantern",
+    "x": 17.3,
+    "y": 26,
+    "w": 0.4,
+    "h": 0.4
+   },
+   {
+    "type": "lantern",
+    "x": 23.3,
+    "y": 26,
+    "w": 0.4,
+    "h": 0.4
+   },
+   {
+    "type": "jar",
+    "x": 8.3,
+    "y": 6.6,
+    "w": 0.7,
+    "h": 0.4
+   },
+   {
+    "type": "jar",
+    "x": 8.3,
+    "y": 13.6,
+    "w": 0.7,
+    "h": 0.4
+   },
+   {
+    "type": "jar",
+    "x": 8.3,
+    "y": 25.6,
+    "w": 0.7,
+    "h": 0.4
+   },
+   {
+    "type": "jar",
+    "x": 31.2,
+    "y": 22.6,
+    "w": 0.7,
+    "h": 0.4
+   },
+   {
+    "type": "jar",
+    "x": 14.3,
+    "y": 21.2,
+    "w": 0.7,
+    "h": 0.4
+   },
+   {
+    "type": "fence",
+    "x": 2,
+    "y": 27.5,
+    "w": 7,
+    "h": 0.3
+   },
+   {
+    "type": "fence",
+    "x": 31,
+    "y": 24,
+    "w": 6,
+    "h": 0.3
+   },
+   {
+    "type": "basket",
+    "x": 25.2,
+    "y": 26.3,
+    "w": 0.6,
+    "h": 0.35,
+    "solid": false
+   },
+   {
+    "type": "basket",
+    "x": 30.4,
+    "y": 26.3,
+    "w": 0.6,
+    "h": 0.35,
+    "solid": false
+   },
+   {
+    "type": "wagon",
+    "x": 11,
+    "y": 29,
+    "w": 3,
+    "h": 2
+   },
+   {
+    "type": "haystack",
+    "x": 15,
+    "y": 30.4,
+    "w": 1.1,
+    "h": 0.7
+   },
+   {
+    "type": "tree_banana",
+    "x": 35,
+    "y": 8.5,
+    "w": 0.6,
+    "h": 0.5
+   },
+   {
+    "type": "tree_banana",
+    "x": 2.3,
+    "y": 9.6,
+    "w": 0.6,
+    "h": 0.5
+   },
+   {
+    "type": "tree_palm",
+    "x": 15,
+    "y": 12.5,
+    "w": 0.6,
+    "h": 0.5
+   },
+   {
+    "type": "tree_palm",
+    "x": 24.5,
+    "y": 11.5,
+    "w": 0.6,
+    "h": 0.5
+   },
+   {
+    "type": "lantern",
+    "x": 17.3,
+    "y": 14,
+    "w": 0.4,
+    "h": 0.4
+   },
+   {
+    "type": "lantern",
+    "x": 23.3,
+    "y": 21,
+    "w": 0.4,
+    "h": 0.4
+   }
+  ],
+  "scatter": [
+   {
+    "type": "flower",
+    "count": 30,
+    "area": {
+     "x": 1,
+     "y": 1,
+     "w": 38,
+     "h": 32
+    },
+    "solid": false
+   }
+  ],
+  "exits": [
+   {
+    "x": 18.5,
+    "y": 0,
+    "w": 3,
+    "h": 0.55,
+    "to": "field",
+    "tx": 36,
+    "ty": 57.4
+   },
+   {
+    "x": 18.5,
+    "y": 33.45,
+    "w": 3,
+    "h": 0.55,
+    "to": "road",
+    "tx": 53.5,
+    "ty": 10
+   }
+  ],
+  "npcs": [
+   {
+    "id": "chan",
+    "name": "พ่อเฒ่าจันทร์",
+    "look": "elder",
+    "x": 28.8,
+    "y": 16.4
+   },
+   {
+    "id": "maen",
+    "name": "ยายแม้น",
+    "look": "granny",
+    "x": 11.5,
+    "y": 20.3
+   },
+   {
+    "id": "kla",
+    "name": "หมื่นกล้า",
+    "look": "guard",
+    "x": 23.6,
+    "y": 31.2
+   },
+   {
+    "id": "suea",
+    "name": "นายเสือ",
+    "look": "guard",
+    "x": 23.6,
+    "y": 2.3
+   }
+  ],
+  "spawns": [],
+  "start": {
+   "x": 20.5,
+   "y": 30
+  }
+ },
+ "field": {
+  "name": "ทุ่งนาร้าง",
+  "w": 72,
+  "h": 60,
+  "ground": "field",
+  "music": "field",
+  "safe": false,
+  "seed": 33,
+  "roads": [
+   {
+    "x": 34,
+    "y": 28,
+    "w": 4,
+    "h": 32
+   },
+   {
+    "x": 2,
+    "y": 27.5,
+    "w": 68,
+    "h": 3
+   }
+  ],
+  "water": [
+   {
+    "x": 41,
+    "y": 0,
+    "w": 3,
+    "h": 27
+   },
+   {
+    "x": 41,
+    "y": 31,
+    "w": 3,
+    "h": 29
+   }
+  ],
+  "paddies": [
+   {
+    "x": 4,
+    "y": 32,
+    "w": 28,
+    "h": 24,
+    "cell": 6
+   },
+   {
+    "x": 47,
+    "y": 33,
+    "w": 22,
+    "h": 22,
+    "cell": 5.5
+   }
+  ],
+  "objects": [
+   {
+    "type": "bridge",
+    "x": 40.5,
+    "y": 27,
+    "w": 4,
+    "h": 4,
+    "solid": false
+   },
+   {
+    "type": "hut",
+    "x": 10,
+    "y": 10,
+    "w": 4,
+    "h": 3
+   },
+   {
+    "type": "hut",
+    "x": 58,
+    "y": 12,
+    "w": 4,
+    "h": 3
+   },
+   {
+    "type": "hut",
+    "x": 26,
+    "y": 18,
+    "w": 4,
+    "h": 3
+   },
+   {
+    "type": "shrine",
+    "x": 30,
+    "y": 6,
+    "w": 2,
+    "h": 1.5,
+    "label": "ศาลพระภูมิ"
+   }
+  ],
+  "scatter": [
+   {
+    "type": "tree_palm",
+    "count": 34,
+    "area": {
+     "x": 1,
+     "y": 1,
+     "w": 70,
+     "h": 26
+    }
+   },
+   {
+    "type": "tree_big",
+    "count": 14,
+    "area": {
+     "x": 1,
+     "y": 1,
+     "w": 70,
+     "h": 24
+    }
+   },
+   {
+    "type": "bush",
+    "count": 40,
+    "area": {
+     "x": 1,
+     "y": 1,
+     "w": 70,
+     "h": 58
+    }
+   },
+   {
+    "type": "rock",
+    "count": 18,
+    "area": {
+     "x": 1,
+     "y": 1,
+     "w": 70,
+     "h": 58
+    }
+   },
+   {
+    "type": "haystack",
+    "count": 8,
+    "area": {
+     "x": 4,
+     "y": 32,
+     "w": 28,
+     "h": 24
+    }
+   }
+  ],
+  "exits": [
+   {
+    "x": 34,
+    "y": 59.45,
+    "w": 4,
+    "h": 0.55,
+    "to": "town",
+    "tx": 20.5,
+    "ty": 1.9
+   }
+  ],
+  "npcs": [],
+  "spawns": [
+   {
+    "type": "piglet",
+    "count": 5,
+    "level": [
+     1,
+     1
+    ],
+    "area": {
+     "x": 4,
+     "y": 32,
+     "w": 28,
+     "h": 22
+    },
+    "respawn": 10
+   },
+   {
+    "type": "boar",
+    "count": 8,
+    "level": [
+     1,
+     2
+    ],
+    "area": {
+     "x": 4,
+     "y": 32,
+     "w": 28,
+     "h": 24
+    },
+    "respawn": 12
+   },
+   {
+    "type": "monkey",
+    "count": 9,
+    "level": [
+     2,
+     4
+    ],
+    "area": {
+     "x": 46,
+     "y": 32,
+     "w": 22,
+     "h": 24
+    },
+    "respawn": 12
+   },
+   {
+    "type": "krasue",
+    "count": 9,
+    "level": [
+     3,
+     5
+    ],
+    "area": {
+     "x": 4,
+     "y": 2,
+     "w": 34,
+     "h": 22
+    },
+    "respawn": 15
+   },
+   {
+    "type": "boar",
+    "count": 5,
+    "level": [
+     4,
+     5
+    ],
+    "area": {
+     "x": 46,
+     "y": 2,
+     "w": 22,
+     "h": 22
+    },
+    "respawn": 14
+   },
+   {
+    "type": "krasue",
+    "count": 4,
+    "level": [
+     4,
+     5
+    ],
+    "area": {
+     "x": 46,
+     "y": 2,
+     "w": 22,
+     "h": 22
+    },
+    "respawn": 15
+   }
+  ],
+  "start": {
+   "x": 36,
+   "y": 57
+  }
+ }
 }

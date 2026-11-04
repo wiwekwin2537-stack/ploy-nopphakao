@@ -81,7 +81,8 @@ export function createGround(zone, scale) {
         }
       }
     } else if (v === 3) {
-      g.fillStyle = '#6a9c8c'; g.fillRect(x, y, T, T);                 // น้ำในนา
+      g.fillStyle = '#78a660'; g.fillRect(x, y, T, T);                 // นาข้าว
+      g.fillStyle = 'rgba(90,150,150,0.22)'; g.fillRect(x, y, T, T);
       g.fillStyle = 'rgba(200,230,240,0.25)'; g.fillRect(x + h * 16, y + hash2(tx, ty, 4) * 28, 10, 1.4);
       for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) {        // กอข้าวเป็นแถว
         const sx = x + 4 + c * 8, sy = y + 6 + r * 8;

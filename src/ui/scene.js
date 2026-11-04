@@ -3,7 +3,7 @@ import { createGround } from '../art/ground.js';
 import { createSpriteCache } from '../art/sprites.js';
 import { drawHuman } from '../art/characters.js';
 import { drawMonster } from '../art/monsters.js';
-import { C, shadow, circle, poly } from '../art/draw.js';
+import { C, shadow, circle, poly, rrect } from '../art/draw.js';
 import { GEM_INFO } from '../systems/loot.js';
 import { tutorialTarget } from '../systems/tutorial.js';
 
@@ -49,36 +49,60 @@ export function createScene(game) {
     circle(ctx, s.x, s.y, s.radius, col[1], null); circle(ctx, s.x, s.y, s.radius * 0.5, col[2], null);
   }
 
-  function drawBars(ctx) {
+  // ป้ายชื่อแบบเอโดเรีย: แผ่นสีเข้มมุมมน ขอบทอง
+  function plate(ctx, text, x, y, size, color = '#f4e6c8', border = 'rgba(217,166,48,0.9)', lv = null) {
+    ctx.font = `600 ${size}px Kanit, sans-serif`;
+    const lvW = lv ? ctx.measureText(lv).width + 6 : 0;
+    const w = ctx.measureText(text).width + 12 + lvW, h = size + 7;
+    ctx.fillStyle = 'rgba(24,16,12,0.78)'; rrect(ctx, x - w / 2, y - h / 2, w, h, h / 2.4); ctx.fill();
+    ctx.strokeStyle = border; ctx.lineWidth = 1; ctx.stroke();
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = color; ctx.fillText(text, x - w / 2 + 6, y + 0.5);
+    if (lv) { ctx.fillStyle = '#ffd24a'; ctx.fillText(lv, x - w / 2 + 6 + ctx.measureText(text).width + 6, y + 0.5); }
+  }
+
+  function overlay(ctx) {
+    const z = game.world.zone, b = game.camera.bounds(), t = game.time;
+    const vis = (x, y) => x > b.l - 60 && x < b.r + 60 && y > b.t - 60 && y < b.b + 80;
+    for (const o of z.objects) {
+      if (!o.label || !game.world.isVisible(o)) continue;
+      const tall = { temple: 220, sala: 150, gate: 160, well: 64, stall: 66, shrine: 80, tree_bodhi: 110 }[o.type] || 60;
+      const lx = o.x + o.w / 2, ly = o.y + o.h - tall;
+      if (vis(lx, ly)) plate(ctx, o.label, lx, ly, 12, '#ffe9a8');
+    }
     for (const m of game.mobs) {
-      if (m.dead) continue;
+      if (m.dead || !vis(m.x, m.y)) continue;
       if (m.state === 'windup' && m.def.ai === 'charger') {      // เส้นเตือนก่อนพุ่ง
-        const len = m.def.chargeSpeed * m.def.chargeTime;
-        const k = 1 - m.windup / m.def.chargeWindup;
+        const len = m.def.chargeSpeed * m.def.chargeTime, k = 1 - m.windup / m.def.chargeWindup;
         ctx.save(); ctx.translate(m.x, m.y); ctx.rotate(Math.atan2(m.dirY, m.dirX));
-        ctx.fillStyle = `rgba(220,40,30,${0.18 + k * 0.25})`; ctx.fillRect(0, -m.radius, len, m.radius * 2);
-        ctx.fillStyle = 'rgba(255,80,60,0.7)'; ctx.fillRect(0, -m.radius, len * k, 2); ctx.fillRect(0, m.radius - 2, len * k, 2);
+        ctx.fillStyle = `rgba(220,40,30,${0.16 + k * 0.22})`; ctx.fillRect(0, -m.radius, len, m.radius * 2);
+        ctx.fillStyle = 'rgba(255,90,70,0.8)'; ctx.fillRect(0, -m.radius, len * k, 2); ctx.fillRect(0, m.radius - 2, len * k, 2);
         ctx.restore();
       }
       if (m.hp < m.maxHp || m.aggroed || m.type === 'bigboar') {
-        const w = Math.max(22, m.radius * 2.2), x = m.x - w / 2, y = m.y - m.height - 10;
-        ctx.fillStyle = 'rgba(20,12,8,0.85)'; ctx.fillRect(x - 1, y - 1, w + 2, 5);
-        ctx.fillStyle = m.type === 'bigboar' ? '#ff8a2a' : '#d8443a'; ctx.fillRect(x, y, w * (m.hp / m.maxHp), 3);
-        ctx.font = 'bold 8px Kanit, sans-serif'; ctx.textAlign = 'center';
-        ctx.lineWidth = 2.5; ctx.strokeStyle = C.ink;
-        const label = (m.type === 'bigboar' ? m.def.name + ' ' : '') + 'Lv' + m.level;
-        ctx.strokeText(label, m.x, y - 3); ctx.fillStyle = m.type === 'bigboar' ? '#ffd24a' : '#f4e6c8'; ctx.fillText(label, m.x, y - 3);
+        const w = Math.max(28, m.radius * 2.6), x = m.x - w / 2, y = m.y - m.height - 8;
+        ctx.fillStyle = 'rgba(20,12,8,0.85)'; rrect(ctx, x - 1, y - 1, w + 2, 6, 3); ctx.fill();
+        ctx.fillStyle = m.type === 'bigboar' ? '#ff8a2a' : '#e0443a'; rrect(ctx, x, y, Math.max(2, w * (m.hp / m.maxHp)), 4, 2); ctx.fill();
+        if (m.type === 'bigboar') plate(ctx, m.def.name, m.x, y - 12, 11, '#ffd24a', 'rgba(255,138,42,0.9)', 'Lv.' + m.level);
+        else { ctx.font = '600 10px Kanit, sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = C.ink; ctx.strokeText('Lv.' + m.level, m.x, y - 6); ctx.fillStyle = '#f4e6c8'; ctx.fillText('Lv.' + m.level, m.x, y - 6); }
       }
     }
-    ctx.font = 'bold 9px Kanit, sans-serif'; ctx.textAlign = 'center';
-    for (const n of game.world.zone.npcs) {
-      ctx.lineWidth = 2.5; ctx.strokeStyle = C.ink; ctx.strokeText(n.name, n.x, n.y - 44);
-      ctx.fillStyle = '#ffe9a8'; ctx.fillText(n.name, n.x, n.y - 44);
+    for (const n of z.npcs) {
+      if (!vis(n.x, n.y)) continue;
+      plate(ctx, n.name, n.x, n.y - 64, 11, '#a8e0ff', 'rgba(120,190,255,0.7)');
       if (n.id === 'chan' && !game.flags.metChan) {
-        const b = Math.sin(game.time * 5) * 2;
-        ctx.font = 'bold 16px Kanit, sans-serif'; ctx.lineWidth = 3; ctx.strokeText('!', n.x, n.y - 54 + b); ctx.fillStyle = C.gold; ctx.fillText('!', n.x, n.y - 54 + b);
-        ctx.font = 'bold 9px Kanit, sans-serif';
+        const bb = Math.sin(t * 5) * 2;
+        ctx.font = '700 20px Kanit, sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 4; ctx.strokeStyle = C.ink;
+        ctx.strokeText('!', n.x, n.y - 80 + bb); ctx.fillStyle = C.gold; ctx.fillText('!', n.x, n.y - 80 + bb);
       }
+    }
+    const p = game.player;
+    if (!p.dead) plate(ctx, 'นักล่าพลอย', p.x, p.y - 62, 11, '#f4e6c8', 'rgba(217,166,48,0.9)', 'Lv.' + p.level);
+    game.fx.drawTexts(ctx);
+    const tt = tutorialTarget(game);
+    if (tt && tt.x > b.l && tt.x < b.r && tt.y > b.t && tt.y < b.b) {
+      const by = tt.y - 30 + Math.sin(t * 5) * 4;
+      poly(ctx, [tt.x - 9, by - 13, tt.x + 9, by - 13, tt.x, by], C.gold, C.ink, 2);
     }
   }
 
@@ -123,14 +147,13 @@ export function createScene(game) {
       }
       for (const s of game.shots) drawShot(ctx, s);
       game.fx.drawWorld(ctx);
-      drawBars(ctx);
-      // ลูกศรนำทางในบทนำ (ถ้าเป้าอยู่ในจอ)
-      const tt = tutorialTarget(game);
-      if (tt && tt.x > b.l && tt.x < b.r && tt.y > b.t && tt.y < b.b) {
-        const by = tt.y - 22 + Math.sin(t * 5) * 4;
-        poly(ctx, [tt.x - 7, by - 10, tt.x + 7, by - 10, tt.x, by], C.gold, C.ink, 1.5);
-      }
       game.sceneStats = { sprites: sprites.size, chunks: ground.size, drawn: list.length };
+    },
+    // ชั้นบน (คมชัด): ป้ายชื่อ แถบเลือด ตัวเลขดาเมจ ลูกศรนำทาง — วาดด้วยพิกัดโลกบนแคนวาสหน้าจอ
+    drawOverlay(ctx, dpr) {
+      const cam = game.camera, k = dpr * cam.zoom;
+      ctx.setTransform(k, 0, 0, k, dpr * cam.viewW / 2 - cam.x * k, dpr * cam.viewH / 2 - cam.y * k);
+      overlay(ctx);
     },
   };
 }

@@ -1,11 +1,11 @@
-// ตัวละครคน: ผู้เล่นและชาวเวียง หัวสี่เหลี่ยม แยกชิ้นแขนขา วาดด้วยโค้ด
-import { C, shadow, box, poly, circle } from './draw.js';
+// ตัวละครคนแบบบล็อก (สัดส่วนเดียวกับเอโดเรีย): ไม่มีเส้นขอบ หัวสี่เหลี่ยมใหญ่ ผมเป็นหนาม วาดด้วยสี่เหลี่ยมล้วน
+import { C } from './draw.js';
 
 export const LOOKS = {
-  hero: { skin: C.skin, shirt: C.indigo, shirtHi: '#3d6296', pants: '#3a2a22', sash: 'check', hair: '#22160f', head: 'band', weapon: 'sword' },
-  elder: { skin: '#d4a07a', shirt: '#ece4d0', shirtHi: '#fff8e8', pants: '#8a6a4a', sash: '#c9822b', hair: '#f2f0ea', head: 'elder', weapon: 'cane' },
-  granny: { skin: '#cf9a72', shirt: '#7a4a7a', shirtHi: '#94609a', pants: '#5a3a2a', sash: '#c9a35a', hair: '#bdb8b0', head: 'bun', weapon: null },
-  guard: { skin: C.skin, shirt: C.red, shirtHi: C.redHi, pants: '#2e2a26', sash: C.gold, hair: '#22160f', head: 'helmet', weapon: 'spear' },
+  hero: { skin: '#f1d2b0', top: '#2c4a73', collar: '#3d6296', leg: '#2a2230', leg2: '#3a3040', hair: '#14141a', hat: 'band', sash: 'check', weapon: 'sword' },
+  elder: { skin: '#e2b894', top: '#ece4d0', collar: '#d9cdb2', leg: '#7a5a3a', leg2: '#8a6a4a', hair: '#f2f0ea', hat: 'elder', sash: '#c9822b', weapon: 'cane' },
+  granny: { skin: '#e0b08a', top: '#7a4a7a', collar: '#94609a', leg: '#5a3a2a', leg2: '#6a4a3a', hair: '#c8c2b8', hat: 'bun', sash: '#c9a35a', weapon: null },
+  guard: { skin: '#f1d2b0', top: '#a3262a', collar: '#c9433a', leg: '#2e2a26', leg2: '#3e3a36', hair: '#14141a', hat: 'helmet', sash: C.gold, weapon: 'spear' },
 };
 
 export function dirFromAngle(a) {
@@ -14,118 +14,93 @@ export function dirFromAngle(a) {
   return s > 0 ? 0 : 1;
 }
 
-function sword(ctx, x, y, ang, len = 20) {
+function sword(ctx, x, y, ang) {
   ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
-  box(ctx, -2, -2, 5, 4, C.gold, C.ink, 1);                // ด้ามจับปลอกทอง
-  poly(ctx, [3, -2, len, -1.5, len + 4, 0, len, 1.5, 3, 2], '#dfe6ea', C.ink, 1.2); // ใบดาบโค้งปลาย
-  ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.fillRect(5, -1, len - 6, 0.8);
-  box(ctx, -7, -1.5, 5, 3, '#5a2f1a', C.ink, 1);
+  ctx.fillStyle = '#5a2f1a'; ctx.fillRect(-6, -1.5, 6, 3);        // ด้าม
+  ctx.fillStyle = C.gold; ctx.fillRect(-1, -4, 3, 8);              // กระบัง
+  ctx.fillStyle = '#d8e0e4'; ctx.fillRect(2, -2, 17, 4);           // ใบดาบ
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(2, -2, 17, 1.5);
+  ctx.fillStyle = '#b8c2c8'; ctx.fillRect(19, -1.5, 3, 3);         // ปลายดาบ
   ctx.restore();
 }
-function spear(ctx, x, y) {
-  ctx.fillStyle = C.teak; ctx.fillRect(x - 1, y - 34, 2.4, 40);
-  poly(ctx, [x - 3, y - 34, x + 0.2, y - 44, x + 3.4, y - 34], '#dfe6ea', C.ink, 1);
-  ctx.fillStyle = C.red; ctx.fillRect(x - 2.5, y - 34, 5.4, 2.5);
-}
-function cane(ctx, x, y) {
-  ctx.strokeStyle = C.teakDark; ctx.lineWidth = 2.2;
-  ctx.beginPath(); ctx.moveTo(x, y + 8); ctx.lineTo(x, y - 12); ctx.quadraticCurveTo(x, y - 16, x - 4, y - 15); ctx.stroke();
-}
 
-function head(ctx, L, hx, hy, dir, t) {
-  // หัวสี่เหลี่ยม
-  box(ctx, hx - 6.5, hy - 12, 13, 12, L.skin);
-  ctx.fillStyle = 'rgba(0,0,0,0.12)'; ctx.fillRect(hx - 5, hy - 2.5, 10, 1.5);
-  // ผม
-  if (L.head !== 'helmet') {
-    ctx.fillStyle = L.hair;
-    if (dir === 1) ctx.fillRect(hx - 6.5, hy - 12, 13, 9);
-    else { ctx.fillRect(hx - 6.5, hy - 12, 13, 4); if (dir === 2) ctx.fillRect(hx + 2, hy - 12, 4.5, 8); if (dir === 3) ctx.fillRect(hx - 6.5, hy - 12, 4.5, 8); }
-  }
-  // หน้า
-  if (dir !== 1) {
-    const ex = dir === 2 ? -2.5 : dir === 3 ? 2.5 : 0;
-    ctx.fillStyle = C.ink;
-    if (dir === 0) { ctx.fillRect(hx - 3.5 + ex, hy - 7, 2, 2.4); ctx.fillRect(hx + 1.5 + ex, hy - 7, 2, 2.4); }
-    else ctx.fillRect(hx + ex - 1 + (dir === 3 ? 1 : -1), hy - 7, 2, 2.4);
-    ctx.fillStyle = 'rgba(200,90,80,0.35)';
-    if (dir === 0) { ctx.fillRect(hx - 5, hy - 4.5, 2, 1.4); ctx.fillRect(hx + 3, hy - 4.5, 2, 1.4); }
-  }
-  // หมวก/เครื่องหัว
-  if (L.head === 'band') {
-    ctx.fillStyle = C.red; ctx.fillRect(hx - 6.5, hy - 10, 13, 2.6);
-    const tail = Math.sin(t * 8) * 1.5;
-    if (dir !== 0) { ctx.fillRect(hx + (dir === 2 ? 5 : -9), hy - 10 + tail * 0.3, 4, 1.8); ctx.fillRect(hx + (dir === 2 ? 7 : -11), hy - 9 + tail, 3, 1.6); }
-  } else if (L.head === 'elder') {
-    ctx.fillStyle = L.hair; if (dir !== 1) { ctx.fillRect(hx - 4, hy - 3, 8, 4); ctx.fillRect(hx - 2.5, hy + 1, 5, 2.5); }
-  } else if (L.head === 'bun') {
-    circle(ctx, hx + (dir === 2 ? 4 : dir === 3 ? -4 : 0), hy - 13.5, 3.5, L.hair, C.ink, 1);
-    ctx.fillStyle = C.gold; ctx.fillRect(hx - 1, hy - 17, 2, 2);
-  } else if (L.head === 'helmet') {
-    poly(ctx, [hx - 7.5, hy - 9, hx - 5, hy - 15, hx, hy - 25, hx + 5, hy - 15, hx + 7.5, hy - 9], C.gold, C.ink, 1.3);
-    ctx.fillStyle = C.goldHi; ctx.fillRect(hx - 6, hy - 11, 12, 1.6);
-    ctx.fillStyle = C.red; ctx.fillRect(hx - 1, hy - 20, 2, 4);
-  }
-}
-
-// opts: { dir, walk(เฟสเดิน 0..1), moving, swing(-1 = ไม่ฟัน, 0..1), aim(มุม), hurt, t, dash, cast }
-export function drawHuman(ctx, look, x, y, o) {
+export function drawHuman(ctx, look, X, Y, o) {
   const L = typeof look === 'string' ? LOOKS[look] : look;
-  const dir = o.dir ?? 0;
-  const bob = o.moving ? Math.abs(Math.sin(o.walk * Math.PI * 2)) * 1.4 : Math.sin(o.t * 2) * 0.4;
-  const step = o.moving ? Math.sin(o.walk * Math.PI * 2) : 0;
-  shadow(ctx, x, y, 9, 3.6);
+  const d = o.dir ?? 0, side = d === 2 || d === 3, f = d === 2 ? -1 : 1;
+  const s = o.moving ? Math.sin(o.walk * Math.PI * 2) : 0;
+  const bob = o.moving ? Math.abs(Math.cos(o.walk * Math.PI * 2)) * 1.5 : (Math.sin(o.t * 2.4) * 0.5 + 0.5) * 1.2;
+  const x = Math.round(X), y = Math.round(Y), by = Math.round(y - bob);
+  const R = (c, a, b, w, h) => { ctx.fillStyle = c; ctx.fillRect(Math.round(a), Math.round(b), w, h); };
   ctx.save();
   if (o.dash) ctx.globalAlpha = 0.85;
-  if (o.hurt > 0 && Math.floor(o.t * 28) % 2) ctx.globalAlpha = 0.4; // กะพริบตอนโดนตี
-  const by = y - 8 - bob; // จุดสะโพก
-  // ขา
-  const legL = step * 3, legR = -step * 3;
-  if (dir === 2 || dir === 3) {
-    box(ctx, x - 2 + legL, by, 4.5, 8 + bob * 0.5, L.pants, C.ink, 1.2);
-    box(ctx, x - 2 + legR, by, 4.5, 8 + bob * 0.5, L.pants, C.ink, 1.2);
-  } else {
-    box(ctx, x - 5, by + Math.max(0, -legL) * 0.3, 4.5, 8 - Math.max(0, legL) * 0.5 + bob * 0.5, L.pants, C.ink, 1.2);
-    box(ctx, x + 0.5, by + Math.max(0, -legR) * 0.3, 4.5, 8 - Math.max(0, legR) * 0.5 + bob * 0.5, L.pants, C.ink, 1.2);
-  }
-  // อาวุธข้างหลังเมื่อหันหลัง
+  if (o.hurt > 0 && Math.floor(o.t * 28) % 2) ctx.globalAlpha = 0.4;
+  ctx.fillStyle = 'rgba(0,0,0,0.27)'; ctx.beginPath(); ctx.ellipse(x, y + 1, 11, 4, 0, 0, 7); ctx.fill();
   const swinging = o.swing >= 0;
-  const armSwing = step * 2.5;
-  const weaponBehind = dir === 1 || dir === 2;
-  const drawWeapon = () => {
+  const weapon = () => {
     if (L.weapon === 'sword') {
-      if (swinging) {
-        const a = (o.aim ?? 0) + (-1.25 + o.swing * 2.5);
-        sword(ctx, x + Math.cos(a) * 6, by - 6 + Math.sin(a) * 6, a, 18);
-      } else {
-        const hx = dir === 2 ? x - 7 : x + 7;
-        sword(ctx, hx, by - 2 + armSwing * 0.3, dir === 2 ? Math.PI * 0.62 : Math.PI * 0.38, 15);
-      }
-    } else if (L.weapon === 'spear') spear(ctx, x + (dir === 2 ? -8 : 8), by);
-    else if (L.weapon === 'cane') cane(ctx, x + (dir === 2 ? -8 : 8), by);
+      if (swinging) sword(ctx, x + Math.cos(o.aim) * 4, by - 20 + Math.sin(o.aim) * 4, o.aim - 1.25 + o.swing * 2.5);
+      else if (d === 1) sword(ctx, x + 8, by - 30, -2.4);                // สะพายหลัง
+      else sword(ctx, x + (side ? f * 7 : 10), by - 14 + s * 2, side ? (f > 0 ? 0.9 : Math.PI - 0.9) : 1.1);
+    } else if (L.weapon === 'spear') {
+      R(C.teak, x + 10, by - 44, 2, 44); R('#d8e0e4', x + 9, by - 50, 4, 7); R(C.red, x + 9, by - 43, 4, 2);
+    } else if (L.weapon === 'cane') {
+      R(C.teakDark, x + 9, by - 22, 2, 22); R(C.teakDark, x + 6, by - 24, 5, 2);
+    }
   };
-  if (weaponBehind && !swinging) drawWeapon();
-  // ลำตัว
-  box(ctx, x - 6.5, by - 11, 13, 12, L.shirt, C.ink, 1.3);
-  ctx.fillStyle = L.shirtHi; ctx.fillRect(x - 5, by - 10, 3, 9);
-  if (L.sash === 'check') {           // ผ้าขาวม้า
-    for (let i = 0; i < 6; i++) { ctx.fillStyle = i % 2 ? '#d84a3a' : '#f1e3c4'; ctx.fillRect(x - 6 + i * 2.2, by - 2.5, 2.2, 3); }
-  } else { ctx.fillStyle = L.sash; ctx.fillRect(x - 6, by - 2.5, 12, 3); }
-  if (L.head === 'elder' || L.head === 'bun') {    // สไบพาดไหล่
-    ctx.fillStyle = L.sash; ctx.beginPath(); ctx.moveTo(x - 6, by - 11); ctx.lineTo(x - 2, by - 11); ctx.lineTo(x + 6, by - 2); ctx.lineTo(x + 2, by - 2); ctx.closePath(); ctx.fill();
-  }
-  // แขน
-  const castLift = o.cast ? 5 : 0;
-  if (dir === 0 || dir === 1) {
-    box(ctx, x - 9.5, by - 10 + armSwing - castLift, 3.5, 9, L.shirt, C.ink, 1.1);
-    box(ctx, x + 6, by - 10 - armSwing - castLift, 3.5, 9, L.shirt, C.ink, 1.1);
-    ctx.fillStyle = L.skin; ctx.fillRect(x - 9, by - 2.5 + armSwing - castLift, 2.6, 2.4); ctx.fillRect(x + 6.5, by - 2.5 - armSwing - castLift, 2.6, 2.4);
+  if (d === 1 || (side && f < 0)) weapon();
+  if (side) {
+    // ขาแกว่งหน้า-หลัง
+    ctx.save(); ctx.translate(x - 3, by - 12); ctx.rotate(s * 0.5); R(L.leg2, 0, 0, 6, 12); R('#1a1418', 0, 10, 7, 2); ctx.restore();
+    ctx.save(); ctx.translate(x - 3, by - 12); ctx.rotate(-s * 0.5); R(L.leg, 0, 0, 6, 12); R('#1a1418', 0, 10, 7, 2); ctx.restore();
+    R(L.top, x - 4.5, by - 26, 9, 14); R(L.collar, x - 5, by - 28, 10, 4);
   } else {
-    const ax = dir === 3 ? x - 1 : x - 2.5;
-    box(ctx, ax + armSwing * 0.6, by - 10 - castLift, 3.5, 9, L.shirt, C.ink, 1.1);
-    ctx.fillStyle = L.skin; ctx.fillRect(ax + 0.5 + armSwing * 0.6, by - 2.5 - castLift, 2.6, 2.4);
+    const l1 = Math.max(0, s) * 3.5, l2 = Math.max(0, -s) * 3.5;
+    R(L.leg, x - 7, by - 12 - l1, 6, 12); R(L.leg, x + 1, by - 12 - l2, 6, 12);
+    R('#1a1418', x - 7, by - 2 - l1, 6, 2); R('#1a1418', x + 1, by - 2 - l2, 6, 2);
+    R(L.top, x - 8, by - 26, 16, 14); R(L.collar, x - 8, by - 28, 16, 4);
+    R('rgba(0,0,0,0.12)', x + 4, by - 26, 4, 14);                    // เงาข้างลำตัว
   }
-  head(ctx, L, x, by - 10, dir, o.t);
-  if (!weaponBehind || swinging) drawWeapon();
+  // ผ้าคาดเอว
+  const sw = side ? 9 : 16, sx = side ? x - 4.5 : x - 8;
+  if (L.sash === 'check') for (let i = 0; i < sw; i += 2) R(i % 4 ? '#f1e3c4' : '#d84a3a', sx + i, by - 15, 2, 3);
+  else R(L.sash, sx, by - 15, sw, 3);
+  if (L.hat === 'elder' || L.hat === 'bun') { ctx.fillStyle = L.sash; ctx.fillRect(side ? x - 4.5 : x - 8, by - 27, side ? 9 : 5, 3); ctx.fillRect(side ? x - 2 : x - 4, by - 24, side ? 4 : 4, 9); }
+  // แขน
+  const cast = o.cast ? -6 : 0;
+  if (side) {
+    ctx.save(); ctx.translate(x, by - 26); ctx.rotate(-s * 0.55 * f + (o.cast ? -f * 1.2 : 0)); R(L.top, -3, 0, 6, 7); R(L.top, -3, 6, 6, 6); R(L.skin, -3, 10, 6, 4); ctx.restore();
+  } else if (!swinging || d === 1) {
+    R(L.top, x - 11, by - 26 + s * 3 + cast, 4, 12); R(L.skin, x - 11, by - 15 + s * 3 + cast, 4, 4);
+    R(L.top, x + 7, by - 26 - s * 3 + cast, 4, 12); R(L.skin, x + 7, by - 15 - s * 3 + cast, 4, 4);
+  } else {
+    R(L.top, x - 11, by - 26, 4, 12); R(L.skin, x - 11, by - 15, 4, 4);
+  }
+  // หัว
+  R(L.skin, x - 6, by - 40, 12, 12);
+  R('rgba(0,0,0,0.1)', x - 6, by - 30, 12, 2);
+  const hair = L.hair;
+  if (L.hat !== 'helmet') {
+    if (d === 1) R(hair, x - 7, by - 43, 14, 15);
+    else if (side) { R(hair, x - 7, by - 43, 14, 6); R(hair, x - 7 + (f < 0 ? 6 : 0), by - 43, 8, 11); }
+    else R(hair, x - 7, by - 43, 14, 6);
+  }
+  if (L.hat === 'band' || L.hat === 'helmet') {                        // ผมหนามแบบเอโดเรีย
+    if (L.hat === 'band') { R(hair, x - 7, by - 47, 4, 5); R(hair, x - 2, by - 48, 4, 6); R(hair, x + 3, by - 47, 4, 5); }
+  }
+  if (L.hat === 'band') {                                               // ผ้าคาดหัวแดง
+    R('#c8302a', x - 7, by - 42, 14, 3);
+    if (d !== 0) { const t = Math.sin(o.t * 9) * 1.5; R('#c8302a', x + (side ? -f * 9 : 5), by - 41 + t * 0.4, 5, 2); R('#a8201a', x + (side ? -f * 12 : 8), by - 40 + t, 4, 2); }
+  } else if (L.hat === 'elder') {
+    if (d !== 1) { R(hair, x - 5, by - 31, 10, 4); R(hair, x - 3, by - 28, 6, 4); }  // เคราขาว
+  } else if (L.hat === 'bun') {
+    R(hair, x - 4 + (side ? -f * 3 : 0), by - 49, 8, 6); R(C.gold, x - 1, by - 51, 2, 3);
+  } else if (L.hat === 'helmet') {                                     // หมวกทรงลอมพอกทอง
+    R(C.gold, x - 8, by - 44, 16, 5); R('#e8c050', x - 6, by - 49, 12, 5); R(C.gold, x - 4, by - 53, 8, 4); R('#e8c050', x - 2, by - 57, 4, 4); R(C.red, x - 1, by - 60, 2, 3);
+    R('#b88a20', x - 8, by - 40, 16, 1);
+  }
+  // ตา
+  if (d === 0) { R('#111', x - 3, by - 36, 2, 3); R('#111', x + 1, by - 36, 2, 3); }
+  else if (side) R('#111', x + 3 * f - 1, by - 36, 2, 3);
+  if (!(d === 1 || (side && f < 0))) weapon();
   ctx.restore();
 }
