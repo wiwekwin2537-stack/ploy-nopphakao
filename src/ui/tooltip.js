@@ -103,9 +103,10 @@ export function drawItemTip(ctx, game, it, ax, ay, opt = {}) {
 
 // ค่าของสกิล (ตัวเลขจากการคำนวณจริง)
 export function skillLines(sk) {
-  const out = [`ดาเมจ ×${sk.damageMult.toFixed(2)} ของ${sk.melee ? 'ดาเมจดาบ' : 'ดาเมจพลอย'}`, `มานา ${sk.mp} · ร่ายซ้ำทุก ${sk.cooldown.toFixed(2)} วิ`];
+  const out = [`ดาเมจ ×${sk.damageMult.toFixed(2)} ของ${sk.melee || sk.arrow ? 'ดาเมจโจมตี' : 'ดาเมจพลอย'}`, `มานา ${sk.mp} · ร่ายซ้ำทุก ${sk.cooldown.toFixed(2)} วิ`];
+  if (sk.arrow) out.push('ต้องถือธนูหรือหน้าไม้');
   if (sk.melee) out.push(sk.shape === 'line' ? `ฟันเป็นแนวตรงยาว ${Math.round(sk.splash)}` : sk.shape === 'cone' ? `ฟันเป็นพัดด้านหน้า ระยะ ${Math.round(sk.splash)}` : `ฟันรอบตัววงกว้าง ${Math.round(sk.splash)}`);
-  if (sk.count > 1) out.push(`ยิงครั้งละ ${sk.count} ลูก`);
+  if (sk.count > 1) out.push(`ยิงครั้งละ ${sk.count} ${sk.arrow ? 'ดอก' : 'ลูก'}`);
   if (sk.pierce) out.push(`ทะลุมอน ${sk.pierce} ตัว`);
   if (sk.splash && !sk.melee) out.push(`ระเบิดวง ${Math.round(sk.splash)}`);
   if (sk.slow) out.push(`ทำให้ช้าลง ${Math.round(sk.slow * 100)}% นาน ${sk.slowTime} วิ`);

@@ -60,7 +60,22 @@
   "mpRegen": 3,
   "hpRegen": 1,
   "townHpRegen": 15,
-  "hurtInvuln": 0.35
+  "hurtInvuln": 0.35,
+  "staffBolt": {
+   "_doc": "คทา (หมอผี) ตีธรรมดาเป็นลูกพลังพุ่งไกล แบบไม้คทาของ PoE — ใช้ดาเมจโจมตี (ดาเมจดาบ) × damage",
+   "speed": 460,
+   "life": 0.75,
+   "radius": 7,
+   "damage": 0.9
+  },
+  "arrow": {
+   "_doc": "ธนู/หน้าไม้ ตีธรรมดา = ยิงลูกศร (ดาเมจโจมตี × damage) · หน้าไม้ทะลุ 1 ตัว",
+   "speed": 640,
+   "life": 0.6,
+   "radius": 5,
+   "damage": 1.0,
+   "crossbowPierce": 1
+  }
  },
  "monsterScale": {
   "hpPerLevel": 0.28,

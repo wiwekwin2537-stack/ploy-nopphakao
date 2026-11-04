@@ -53,7 +53,7 @@
   },
   "herb_staff": {
    "slot": "weapon",
-   "name": "ไม้เท้าว่านยา",
+   "name": "คทาว่านยา",
    "req": 1,
    "stats": {
     "dmgFlat": 1,
@@ -62,9 +62,83 @@
    },
    "color": "#8a5a32",
    "look": {
-    "kind": "glaive"
+    "kind": "staff"
    },
    "mat": "leather"
+  },
+  "bamboo_bow": {
+   "slot": "weapon",
+   "name": "ธนูไม้ไผ่",
+   "req": 1,
+   "stats": {
+    "dmgFlat": 2,
+    "crit": 2
+   },
+   "color": "#c8b070",
+   "look": {
+    "kind": "bow"
+   },
+   "mat": "bamboo"
+  },
+  "wood_crossbow": {
+   "slot": "weapon",
+   "name": "หน้าไม้ไม้มะค่า",
+   "req": 4,
+   "stats": {
+    "dmgFlat": 8,
+    "atkSpeedInc": -8
+   },
+   "color": "#8a5a32",
+   "look": {
+    "kind": "crossbow"
+   },
+   "mat": "leather"
+  },
+  "horn_bow": {
+   "slot": "weapon",
+   "name": "ธนูเขาควาย",
+   "req": 6,
+   "stats": {
+    "dmgFlat": 9,
+    "crit": 3
+   },
+   "color": "#e8dcc0",
+   "look": {
+    "kind": "bow"
+   },
+   "mat": "bone",
+   "art": "bamboo_bow"
+  },
+  "iron_crossbow": {
+   "slot": "weapon",
+   "name": "หน้าไม้เหล็กดำ",
+   "req": 12,
+   "stats": {
+    "dmgFlat": 22,
+    "crit": 2,
+    "atkSpeedInc": -8
+   },
+   "color": "#aab4c5",
+   "look": {
+    "kind": "crossbow"
+   },
+   "mat": "iron",
+   "art": "wood_crossbow"
+  },
+  "garuda_bow": {
+   "slot": "weapon",
+   "name": "ธนูปีกครุฑ",
+   "req": 15,
+   "stats": {
+    "dmgFlat": 26,
+    "crit": 4
+   },
+   "color": "#f2c230",
+   "look": {
+    "kind": "bow"
+   },
+   "mat": "gold",
+   "art": "bamboo_bow"
   },
   "iron_sword": {
    "slot": "weapon",

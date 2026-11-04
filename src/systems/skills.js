@@ -10,6 +10,13 @@ export function faceAngle(p, a) {
   p.dir = Math.abs(c) > Math.abs(s) ? (c > 0 ? 3 : 2) : (s > 0 ? 0 : 1);
 }
 
+const RANGED = new Set(['bow', 'crossbow']);
+// ทรงอาวุธที่ถือ: sword / kris / glaive / staff / bow / crossbow
+export function weaponKind(game) {
+  const w = game.player.equip && game.player.equip.weapon;
+  return w ? ((game.data.items.bases[w.base].look || {}).kind || 'sword') : 'sword';
+}
+
 export function skillOf(game, i) { return skillsOf(game.data.gems, game.player, game.data.items)[i] || null; }
 
 export function pickTarget(game, p) {
@@ -29,6 +36,7 @@ export function pickTarget(game, p) {
 export function castSkill(game, group) {
   const p = game.player, sk = skillOf(game, group);
   if (!sk || p.skillCd[group] > 0 || p.dashT > 0) return false;
+  if (sk.arrow && !RANGED.has(weaponKind(game))) { if (!p._noMpWarn) { game.fx.text(p.x, p.y - 70, 'ต้องถือธนูหรือหน้าไม้', '#ffb070'); p._noMpWarn = 0.8; } return false; }
   const st0 = playerStats(p, game.data);
   if (st0.bloodMagic ? p.hp <= sk.mp : p.mp < sk.mp) { if (!p._noMpWarn) { game.fx.text(p.x, p.y - 70, 'มานาไม่พอ', '#8fb8ff'); p._noMpWarn = 0.8; } return false; }
   const target = pickTarget(game, p);
@@ -69,7 +77,7 @@ export function releaseSkill(game, sk, ang) {
     game.audio.play('swing');
     return;
   }
-  const dmg = st.spellDamage * sk.damageMult;
+  const dmg = (sk.arrow ? st.damage : st.spellDamage) * sk.damageMult;   // ศรใช้ดาเมจโจมตี · พลอยอื่นใช้ดาเมจพลอย
   const spread = 0.2;
   for (let i = 0; i < sk.count; i++) {
     const a = ang + (i - (sk.count - 1) / 2) * spread;

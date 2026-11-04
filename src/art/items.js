@@ -63,6 +63,19 @@ const WEAPONS = {
     part(g, GOLD, P(g, [26, 43, 38, 43, 40, 47, 24, 47]), 24, 43, 40, 47);
     part(g, WOOD, P(g, [29, 47, 35, 47, 37, 52, 33, 60, 29, 58, 30, 52]), 29, 47, 37, 60);   // ด้ามกริชโค้งแบบหัวนก
   },
+  bamboo_bow(g, M) {                                           // ธนู: คันโค้งสองปลายงอน สายตึง ด้ามพันหนัง
+    part(g, M, () => { g.beginPath(); g.moveTo(26, 4); g.quadraticCurveTo(46, 18, 40, 32); g.quadraticCurveTo(46, 46, 26, 60); g.lineTo(29, 60); g.quadraticCurveTo(49, 46, 43, 32); g.quadraticCurveTo(49, 18, 29, 4); g.closePath(); }, 26, 0, 49, 0);
+    g.strokeStyle = '#f4f0e0'; g.lineWidth = 1.2; g.beginPath(); g.moveTo(27, 5); g.lineTo(27, 59); g.stroke();   // สายธนู
+    part(g, WOOD, R(g, 39.5, 27, 5, 10), 39, 0, 45, 0);
+    g.fillStyle = '#c8302a'; g.fillRect(39.5, 30, 5, 2);
+  },
+  wood_crossbow(g, M) {                                        // หน้าไม้: รางไม้ยาว คันขวาง ไกใต้ราง
+    part(g, WOOD, P(g, [30, 8, 35, 8, 36, 58, 29, 58]), 29, 0, 36, 0);
+    part(g, M, () => { g.beginPath(); g.moveTo(10, 20); g.quadraticCurveTo(32, 8, 54, 20); g.lineTo(54, 23); g.quadraticCurveTo(32, 12, 10, 23); g.closePath(); }, 10, 8, 54, 23);
+    g.strokeStyle = '#f4f0e0'; g.lineWidth = 1; g.beginPath(); g.moveTo(11, 22); g.lineTo(32, 30); g.lineTo(53, 22); g.stroke();
+    part(g, GOLD, R(g, 29.5, 30, 6, 3), 29, 30, 36, 33);
+    part(g, WOOD, P(g, [33, 40, 37, 40, 36, 47, 34, 47]), 33, 40, 37, 47);
+  },
   herb_staff(g, M) {                                           // ไม้เท้าหมอผี: ไม้คดพันผ้ายันต์ หัวเป็นลูกแก้วในกรงราก
     part(g, M, () => { g.beginPath(); g.moveTo(30, 18); g.quadraticCurveTo(28, 40, 31, 62); g.lineTo(35, 62); g.quadraticCurveTo(33, 40, 35, 18); g.closePath(); }, 28, 0, 36, 0);
     g.fillStyle = '#c8302a'; g.fillRect(29, 30, 7, 3); g.fillStyle = '#f0e2c0'; g.fillRect(29.5, 33, 6, 5);   // ผ้ายันต์
@@ -199,7 +212,7 @@ export function itemSprite(I, baseId, px, upright = false) {
 }
 
 // อาวุธในมือตัวละคร: ภาพเดียวกับไอคอนแต่ตั้งตรง (ปลายอยู่บน) + จุดจับ (gy) และความยาวจากมือถึงปลาย (reach) บนช่อง 64
-const GRIP = { brass_glaive: { gy: 50, reach: 48 }, silver_kris: { gy: 52, reach: 50 }, herb_staff: { gy: 46, reach: 44 } };
+const GRIP = { brass_glaive: { gy: 50, reach: 48 }, silver_kris: { gy: 52, reach: 50 }, herb_staff: { gy: 46, reach: 44 }, bamboo_bow: { gy: 32, reach: 28, gx: 42 }, wood_crossbow: { gy: 44, reach: 36 } };
 export function weaponInHand(I, baseId) {
   const b = I.bases[baseId], art = b && (b.art || baseId);
   if (!art || !WEAPONS[art]) return null;

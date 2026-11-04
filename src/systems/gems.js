@@ -30,10 +30,11 @@ export function computeSkill(G, mainId, supportIds = [], lvOf = () => 1) {
   const sk = {
     gem: mainId, name: m.skill, kind: m.kind, color: m.color, hi: m.hi,
     mp: m.mp, cooldown: m.cooldown, damageMult: m.damageMult, speed: m.speed, life: m.life, radius: m.radius,
-    splash: m.splash || 0, count: 1, pierce: m.pierce || 0, slow: m.slow || 0, slowTime: m.slowTime || 0,
+    splash: m.splash || 0, count: m.count || 1, pierce: m.pierce || 0, slow: m.slow || 0, slowTime: m.slowTime || 0,
     poison: m.poison || 0, poisonTime: m.poisonTime || 0, supports: [],
   };
   sk.level = lv; sk.damageMult *= 1 + L.skillDamage * (lv - 1);   // เลเวลพลอยสกิล
+  sk.arrow = !!m.arrow;                                           // ศร: ใช้ดาเมจโจมตี ต้องถือธนู/หน้าไม้
   sk.melee = !!m.melee; sk.shape = m.shape || null; sk.width = m.width || 0; sk.arc = m.arc || 0; sk.unused = [];
   for (const sid of supportIds) {
     const s = sid && G.support[sid];

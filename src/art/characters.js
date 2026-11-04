@@ -41,9 +41,9 @@ let WSPRITE = null;      // ภาพอาวุธจริงจาก art/it
 function sword(ctx, x, y, ang, len = 19) {
   ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
   if (WSPRITE) {                                              // ภาพอาวุธตัวเดียวกับไอคอน หมุนให้ปลายชี้ไปตามแขน
-    const want = WEAPON === 'glaive' ? len + 16 : WEAPON === 'kris' ? 15 : len + 4, k = want / WSPRITE.reach;
+    const want = WEAPON === 'glaive' || WEAPON === 'staff' ? len + 16 : WEAPON === 'bow' ? 14 : WEAPON === 'crossbow' ? 13 : WEAPON === 'kris' ? 15 : len + 4, k = want / WSPRITE.reach;
     ctx.rotate(Math.PI / 2);
-    ctx.drawImage(WSPRITE.sprite, -32 * k, -WSPRITE.gy * k, 64 * k, 64 * k);
+    ctx.drawImage(WSPRITE.sprite, -(WSPRITE.gx || 32) * k, -WSPRITE.gy * k, 64 * k, 64 * k);   // gx = จุดจับแนวนอน (ธนูจับกลางคันซึ่งอยู่ขวา)
     ctx.restore(); return;
   }
   ctx.fillStyle = '#5a2f1a'; ctx.fillRect(-5, -1.5, 5, 3);
@@ -175,6 +175,7 @@ export function drawHuman(ctx, look, X, Y, o) {
     if (swinging) sword(ctx, hx, hy, pose.ang);
   };
   const staff = (hx, hy) => {
+    if ((WEAPON === 'staff' || WEAPON === 'bow' || WEAPON === 'crossbow') && WSPRITE) { sword(ctx, hx, hy + 8, -Math.PI / 2, 22); return; }   // คทาของผู้เล่น: ถือตั้งตรง (ภาพเดียวกับไอคอน)
     if (L.weapon === 'spear') { R(C.teak, hx - 1, hy - 34, 2, 44); R('#d8e0e4', hx - 2, hy - 40, 4, 7); R(C.red, hx - 2, hy - 33, 4, 2); }
     else if (L.weapon === 'cane') { R(C.teakDark, hx - 1, hy - 4, 2, 20); R(C.teakDark, hx - 4, hy - 6, 5, 2); }
   };

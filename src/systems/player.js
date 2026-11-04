@@ -1,6 +1,6 @@
 // ผู้เล่น: ค่าสถานะ การเดิน (ปุ่ม/จอย/คลิก) การฟัน การหลบ การใช้สกิล
-import { meleeArc } from './combat.js';
-import { castSkill, faceAngle } from './skills.js';
+import { meleeArc, spawnShot } from './combat.js';
+import { castSkill, faceAngle, weaponKind } from './skills.js';
 import { playerStats } from './stats.js';
 import { emptyEquip } from './items.js';
 
@@ -52,6 +52,25 @@ export function doAttack(game) {
   const target = (p.targetMob && !p.targetMob.dead) ? p.targetMob : nearestMob(game, p.x, p.y, B.attackRange * 1.8);
   if (target) faceAngle(p, Math.atan2(target.y - target.height * 0.3 - (p.y - 10), target.x - p.x));
   p.attackCd = playerStats(p, game.data).attackCooldown;
+  const kind = weaponKind(game);
+  if (kind === 'bow' || kind === 'crossbow') {                    // ธนู/หน้าไม้: ยิงลูกศรไปหาเป้า
+    const tg = target || nearestMob(game, p.x, p.y, 380);
+    if (tg) faceAngle(p, Math.atan2(tg.y - tg.height * 0.3 - (p.y - 10), tg.x - p.x));
+    const st = playerStats(p, game.data), A = B.arrow, sy = p.y - 20, a = tg ? Math.atan2(tg.y - tg.height * 0.4 - sy, tg.x - p.x) : p.aim;
+    spawnShot(game, { x: p.x + Math.cos(a) * 12, y: sy + Math.sin(a) * 8, vx: Math.cos(a) * A.speed, vy: Math.sin(a) * A.speed, life: A.life, radius: A.radius, from: 'player', damage: st.damage * A.damage, crit: st.crit, critMult: st.critMult, kind: 'arrow', splash: 0, pierce: kind === 'crossbow' ? A.crossbowPierce : 0, grace: 0.12 });
+    p.castT = 0.2; p.combatTimer = 4; game.audio.play('swing');
+    game.events.emit('playerAttacked', { hits: 0, ranged: true });
+    return true;
+  }
+  if (kind === 'staff') {                                         // คทา: ชูคทาแล้วยิงลูกพลังไปหาเป้า (ไม่เอาคทาตี)
+    const tg = target || nearestMob(game, p.x, p.y, 340);
+    if (tg) faceAngle(p, Math.atan2(tg.y - tg.height * 0.3 - (p.y - 10), tg.x - p.x));
+    const st = playerStats(p, game.data), S = B.staffBolt, sy = p.y - 20, a = tg ? Math.atan2(tg.y - tg.height * 0.4 - sy, tg.x - p.x) : p.aim;
+    spawnShot(game, { x: p.x + Math.cos(a) * 14, y: sy + Math.sin(a) * 10, vx: Math.cos(a) * S.speed, vy: Math.sin(a) * S.speed, life: S.life, radius: S.radius, from: 'player', damage: st.damage * S.damage, crit: st.crit, critMult: st.critMult, kind: 'arcane', splash: 0, pierce: 0, grace: 0.12 });
+    p.castT = 0.25; p.combatTimer = 4; game.audio.play('cast');
+    game.events.emit('playerAttacked', { hits: 0, ranged: true });
+    return true;
+  }
   // คอมโบ 3 จังหวะ: ฟันขวา→ซ้าย, ซ้าย→ขวา, แทงตรง (กดต่อเนื่องภายใน 0.7 วิ)
   p.combo = p.comboT > 0 ? (p.combo + 1) % 3 : 0;
   p.comboT = 0.7;

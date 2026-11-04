@@ -7,7 +7,7 @@ const lookCache = { key: '', look: null };
 
 export function heroLook(game) {
   const p = game.player, I = game.data.items, e = p.equip || {};
-  const key = p.cls + '|' + ['head', 'body', 'legs', 'arms', 'amulet'].map((k) => (e[k] ? e[k].base : '')).join('|');
+  const key = p.cls + '|' + (e.weapon ? e.weapon.base : '') + '|' + ['head', 'body', 'legs', 'arms', 'amulet'].map((k) => (e[k] ? e[k].base : '')).join('|');
   if (lookCache.key !== key || !lookCache.look) {
     const CL = game.data.passives.classes[p.cls], L = { ...LOOKS.hero, ...((CL && CL.look) || {}) }, lk = (k) => (e[k] ? I.bases[e[k].base] : null);
     const b = lk('body'), h = lk('head'), lg = lk('legs'), ar = lk('arms'), nk = lk('amulet');
@@ -17,6 +17,8 @@ export function heroLook(game) {
     if (lg) { L.leg = matColor(lg); L.leg2 = shade(L.leg, 0.06); L.guard = lg.look && lg.look.guard; L.legArt = itemSprite(I, e.legs.base, 64); }
     if (ar) { L.fore = matColor(ar); L.foreArt = itemSprite(I, e.arms.base, 64); }
     if (nk) L.neck = nk.color;
+    const wk = e.weapon && (I.bases[e.weapon.base].look || {}).kind;
+    L.weapon = ['staff', 'bow', 'crossbow'].includes(wk) ? 'staff' : 'sword';   // คทา/ธนู/หน้าไม้ = ถือตั้งตรง ไม่สะพายหลัง ไม่เหวี่ยงฟัน
     lookCache.key = key; lookCache.look = L;
   }
   return lookCache.look;

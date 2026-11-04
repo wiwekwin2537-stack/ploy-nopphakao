@@ -61,6 +61,14 @@
   {
    "base": "takrut",
    "price": 50
+  },
+  {
+   "base": "bamboo_bow",
+   "price": 45
+  },
+  {
+   "base": "wood_crossbow",
+   "price": 110
   }
  ],
  "sell": {

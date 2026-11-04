@@ -212,6 +212,41 @@
    "speed": 0,
    "life": 0,
    "radius": 0
+  },
+  "tourmaline": {
+   "name": "ทัวร์มาลีน",
+   "skill": "ศรเพลิง",
+   "desc": "ยิงลูกศรติดไฟพุ่งแรง ระเบิดเป็นวงเล็กเมื่อโดน ใช้ดาเมจโจมตี ต้องถือธนูหรือหน้าไม้",
+   "kind": "firearrow",
+   "arrow": true,
+   "mp": 6,
+   "cooldown": 0.45,
+   "damageMult": 1.5,
+   "speed": 620,
+   "life": 0.8,
+   "radius": 6,
+   "splash": 34,
+   "socket": "g",
+   "color": "#e8503a",
+   "hi": "#ffb09a"
+  },
+  "peridot": {
+   "name": "เพอริดอต",
+   "skill": "ศรกระจาย",
+   "desc": "ยิงลูกศรสามดอกเป็นพัด ใช้ดาเมจโจมตี ต้องถือธนูหรือหน้าไม้",
+   "kind": "arrow",
+   "arrow": true,
+   "count": 3,
+   "mp": 7,
+   "cooldown": 0.5,
+   "damageMult": 1.05,
+   "speed": 600,
+   "life": 0.75,
+   "radius": 6,
+   "splash": 0,
+   "socket": "g",
+   "color": "#9ad83a",
+   "hi": "#e0ffa8"
   }
  },
  "support": {
@@ -346,6 +381,16 @@
    "gem": "zircon",
    "chance": 0.006,
    "minLevel": 5
+  },
+  {
+   "gem": "tourmaline",
+   "chance": 0.008,
+   "minLevel": 2
+  },
+  {
+   "gem": "peridot",
+   "chance": 0.008,
+   "minLevel": 3
   }
  ],
  "skillButtons": 3,

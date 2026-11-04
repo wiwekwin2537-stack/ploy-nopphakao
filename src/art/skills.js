@@ -1,5 +1,5 @@
 // รูปสกิล (ไอคอนสี่เหลี่ยมแบบแถบสกิล PoE): ลูกไฟ หอกน้ำแข็ง หมอกพิษ สายฟ้า — ใช้บนปุ่มสกิลและสลักในพลอยสกิล
-const BG = { fire: ['#5a1008', '#1a0402'], ice: ['#0e2a5a', '#040a1a'], poison: ['#0e3a14', '#031006'], bolt: ['#3a2a06', '#100a02'], holy: ['#4a4a5a', '#101018'], slash: ['#4a0a0a', '#120202'], cleave: ['#0a3a14', '#021006'], frost: ['#0a2050', '#020818'] };
+const BG = { fire: ['#5a1008', '#1a0402'], ice: ['#0e2a5a', '#040a1a'], poison: ['#0e3a14', '#031006'], bolt: ['#3a2a06', '#100a02'], holy: ['#4a4a5a', '#101018'], slash: ['#4a0a0a', '#120202'], cleave: ['#0a3a14', '#021006'], frost: ['#0a2050', '#020818'], firearrow: ['#5a1a08', '#1a0602'], arrow: ['#2a3a0a', '#0a1002'], aura: ['#2a1a3a', '#0a0612'] };
 
 function paintSkill(g, kind, plate) {
   if (plate) {                                                   // พื้นหลังไอคอน
@@ -27,6 +27,16 @@ function paintSkill(g, kind, plate) {
     g.fillStyle = '#c8ffb0'; g.strokeStyle = '#1a5a20'; g.lineWidth = 1.6;
     g.beginPath(); g.moveTo(32, 18); g.quadraticCurveTo(42, 32, 32, 40); g.quadraticCurveTo(22, 32, 32, 18); g.fill(); g.stroke();
     g.fillStyle = 'rgba(255,255,255,0.8)'; g.beginPath(); g.arc(29, 31, 2.5, 0, Math.PI * 2); g.fill();
+  } else if (kind === 'firearrow' || kind === 'arrow') {          // ศรเพลิง: ลูกศรไฟ 1 ดอก · ศรกระจาย: ลูกศร 3 ดอกเป็นพัด
+    const shafts = kind === 'arrow' ? [-0.45, 0, 0.45] : [0];
+    for (const da of shafts) {
+      g.save(); g.translate(14, 50); g.rotate(-0.8 + da);
+      if (kind === 'firearrow') { g.fillStyle = 'rgba(255,120,30,0.55)'; g.beginPath(); g.ellipse(34, 0, 14, 6, 0, 0, Math.PI * 2); g.fill(); }
+      g.fillStyle = '#c8a070'; g.fillRect(0, -1.5, 40, 3);
+      g.fillStyle = kind === 'firearrow' ? '#fff0a0' : '#e8eef4'; g.beginPath(); g.moveTo(48, 0); g.lineTo(38, -5); g.lineTo(38, 5); g.closePath(); g.fill();
+      g.fillStyle = '#f4f0e8'; g.beginPath(); g.moveTo(0, 0); g.lineTo(-6, -6); g.lineTo(6, -1); g.closePath(); g.fill(); g.beginPath(); g.moveTo(0, 0); g.lineTo(-6, 6); g.lineTo(6, 1); g.closePath(); g.fill();
+      g.restore();
+    }
   } else if (kind === 'slash') {                                 // ฟันพายุ: ดาบกลางวงพายุฟันสีแดง
     for (let i = 0; i < 3; i++) {
       g.strokeStyle = ['rgba(255,80,60,0.45)', 'rgba(255,150,120,0.7)', '#ffe0d0'][i]; g.lineWidth = 7 - i * 2.5;

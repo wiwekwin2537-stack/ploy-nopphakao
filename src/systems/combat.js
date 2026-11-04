@@ -73,7 +73,7 @@ export function meleeArc(game, x, y, ang, range, arc, base, critChance, critMult
 export function spawnShot(game, shot) { game.shots.push({ hitIds: new Set(), ...shot }); }
 
 export const SHOT_COLORS = {
-  fire: ['#ff7a2a', '#ffe08a', '#ffb84a'], ice: ['#7ac0ff', '#e8f4ff', '#a8d8ff'], poison: ['#3ad06a', '#c8ffb0', '#7dff8a'], ghost: ['#8cff9a', '#e8ffe8', '#8cff9a'], phong: ['#ff9a3a', '#fff0b0', '#ffc070'], water: ['#3ab8e0', '#e8fbff', '#8ae0ff'], bolt: ['#ffd23a', '#ffffff', '#fff6a0'], holy: ['#ffe8a0', '#ffffff', '#fff0c8'],
+  fire: ['#ff7a2a', '#ffe08a', '#ffb84a'], ice: ['#7ac0ff', '#e8f4ff', '#a8d8ff'], poison: ['#3ad06a', '#c8ffb0', '#7dff8a'], ghost: ['#8cff9a', '#e8ffe8', '#8cff9a'], phong: ['#ff9a3a', '#fff0b0', '#ffc070'], water: ['#3ab8e0', '#e8fbff', '#8ae0ff'], bolt: ['#ffd23a', '#ffffff', '#fff6a0'], holy: ['#ffe8a0', '#ffffff', '#fff0c8'], arcane: ['#b07aff', '#f4e8ff', '#d0b0ff'], arrow: ['#c8a070', '#fff4dc', '#e8d0a8'], firearrow: ['#ff7a2a', '#ffe08a', '#ffb84a'],
 };
 
 // ผลพิเศษของกระสุนพลอย: ทำให้ช้า / ติดพิษ
@@ -106,7 +106,8 @@ export function updateShots(game, dt) {
     s.x += s.vx * dt; s.y += s.vy * dt;
     const col = SHOT_COLORS[s.kind] || SHOT_COLORS.ghost;
     game.fx.trail(s.x, s.y, Math.random() > 0.5 ? col[0] : col[1], 3.5, 0.28);
-    let done = s.life <= 0 || (!s.flying && game.world.blocked(s.x, s.y + 8, 3));
+    if (s.grace) s.grace -= dt;                                    // ช่วงแรกที่เพิ่งออกจากมือ ไม่ชนของ (ยิงประชิดข้างเกวียน/ต้นไม้ได้)
+    let done = s.life <= 0 || (!s.flying && !(s.grace > 0) && game.world.blocked(s.x, s.y + 8, 3));
     if (!done && s.from === 'player') {
       for (const m of game.mobs) {
         if (m.dead || s.hitIds.has(m.id)) continue;
