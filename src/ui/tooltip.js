@@ -3,7 +3,7 @@
 import { C, rrect, circle } from '../art/draw.js';
 import { uiText as text } from './hud.js';
 import { itemName, itemStats, longestLink } from '../systems/items.js';
-import { gemInfo, gemType, computeSkill } from '../systems/gems.js';
+import { gemInfo, gemType, computeSkill, supportLines } from '../systems/gems.js';
 import { gemSprite } from '../art/gems.js';
 import { itemSprite } from '../art/items.js';
 import { SOCKET_COL } from './gemtab.js';
@@ -91,6 +91,18 @@ export function drawItemTip(ctx, game, it, ax, ay, opt = {}) {
   tipBox(ctx, lines, ax, ay, s, opt.W, opt.H, col);
 }
 
+// ค่าของสกิล (ตัวเลขจากการคำนวณจริง)
+export function skillLines(sk) {
+  const out = [`ดาเมจ ×${sk.damageMult.toFixed(2)} ของ${sk.melee ? 'ดาเมจดาบ' : 'ดาเมจพลอย'}`, `มานา ${sk.mp} · ร่ายซ้ำทุก ${sk.cooldown.toFixed(2)} วิ`];
+  if (sk.melee) out.push(`ฟันรอบตัววงกว้าง ${Math.round(sk.splash)}`);
+  if (sk.count > 1) out.push(`ยิงครั้งละ ${sk.count} ลูก`);
+  if (sk.pierce) out.push(`ทะลุมอน ${sk.pierce} ตัว`);
+  if (sk.splash && !sk.melee) out.push(`ระเบิดวง ${Math.round(sk.splash)}`);
+  if (sk.slow) out.push(`ทำให้ช้าลง ${Math.round(sk.slow * 100)}% นาน ${sk.slowTime} วิ`);
+  if (sk.poison) out.push(`ติดพิษนาน ${sk.poisonTime} วิ`);
+  return out;
+}
+
 export function drawGemTip(ctx, game, id, ax, ay, opt = {}) {
   const G = game.data.gems, s = opt.s || 1, info = gemInfo(G, id), main = gemType(G, id) === 'main', lines = [];
   lines.push({ h: 40 * s, draw: (c, x, y, w) => c.drawImage(gemSprite(G, id, 80), x + w / 2 - 18 * s, y, 36 * s, 36 * s) });
@@ -100,15 +112,12 @@ export function drawGemTip(ctx, game, id, ax, ay, opt = {}) {
   lines.push({ t: `ลงได้ในช่องสี${sc.name} หรือช่องขาว`, col: sc.color, size: 9.5, center: true, weight: '600' });
   lines.push({ sep: true, h: 8 * s });
   if (main) {
-    const sk = computeSkill(G, id);
+    const sk = opt.final || computeSkill(G, id);                 // ฝังอยู่ = แสดงผลรวมกับพลอยเสริมที่เชื่อมจริง
     lines.push({ t: `สกิล: ${sk.name}`, col: C.goldHi, size: 10.5, weight: '600' });
-    lines.push({ t: `ดาเมจ ×${sk.damageMult.toFixed(2)} ของดาเมจพลอย`, size: 10 });
-    lines.push({ t: `มานา ${sk.mp} · ร่ายซ้ำ ${sk.cooldown.toFixed(2)} วิ`, size: 10 });
-    if (sk.pierce) lines.push({ t: `ทะลุมอน ${sk.pierce} ตัว`, size: 10 });
-    if (sk.splash) lines.push({ t: `ระเบิดวง ${Math.round(sk.splash)}`, size: 10 });
-    if (sk.slow) lines.push({ t: `ทำให้ช้าลง ${Math.round(sk.slow * 100)}% ${sk.slowTime} วิ`, size: 10 });
-    if (sk.poison) lines.push({ t: `พิษ ${sk.poisonTime} วิ`, size: 10 });
-  }
+    for (const l of skillLines(sk)) lines.push({ t: l, size: 10 });
+    if (opt.final && sk.supports.length) lines.push({ t: 'เสริมอยู่: ' + sk.supports.map((x) => G.support[x].name.replace('พลอยเสริม', '')).join(' + '), col: '#9af0b0', size: 9.5 });
+    if (opt.final && sk.unused && sk.unused.length) lines.push({ t: 'ไม่มีผลกับสกิลนี้: ' + sk.unused.map((x) => G.support[x].name.replace('พลอยเสริม', '')).join(' + '), col: '#ff9a7a', size: 9.5 });
+  } else for (const l of supportLines(G, id)) lines.push({ t: l, size: 10 });
   lines.push({ t: info.desc, col: MOD_COL, size: 9.5 });
   if (opt.hint) { lines.push({ sep: true, h: 8 * s }); lines.push({ t: opt.hint, col: '#9af0b0', size: 9.5, weight: '600' }); }
   tipBox(ctx, lines, ax, ay, s, opt.W, opt.H, info.color);

@@ -1,5 +1,5 @@
 // รูปสกิล (ไอคอนสี่เหลี่ยมแบบแถบสกิล PoE): ลูกไฟ หอกน้ำแข็ง หมอกพิษ สายฟ้า — ใช้บนปุ่มสกิลและสลักในพลอยสกิล
-const BG = { fire: ['#5a1008', '#1a0402'], ice: ['#0e2a5a', '#040a1a'], poison: ['#0e3a14', '#031006'], bolt: ['#3a2a06', '#100a02'], holy: ['#4a4a5a', '#101018'] };
+const BG = { fire: ['#5a1008', '#1a0402'], ice: ['#0e2a5a', '#040a1a'], poison: ['#0e3a14', '#031006'], bolt: ['#3a2a06', '#100a02'], holy: ['#4a4a5a', '#101018'], slash: ['#4a0a0a', '#120202'] };
 
 function paintSkill(g, kind, plate) {
   if (plate) {                                                   // พื้นหลังไอคอน
@@ -27,6 +27,14 @@ function paintSkill(g, kind, plate) {
     g.fillStyle = '#c8ffb0'; g.strokeStyle = '#1a5a20'; g.lineWidth = 1.6;
     g.beginPath(); g.moveTo(32, 18); g.quadraticCurveTo(42, 32, 32, 40); g.quadraticCurveTo(22, 32, 32, 18); g.fill(); g.stroke();
     g.fillStyle = 'rgba(255,255,255,0.8)'; g.beginPath(); g.arc(29, 31, 2.5, 0, Math.PI * 2); g.fill();
+  } else if (kind === 'slash') {                                 // ฟันพายุ: ดาบกลางวงพายุฟันสีแดง
+    for (let i = 0; i < 3; i++) {
+      g.strokeStyle = ['rgba(255,80,60,0.45)', 'rgba(255,150,120,0.7)', '#ffe0d0'][i]; g.lineWidth = 7 - i * 2.5;
+      g.beginPath(); g.arc(32, 32, 22 - i * 2, -0.4 + i * 0.3, Math.PI * 1.4 + i * 0.3); g.stroke();
+    }
+    g.save(); g.translate(32, 32); g.rotate(-0.8);
+    g.fillStyle = '#e8eef4'; g.fillRect(-2.5, -20, 5, 26); g.fillStyle = '#d9a630'; g.fillRect(-7, 6, 14, 3); g.fillStyle = '#5a2f1a'; g.fillRect(-2, 9, 4, 8);
+    g.restore();
   } else if (kind === 'holy') {                                  // รัศมีเพชร: แสงขาววาบเป็นแฉก
     const gl = g.createRadialGradient(32, 32, 2, 32, 32, 26); gl.addColorStop(0, '#ffffff'); gl.addColorStop(0.5, 'rgba(230,230,255,0.6)'); gl.addColorStop(1, 'rgba(200,200,255,0)');
     g.fillStyle = gl; g.beginPath(); g.arc(32, 32, 26, 0, Math.PI * 2); g.fill();

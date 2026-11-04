@@ -45,7 +45,7 @@ export function icon(ctx, id, x, y, r, game) {
     ctx.strokeStyle = C.cream; ctx.lineWidth = r * 0.14; ctx.lineCap = 'round';
     for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo(-r * 0.5, (i - 1) * r * 0.28); ctx.lineTo(r * 0.15 - i * r * 0.12, (i - 1) * r * 0.28); ctx.stroke(); }
     poly(ctx, [r * 0.15, -r * 0.4, r * 0.55, 0, r * 0.15, r * 0.4], C.cream, null);
-  } else if (SKILL_BTN[id] !== undefined) {                 // ไอคอนสกิล = พลอยหลักที่ฝัง + จุดสีพลอยเสริม
+  } else if (SKILL_BTN[id] !== undefined) {                 // ไอคอนสกิล = พลอยสกิลที่ฝัง + จุดสีพลอยเสริม
     const sk = skillOf(game, SKILL_BTN[id]);
     if (sk) {
       const px = r * 1.6 * (ctx.getTransform().a || 1);

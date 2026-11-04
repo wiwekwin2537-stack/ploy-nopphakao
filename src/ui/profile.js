@@ -54,7 +54,7 @@ export function drawProfileStats(ctx, game, B) {
   // ล่างขวา: สกิลที่ฝัง + คีย์สโตน + แต้มพาสซีฟ
   let y = by + Math.ceil(rows.length / 2) * rh + 10 * s;
   const skills = skillsOf(D.gems, p).slice(0, 3).map((sk, i) => `${i + 1}. ${sk.name}${sk.supports.length ? ' +' + sk.supports.length : ''}`);
-  text(ctx, 'สกิล — ' + (skills.length ? skills.join(' · ') : 'ยังไม่มี (ฝังพลอยหลักในช่องอาวุธ/เสื้อ)'), rx, y, 10 * s, C.cream, 'left', 'normal'); y += 18 * s;
+  text(ctx, 'สกิล — ' + (skills.length ? skills.join(' · ') : 'ยังไม่มี (ฝังพลอยสกิลในช่องอาวุธ/เสื้อ)'), rx, y, 10 * s, C.cream, 'left', 'normal'); y += 18 * s;
   const ks = p.passives.filter((id) => PS.nodes[id] && PS.nodes[id].kind === 'keystone').map((id) => PS.nodes[id].name);
   if (ks.length) { text(ctx, 'คีย์สโตน — ' + ks.join(' · '), rx, y, 10 * s, '#ffb070', 'left', '600'); y += 18 * s; }
   const left = pointsLeft(p, PS);

@@ -146,7 +146,10 @@ export function drawGemTab(ctx, game, B) {
     game.tipLater = () => drawGemTip(ctx, game, showId, cx - g.cell / 2, cy, { ...o, hint: `แตะช่องบน${slotName}เพื่อฝัง (แตะพลอยซ้ำ = ช่องว่างแรก)` });
   } else if (game.sockSel) {
     const row = GL.rows.find((r) => r.slot === game.sockSel.slot), it = p.equip[game.sockSel.slot], gid = it && it.gems && it.gems[game.sockSel.idx];
-    if (gid) { const so = row.sockets[game.sockSel.idx]; game.tipLater = () => drawGemTip(ctx, game, gid, so.x, so.y, { ...o, hint: 'แตะช่องนี้อีกครั้งเพื่อถอดเข้ากระเป๋า' }); }
+    if (gid) {
+      const so = row.sockets[game.sockSel.idx], final = skillsOf(G, p).find((k) => k.slot === game.sockSel.slot && k.socket === game.sockSel.idx);
+      game.tipLater = () => drawGemTip(ctx, game, gid, so.x, so.y, { ...o, final, hint: 'แตะช่องนี้อีกครั้งเพื่อถอดเข้ากระเป๋า' });
+    }
   } else if (game.curSel) {
     const c = GL.cur.find((q) => q.kind === game.curSel);
     game.tipLater = () => drawCurrencyTip(ctx, game, game.curSel, c.x + c.w / 2, c.y, { ...o, hint: `มี ${p.currency[game.curSel] || 0} · แตะอีกครั้งเพื่อใช้กับ${slotName}` });

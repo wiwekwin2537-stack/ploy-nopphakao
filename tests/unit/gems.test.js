@@ -162,3 +162,29 @@ test('พลอยขาว (เพชร/เพชรน้ำหนึ่ง) 
   const sk = skillsOf(G, p)[0];
   assert.equal(sk.gem, 'diamond'); assert.deepEqual(sk.supports, ['purity']);
 });
+
+test('ข้อความตรงกับค่าจริง: คำอธิบายพลอยไม่มีตัวเลขเขียนมือ · ผลพลอยเสริมสร้างจากตัวเลขในข้อมูล', async () => {
+  const { supportLines } = await import('../../src/systems/gems.js');
+  const G = makeGame().data.gems;
+  for (const [id, g] of [...Object.entries(G.main), ...Object.entries(G.support)]) assert.ok(!/\d/.test(g.desc), `${id}: คำอธิบายมีตัวเลข (อาจไม่ตรงกับค่าจริง) "${g.desc}"`);
+  for (const [id, s] of Object.entries(G.support)) {
+    const txt = supportLines(G, id).join(' ');
+    for (const v of [s.extra, s.pierce, s.splashAdd, s.damage !== 1 ? s.damage : null, s.mpMult].filter((x) => x)) assert.ok(txt.includes(String(v)), `${id}: ไม่แสดงค่า ${v}`);
+  }
+});
+
+test('นิล ฟันพายุ: โดนมอนรอบตัวทุกตัวในวง ไม่โดนตัวไกล · ใช้ดาเมจดาบ · แตกกระจาย/ทะลวงไม่มีผล · ระเบิดขยายวง', async () => {
+  const { castSkill } = await import('../../src/systems/skills.js');
+  const g = makeGame(), G = g.data.gems, p = g.player; g.world.load('field'); g.flags.tutorialDone = true;
+  p.x = 1200; p.y = 1300; p.mp = 999;
+  gear(p, ['onyx', 'multi', 'area'], [true, true]);
+  p.equip.weapon.colors = ['r', 'g', 'r'];
+  const sk = skillsOf(G, p)[0];
+  assert.ok(sk.melee); assert.deepEqual(sk.unused, ['multi']); assert.ok(sk.splash > G.main.onyx.splash);
+  const near = [0, 1, 2, 3].map((i) => makeMob(g, 'boar', 1, p.x + Math.cos(i * 1.57) * 60, p.y + Math.sin(i * 1.57) * 40)), far = makeMob(g, 'boar', 1, p.x + 400, p.y);
+  for (const m of [...near, far]) { m.hp = m.maxHp = 9999; g.mobs.push(m); }
+  assert.ok(castSkill(g, 0));
+  assert.equal(g.shots.length, 0, 'สกิลฟันไม่มีกระสุน');
+  assert.ok(near.every((m) => m.hp < 9999), 'ต้องโดนทุกตัวรอบตัว');
+  assert.equal(far.hp, 9999, 'ตัวไกลต้องไม่โดน');
+});

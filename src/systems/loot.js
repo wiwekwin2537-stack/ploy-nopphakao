@@ -65,7 +65,7 @@ function pickGem(game, gem) {
   game.audio.play('gem');
   if (gem !== 'ruby' && !game.flags.bagHint) {
     game.flags.bagHint = true;
-    game.notice = { text: (gemType(G, gem) === 'support' ? 'ได้พลอยเสริม! ' : 'ได้พลอยหลักใหม่! ') + 'แตะรูปตัวละครมุมซ้ายบน → แถบพลอย เพื่อฝัง', t: 7 };
+    game.notice = { text: (gemType(G, gem) === 'support' ? 'ได้พลอยเสริม! ' : 'ได้พลอยสกิลใหม่! ') + 'แตะรูปตัวละครมุมซ้ายบน → แถบพลอย เพื่อฝัง', t: 7 };
   }
   game.events.emit('gemPicked', { gem });
 }

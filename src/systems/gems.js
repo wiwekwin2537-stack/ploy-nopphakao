@@ -1,5 +1,5 @@
 // ระบบพลอยแบบ PoE: พลอยฝังใน "ช่อง" ของอาวุธ/เสื้อ (สูงสุด 6 ช่อง) ช่องที่ "เชื่อม" กันเป็นกลุ่ม
-// พลอยหลักในกลุ่ม = สกิล · พลอยเสริมในกลุ่มเดียวกันเสริมทุกสกิลในกลุ่มนั้น
+// พลอยสกิลในกลุ่ม = สกิล · พลอยเสริมในกลุ่มเดียวกันเสริมทุกสกิลในกลุ่มนั้น
 // ไอเท็ม: { sockets: n, links: [bool × n-1] (ช่อง i เชื่อมกับ i+1), gems: [id|null × n] }
 // ทุกตัวเลขอยู่ใน data/gems.json และ data/items.json ("sockets", "currency")
 
@@ -22,7 +22,7 @@ export function linkGroups(it) {
   return out;
 }
 
-// รวมค่าสกิลจากพลอยหลัก 1 เม็ด + พลอยเสริมที่เชื่อมอยู่ — คืน null ถ้าไม่ใช่พลอยหลัก
+// รวมค่าสกิลจากพลอยสกิล 1 เม็ด + พลอยเสริมที่เชื่อมอยู่ — คืน null ถ้าไม่ใช่พลอยสกิล
 export function computeSkill(G, mainId, supportIds = []) {
   const m = G.main[mainId];
   if (!m) return null;
@@ -32,9 +32,11 @@ export function computeSkill(G, mainId, supportIds = []) {
     splash: m.splash || 0, count: 1, pierce: m.pierce || 0, slow: m.slow || 0, slowTime: m.slowTime || 0,
     poison: m.poison || 0, poisonTime: m.poisonTime || 0, supports: [],
   };
+  sk.melee = !!m.melee; sk.unused = [];
   for (const sid of supportIds) {
     const s = sid && G.support[sid];
     if (!s) continue;
+    if (m.melee && (s.extra || s.pierce)) { sk.unused.push(sid); continue; }   // ฟันรอบตัว: ยิงหลายลูก/ทะลุ ไม่มีผล
     sk.supports.push(sid);
     sk.damageMult *= s.damage ?? 1;
     if (s.extra) sk.count += s.extra;
@@ -45,6 +47,19 @@ export function computeSkill(G, mainId, supportIds = []) {
   }
   sk.mp = Math.ceil(sk.mp + (sk.count - 1) * 2);       // ยิงหลายลูกใช้มานาเพิ่มลูกละ 2
   return sk;
+}
+
+// ผลของพลอยเสริม (สร้างจากตัวเลขใน data/gems.json — ข้อความตรงกับค่าจริงเสมอ)
+export function supportLines(G, id) {
+  const s = G.support[id], out = [];
+  if (!s) return out;
+  if (s.extra) out.push(`ยิงเพิ่มอีก ${s.extra} ลูก (เป็นพัด)`);
+  if (s.pierce) out.push(`ทะลุมอนเพิ่ม ${s.pierce} ตัว`);
+  if (s.splashAdd) out.push(`วงระเบิด/วงฟัน ×${s.splashMult || 1} แล้ว +${s.splashAdd}`);
+  if (s.damage && s.damage !== 1) out.push(`ดาเมจ ×${s.damage}`);
+  if (s.cooldownMult) out.push(`ร่ายเร็วขึ้น ${Math.round((1 - s.cooldownMult) * 100)}%`);
+  if (s.mpMult) out.push(`มานา ×${s.mpMult}`);
+  return out;
 }
 
 // สกิลทั้งหมดจากของที่สวม เรียงตาม อาวุธ → เสื้อ และลำดับช่อง (ปุ่มสกิล 1/2/3 = 3 สกิลแรก)
@@ -68,7 +83,7 @@ export function skillsOf(G, p) {
 }
 
 // ใส่พลอยจากกระเป๋าลงช่อง idx ของของที่สวมช่อง slot (ช่องมีพลอยอยู่แล้ว = สลับกลับกระเป๋า)
-// idx ไม่ระบุ = ช่องว่างช่องแรก (พลอยหลักชอบช่องที่ไม่มีพลอยหลักในกลุ่ม)
+// idx ไม่ระบุ = ช่องว่างช่องแรก (พลอยสกิลชอบช่องที่ไม่มีพลอยสกิลในกลุ่ม)
 export function socketGem(G, p, bagIndex, slot, idx) {
   const id = p.bag[bagIndex], it = p.equip && p.equip[slot];
   if (!id || !gemType(G, id) || !it || !it.sockets) return false;

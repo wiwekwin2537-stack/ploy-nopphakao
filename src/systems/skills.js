@@ -1,5 +1,5 @@
 // ใช้สกิลจากพลอยที่ฝังในของ (ปุ่มสกิล 1/2/3 = สกิลที่ 1/2/3 ตามลำดับ อาวุธ → เสื้อ)
-import { spawnShot } from './combat.js';
+import { spawnShot, rollDamage, damageMob } from './combat.js';
 import { playerStats } from './stats.js';
 import { skillsOf } from './gems.js';
 
@@ -30,7 +30,22 @@ export function castSkill(game, group) {
   p.aim = ang;
   if (st0.bloodMagic) p.hp = Math.max(1, p.hp - sk.mp); else p.mp -= sk.mp;
   p.skillCd[group] = sk.cooldown * st0.castCdMult; p.castT = 0.22; p.combatTimer = 4;
-  const st = playerStats(p, game.data), dmg = st.spellDamage * sk.damageMult;
+  const st = playerStats(p, game.data);
+  if (sk.melee) {                                                // ฟันพายุ: ดาบหมุนรอบตัว ใช้ดาเมจดาบ วงตามพลอยเสริมระเบิด + วงระเบิดจากพาสซีฟ
+    const R = sk.splash * st.areaMult;
+    for (const m of game.mobs) {
+      if (m.dead || Math.hypot(m.x - p.x, (m.y - p.y) * 1.2) > R + m.radius) continue;
+      const r = rollDamage(st.damage * sk.damageMult, game.rng, st.crit, st.critMult);
+      damageMob(game, m, r.amount, r.crit);
+    }
+    game.fx.ring(p.x, p.y - 10, R, '#ff6a5a'); game.fx.ring(p.x, p.y - 10, R * 0.7, '#ffd0a0');
+    for (let i = 0; i < 4; i++) game.fx.slash(p.x, p.y - 14, i * Math.PI / 2, R * 0.8, 1.6, 1);
+    game.camera.shake = Math.max(game.camera.shake, 3);
+    game.audio.play('swing');
+    game.events.emit('skillCast', { group, gem: sk.gem });
+    return true;
+  }
+  const dmg = st.spellDamage * sk.damageMult;
   const spread = 0.2;
   for (let i = 0; i < sk.count; i++) {
     const a = ang + (i - (sk.count - 1) / 2) * spread;

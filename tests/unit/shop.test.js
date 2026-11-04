@@ -98,3 +98,10 @@ test('น้ำมนต์: ซื้อ/ดื่มฟื้นมานา �
   assert.equal(validate(old, g.data).mpPotions, 2);
   assert.equal(validate({ ...s, mpPotions: 99 }, g.data), null);
 });
+
+test('ข้อความตรงกับค่าจริง: ยาหม้อ/น้ำมนต์บอก % ตรงกับค่าฟื้น · ลายแทงบอกเลเวลมอนตรงกับสูตรถ้ำ', () => {
+  const g = makeGame(), S = g.data.shop, I = g.data.items, MP = g.data.balance.maps;
+  assert.ok(S.potion.desc.includes(Math.round(S.potion.heal * 100) + '%'));
+  assert.ok(S.manaPotion.desc.includes(Math.round(S.manaPotion.heal * 100) + '%'));
+  for (let t = 1; t <= 5; t++) assert.ok(I.currency['map' + t].desc.includes('เลเวล ' + (MP.levelBase + t * MP.levelPerTier)), 'map' + t);
+});
