@@ -575,6 +575,21 @@ await check('ยูนีค: ง้าวพิทักษ์วัดร้�
   return 'สกิลช่อง ' + (res.idx + 1);
 });
 
+await check('รางวัลเควสแบบ PoE: ล้มยักษ์แล้วคุยพ่อเฒ่าจันทร์ → หน้าต่างเลือกพลอย 1 จาก 3 → แตะสองครั้งได้พลอยเข้ากระเป๋า', async () => {
+  await G(page, () => { const g = __ploy.game, n = g.data.zones.town.npcs.find((q) => q.id === 'chan'); Object.assign(g.flags, { yakSlain: true }); delete g.flags.q_q1_main; __ploy.enterZone(g, 'town', n.x * 32, n.y * 32 + 30); });
+  await page.waitForTimeout(300);
+  await page.keyboard.press('KeyE'); await page.waitForTimeout(150);
+  for (let i = 0; i < 8 && (await state(page)).mode === 'dialog'; i++) { await page.keyboard.press('KeyE'); await page.waitForTimeout(120); }
+  assert((await state(page)).mode === 'reward', 'ไม่เปิดหน้าต่างรางวัล: ' + (await state(page)).mode);
+  const c = await G(page, () => { const B = __ploy.rewardLayout(), k = B.cards[0]; return { x: k.x + k.w / 2, y: k.y + k.h / 2 }; });
+  await page.mouse.click(c.x, c.y); await page.waitForTimeout(150);
+  await page.screenshot({ path: SHOTS + '/29-quest-reward.png' });
+  await page.mouse.click(c.x, c.y); await page.waitForTimeout(150);
+  const r = await G(page, () => ({ mode: __ploy.game.mode, got: __ploy.game.player.bag.includes(__ploy.game.data.quests.list[0].reward.gems[0]), claimed: !!__ploy.game.flags.q_q1_main }));
+  assert(r.mode === 'play' && r.got && r.claimed, JSON.stringify(r));
+  return 'ได้พลอยรางวัล';
+});
+
 await check('ความเร็ว: มอน 100 ตัวไล่ล้อม ใช้เวลาคำนวณ+วาดต่อเฟรมไม่เกิน 8ms', async () => {
   await G(page, () => { const g = __ploy.game, p = g.player; const types = ['boar', 'monkey', 'krasue', 'piglet']; for (let i = 0; i < 2000 && g.mobs.length < 100; i++) { const m = __ploy.makeMob(g, types[i % 4], 3, p.x + (Math.random() - 0.5) * 700, p.y + (Math.random() - 0.5) * 400, -1); if (!g.world.blocked(m.x, m.y, m.radius)) g.mobs.push(m); } g.mobs.forEach((m) => { m.aggroed = true; }); p.invuln = 99; });
   await page.waitForTimeout(1500);
