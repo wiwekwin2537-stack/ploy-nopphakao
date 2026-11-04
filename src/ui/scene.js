@@ -149,7 +149,7 @@ export function createScene(game) {
         if (it.o) sprites.draw(ctx, it.o);
         else if (it.mob) {
           const mo = it.mob;
-          drawMonster(ctx, mo.type, mo.x, mo.y, { t: mo.t, moving: mo.moving, face: mo.face, charging: mo.state === 'charge', windup: mo.state === 'windup' ? 1 : 0, flash: mo.flash, dying: mo.dying, recoil: mo.recoil || 0, kbx: mo.kbx || 0, kby: mo.kby || 0, stun: mo.state === 'stun' });
+          drawMonster(ctx, mo.type, mo.x, mo.y, { t: mo.t, walk: mo.walk, moving: mo.moving, face: mo.face, charging: mo.state === 'charge', windup: mo.state === 'windup' ? 1 : 0, flash: mo.flash, dying: mo.dying, recoil: mo.recoil || 0, kbx: mo.kbx || 0, kby: mo.kby || 0, stun: mo.state === 'stun' });
         } else if (it.npc) {
           const n = it.npc;
           drawHuman(ctx, n.look, n.x, n.y, { dir: n.face ? (n.face < 0 ? 2 : 3) : 0, t: t + n.x, moving: false, swing: -1 });
@@ -160,7 +160,7 @@ export function createScene(game) {
             drawHuman(ctx, 'hero', gh.x, gh.y, { dir: gh.dir, walk: gh.walk, moving: true, swing: -1, t, dash: true });
           }
           ctx.globalAlpha = 1;
-          drawHuman(ctx, 'hero', p.x, p.y, { dir: p.dir, walk: p.walk, moving: p.moving, swing: p.swing, combo: p.combo, aim: p.aim, hurt: p.hurt, t, dash: p.dashT > 0, cast: p.castT > 0 });
+          drawHuman(ctx, 'hero', p.x, p.y, { dir: p.dir, walk: p.walk, amt: p.walkAmt, moving: p.moving, swing: p.swing, combo: p.combo, aim: p.aim, hurt: p.hurt, t, dash: p.dashT > 0, cast: p.castT > 0 });
         }
       }
       for (const s of game.shots) drawShot(ctx, s);

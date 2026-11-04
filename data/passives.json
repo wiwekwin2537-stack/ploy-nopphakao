@@ -1,0 +1,807 @@
+{
+ "pointsPerLevel": 1,
+ "nodes": {
+  "warrior": {
+   "x": 0,
+   "y": -300,
+   "kind": "start",
+   "name": "นักรบ",
+   "stats": {},
+   "links": [
+    "warrior_a0",
+    "warrior_b0",
+    "warrior_k0",
+    "warrior_in",
+    "hyb_warrior_ranger0",
+    "hyb_shaman_warrior2"
+   ],
+   "class": "warrior"
+  },
+  "warrior_a0": {
+   "x": -94,
+   "y": -327,
+   "kind": "small",
+   "name": "กำลังแขน",
+   "stats": {
+    "dmgMelee": 8
+   },
+   "links": [
+    "warrior",
+    "warrior_a1",
+    "warrior_k0",
+    "hyb_warrior_ranger0"
+   ]
+  },
+  "warrior_a1": {
+   "x": -161,
+   "y": -346,
+   "kind": "small",
+   "name": "กายแกร่ง",
+   "stats": {
+    "hpFlat": 14
+   },
+   "links": [
+    "warrior_a0",
+    "warrior_a2"
+   ]
+  },
+  "warrior_a2": {
+   "x": -237,
+   "y": -352,
+   "kind": "small",
+   "name": "ฟันหนัก",
+   "stats": {
+    "dmgMelee": 8
+   },
+   "links": [
+    "warrior_a1",
+    "warrior_aN"
+   ]
+  },
+  "warrior_aN": {
+   "x": -330,
+   "y": -342,
+   "kind": "notable",
+   "name": "แขนพระยาช้าง",
+   "stats": {
+    "dmgMelee": 25,
+    "atkSpeedInc": 5
+   },
+   "links": [
+    "warrior_a2"
+   ]
+  },
+  "warrior_b0": {
+   "x": 94,
+   "y": -327,
+   "kind": "small",
+   "name": "หนังเหนียว",
+   "stats": {
+    "hpInc": 5
+   },
+   "links": [
+    "warrior",
+    "warrior_b1",
+    "warrior_k0",
+    "hyb_shaman_warrior2"
+   ]
+  },
+  "warrior_b1": {
+   "x": 161,
+   "y": -346,
+   "kind": "small",
+   "name": "เลือดร้อน",
+   "stats": {
+    "lifeOnHit": 1
+   },
+   "links": [
+    "warrior_b0",
+    "warrior_b2"
+   ]
+  },
+  "warrior_b2": {
+   "x": 237,
+   "y": -352,
+   "kind": "small",
+   "name": "กายแกร่ง",
+   "stats": {
+    "hpFlat": 14
+   },
+   "links": [
+    "warrior_b1",
+    "warrior_bN"
+   ]
+  },
+  "warrior_bN": {
+   "x": 330,
+   "y": -342,
+   "kind": "notable",
+   "name": "ผิวดั่งเกราะเพชร",
+   "stats": {
+    "hpInc": 15,
+    "lifeOnHit": 2
+   },
+   "links": [
+    "warrior_b2"
+   ]
+  },
+  "warrior_k0": {
+   "x": 0,
+   "y": -370,
+   "kind": "small",
+   "name": "พลังดั้งเดิม",
+   "stats": {
+    "dmgAll": 4
+   },
+   "links": [
+    "warrior",
+    "warrior_k1",
+    "warrior_a0",
+    "warrior_b0"
+   ]
+  },
+  "warrior_k1": {
+   "x": 0,
+   "y": -430,
+   "kind": "small",
+   "name": "พลังดั้งเดิม",
+   "stats": {
+    "dmgAll": 4
+   },
+   "links": [
+    "warrior_k0",
+    "warrior_K"
+   ]
+  },
+  "warrior_K": {
+   "x": 0,
+   "y": -510,
+   "kind": "keystone",
+   "name": "จิตคชสาร",
+   "stats": {
+    "ks": "elephant"
+   },
+   "links": [
+    "warrior_k1"
+   ],
+   "desc": "ดาเมจดาบ ×1.5 แต่ดาเมจพลอย ×0.7"
+  },
+  "warrior_in": {
+   "x": 0,
+   "y": -215,
+   "kind": "small",
+   "name": "ทางสู่ใจกลาง",
+   "stats": {
+    "hpFlat": 6,
+    "mpFlat": 4
+   },
+   "links": [
+    "warrior",
+    "core0"
+   ]
+  },
+  "ranger": {
+   "x": -260,
+   "y": 150,
+   "kind": "start",
+   "name": "พราน",
+   "stats": {},
+   "links": [
+    "ranger_a0",
+    "ranger_b0",
+    "ranger_k0",
+    "ranger_in",
+    "hyb_warrior_ranger2",
+    "hyb_ranger_shaman0"
+   ],
+   "class": "ranger"
+  },
+  "ranger_a0": {
+   "x": -236,
+   "y": 245,
+   "kind": "small",
+   "name": "ฝีเท้าเบา",
+   "stats": {
+    "moveInc": 4
+   },
+   "links": [
+    "ranger",
+    "ranger_a1",
+    "ranger_k0",
+    "hyb_ranger_shaman0"
+   ]
+  },
+  "ranger_a1": {
+   "x": -219,
+   "y": 313,
+   "kind": "small",
+   "name": "ตาไว",
+   "stats": {
+    "crit": 2
+   },
+   "links": [
+    "ranger_a0",
+    "ranger_a2"
+   ]
+  },
+  "ranger_a2": {
+   "x": -186,
+   "y": 381,
+   "kind": "small",
+   "name": "มือไว",
+   "stats": {
+    "atkSpeedInc": 5
+   },
+   "links": [
+    "ranger_a1",
+    "ranger_aN"
+   ]
+  },
+  "ranger_aN": {
+   "x": -131,
+   "y": 457,
+   "kind": "notable",
+   "name": "สายตาพญาเหยี่ยว",
+   "stats": {
+    "crit": 6,
+    "critMult": 30
+   },
+   "links": [
+    "ranger_a2"
+   ]
+  },
+  "ranger_b0": {
+   "x": -330,
+   "y": 82,
+   "kind": "small",
+   "name": "หลบหลีก",
+   "stats": {
+    "dashCdInc": -8
+   },
+   "links": [
+    "ranger",
+    "ranger_b1",
+    "ranger_k0",
+    "hyb_warrior_ranger2"
+   ]
+  },
+  "ranger_b1": {
+   "x": -381,
+   "y": 33,
+   "kind": "small",
+   "name": "ฝีเท้าเบา",
+   "stats": {
+    "moveInc": 4
+   },
+   "links": [
+    "ranger_b0",
+    "ranger_b2"
+   ]
+  },
+  "ranger_b2": {
+   "x": -423,
+   "y": -30,
+   "kind": "small",
+   "name": "ตาไว",
+   "stats": {
+    "crit": 2
+   },
+   "links": [
+    "ranger_b1",
+    "ranger_bN"
+   ]
+  },
+  "ranger_bN": {
+   "x": -461,
+   "y": -115,
+   "kind": "notable",
+   "name": "ฝีเท้าลมกรด",
+   "stats": {
+    "moveInc": 10,
+    "dashCdInc": -25
+   },
+   "links": [
+    "ranger_b2"
+   ]
+  },
+  "ranger_k0": {
+   "x": -320,
+   "y": 185,
+   "kind": "small",
+   "name": "พลังดั้งเดิม",
+   "stats": {
+    "dmgAll": 4
+   },
+   "links": [
+    "ranger",
+    "ranger_k1",
+    "ranger_a0",
+    "ranger_b0"
+   ]
+  },
+  "ranger_k1": {
+   "x": -372,
+   "y": 215,
+   "kind": "small",
+   "name": "พลังดั้งเดิม",
+   "stats": {
+    "dmgAll": 4
+   },
+   "links": [
+    "ranger_k0",
+    "ranger_K"
+   ]
+  },
+  "ranger_K": {
+   "x": -442,
+   "y": 255,
+   "kind": "keystone",
+   "name": "เพชฌฆาตเงา",
+   "stats": {
+    "ks": "shadow"
+   },
+   "links": [
+    "ranger_k1"
+   ],
+   "desc": "โอกาสคริติคอล ×2 แต่เลือดสูงสุด ×0.8"
+  },
+  "ranger_in": {
+   "x": -186,
+   "y": 107,
+   "kind": "small",
+   "name": "ทางสู่ใจกลาง",
+   "stats": {
+    "hpFlat": 6,
+    "mpFlat": 4
+   },
+   "links": [
+    "ranger",
+    "core4"
+   ]
+  },
+  "shaman": {
+   "x": 260,
+   "y": 150,
+   "kind": "start",
+   "name": "หมอผี",
+   "stats": {},
+   "links": [
+    "shaman_a0",
+    "shaman_b0",
+    "shaman_k0",
+    "shaman_in",
+    "hyb_ranger_shaman2",
+    "hyb_shaman_warrior0"
+   ],
+   "class": "shaman"
+  },
+  "shaman_a0": {
+   "x": 330,
+   "y": 82,
+   "kind": "small",
+   "name": "มนต์แรง",
+   "stats": {
+    "dmgSpell": 8
+   },
+   "links": [
+    "shaman",
+    "shaman_a1",
+    "shaman_k0",
+    "hyb_shaman_warrior0"
+   ]
+  },
+  "shaman_a1": {
+   "x": 381,
+   "y": 33,
+   "kind": "small",
+   "name": "ใจสงบ",
+   "stats": {
+    "mpFlat": 10
+   },
+   "links": [
+    "shaman_a0",
+    "shaman_a2"
+   ]
+  },
+  "shaman_a2": {
+   "x": 423,
+   "y": -30,
+   "kind": "small",
+   "name": "มนต์แรง",
+   "stats": {
+    "dmgSpell": 8
+   },
+   "links": [
+    "shaman_a1",
+    "shaman_aN"
+   ]
+  },
+  "shaman_aN": {
+   "x": 461,
+   "y": -115,
+   "kind": "notable",
+   "name": "ยันต์เก้ายอด",
+   "stats": {
+    "dmgSpell": 25,
+    "areaInc": 15
+   },
+   "links": [
+    "shaman_a2"
+   ]
+  },
+  "shaman_b0": {
+   "x": 236,
+   "y": 245,
+   "kind": "small",
+   "name": "ลมหายใจฤๅษี",
+   "stats": {
+    "mpRegenInc": 12
+   },
+   "links": [
+    "shaman",
+    "shaman_b1",
+    "shaman_k0",
+    "hyb_ranger_shaman2"
+   ]
+  },
+  "shaman_b1": {
+   "x": 219,
+   "y": 313,
+   "kind": "small",
+   "name": "ร่ายไว",
+   "stats": {
+    "castSpeedInc": 4
+   },
+   "links": [
+    "shaman_b0",
+    "shaman_b2"
+   ]
+  },
+  "shaman_b2": {
+   "x": 186,
+   "y": 381,
+   "kind": "small",
+   "name": "ใจสงบ",
+   "stats": {
+    "mpFlat": 10
+   },
+   "links": [
+    "shaman_b1",
+    "shaman_bN"
+   ]
+  },
+  "shaman_bN": {
+   "x": 131,
+   "y": 457,
+   "kind": "notable",
+   "name": "สมาธิฤๅษี",
+   "stats": {
+    "mpRegenInc": 30,
+    "mpInc": 15,
+    "castSpeedInc": 8
+   },
+   "links": [
+    "shaman_b2"
+   ]
+  },
+  "shaman_k0": {
+   "x": 320,
+   "y": 185,
+   "kind": "small",
+   "name": "พลังดั้งเดิม",
+   "stats": {
+    "dmgAll": 4
+   },
+   "links": [
+    "shaman",
+    "shaman_k1",
+    "shaman_a0",
+    "shaman_b0"
+   ]
+  },
+  "shaman_k1": {
+   "x": 372,
+   "y": 215,
+   "kind": "small",
+   "name": "พลังดั้งเดิม",
+   "stats": {
+    "dmgAll": 4
+   },
+   "links": [
+    "shaman_k0",
+    "shaman_K"
+   ]
+  },
+  "shaman_K": {
+   "x": 442,
+   "y": 255,
+   "kind": "keystone",
+   "name": "มนต์เลือดแลก",
+   "stats": {
+    "ks": "blood"
+   },
+   "links": [
+    "shaman_k1"
+   ],
+   "desc": "สกิลพลอยใช้เลือดแทนมานา"
+  },
+  "shaman_in": {
+   "x": 186,
+   "y": 107,
+   "kind": "small",
+   "name": "ทางสู่ใจกลาง",
+   "stats": {
+    "hpFlat": 6,
+    "mpFlat": 4
+   },
+   "links": [
+    "shaman",
+    "core2"
+   ]
+  },
+  "core0": {
+   "x": 0,
+   "y": -130,
+   "kind": "small",
+   "name": "แก่นพลัง",
+   "stats": {
+    "dmgAll": 5
+   },
+   "links": [
+    "core1",
+    "core5",
+    "warrior_in"
+   ]
+  },
+  "core1": {
+   "x": 113,
+   "y": -65,
+   "kind": "small",
+   "name": "สมดุล",
+   "stats": {
+    "hpInc": 4,
+    "mpInc": 4
+   },
+   "links": [
+    "core0",
+    "core2",
+    "heart"
+   ]
+  },
+  "core2": {
+   "x": 113,
+   "y": 65,
+   "kind": "small",
+   "name": "แก่นพลัง",
+   "stats": {
+    "dmgAll": 5
+   },
+   "links": [
+    "core1",
+    "core3",
+    "shaman_in"
+   ]
+  },
+  "core3": {
+   "x": 0,
+   "y": 130,
+   "kind": "small",
+   "name": "ไหวพริบ",
+   "stats": {
+    "crit": 1.5
+   },
+   "links": [
+    "core2",
+    "core4",
+    "heart"
+   ]
+  },
+  "core4": {
+   "x": -113,
+   "y": 65,
+   "kind": "small",
+   "name": "แก่นพลัง",
+   "stats": {
+    "dmgAll": 5
+   },
+   "links": [
+    "core3",
+    "core5",
+    "ranger_in"
+   ]
+  },
+  "core5": {
+   "x": -113,
+   "y": -65,
+   "kind": "small",
+   "name": "จังหวะ",
+   "stats": {
+    "castSpeedInc": 3,
+    "atkSpeedInc": 3
+   },
+   "links": [
+    "core4",
+    "core0",
+    "heart"
+   ]
+  },
+  "heart": {
+   "x": 0,
+   "y": 0,
+   "kind": "notable",
+   "name": "หัวใจหิมพานต์",
+   "stats": {
+    "dmgAll": 10,
+    "hpInc": 6,
+    "mpInc": 6
+   },
+   "links": [
+    "core1",
+    "core3",
+    "core5"
+   ]
+  },
+  "hyb_warrior_ranger0": {
+   "x": -170,
+   "y": -235,
+   "kind": "small",
+   "name": "สายผสม",
+   "stats": {
+    "atkSpeedInc": 4
+   },
+   "links": [
+    "warrior",
+    "hyb_warrior_ranger1",
+    "warrior_a0"
+   ]
+  },
+  "hyb_warrior_ranger1": {
+   "x": -251,
+   "y": -145,
+   "kind": "notable",
+   "name": "นักดาบเงา",
+   "stats": {
+    "atkSpeedInc": 10,
+    "dmgMelee": 10
+   },
+   "links": [
+    "hyb_warrior_ranger0",
+    "hyb_warrior_ranger2"
+   ]
+  },
+  "hyb_warrior_ranger2": {
+   "x": -288,
+   "y": -30,
+   "kind": "small",
+   "name": "สายผสม",
+   "stats": {
+    "atkSpeedInc": 4
+   },
+   "links": [
+    "hyb_warrior_ranger1",
+    "ranger",
+    "ranger_b0"
+   ]
+  },
+  "hyb_ranger_shaman0": {
+   "x": -118,
+   "y": 265,
+   "kind": "small",
+   "name": "สายผสม",
+   "stats": {
+    "projSpeedInc": 8
+   },
+   "links": [
+    "ranger",
+    "hyb_ranger_shaman1",
+    "ranger_a0"
+   ]
+  },
+  "hyb_ranger_shaman1": {
+   "x": 0,
+   "y": 290,
+   "kind": "notable",
+   "name": "พลอยพุ่งไว",
+   "stats": {
+    "projSpeedInc": 20,
+    "dmgSpell": 12
+   },
+   "links": [
+    "hyb_ranger_shaman0",
+    "hyb_ranger_shaman2"
+   ]
+  },
+  "hyb_ranger_shaman2": {
+   "x": 118,
+   "y": 265,
+   "kind": "small",
+   "name": "สายผสม",
+   "stats": {
+    "projSpeedInc": 8
+   },
+   "links": [
+    "hyb_ranger_shaman1",
+    "shaman",
+    "shaman_b0"
+   ]
+  },
+  "hyb_shaman_warrior0": {
+   "x": 288,
+   "y": -30,
+   "kind": "small",
+   "name": "สายผสม",
+   "stats": {
+    "hpFlat": 8,
+    "mpFlat": 6
+   },
+   "links": [
+    "shaman",
+    "hyb_shaman_warrior1",
+    "shaman_a0"
+   ]
+  },
+  "hyb_shaman_warrior1": {
+   "x": 251,
+   "y": -145,
+   "kind": "notable",
+   "name": "ร่างอมตะ",
+   "stats": {
+    "hpInc": 10,
+    "mpInc": 10,
+    "lifeOnHit": 2
+   },
+   "links": [
+    "hyb_shaman_warrior0",
+    "hyb_shaman_warrior2"
+   ]
+  },
+  "hyb_shaman_warrior2": {
+   "x": 170,
+   "y": -235,
+   "kind": "small",
+   "name": "สายผสม",
+   "stats": {
+    "hpFlat": 8,
+    "mpFlat": 6
+   },
+   "links": [
+    "hyb_shaman_warrior1",
+    "warrior",
+    "warrior_b0"
+   ]
+  }
+ },
+ "classes": {
+  "warrior": {
+   "name": "นักรบ",
+   "desc": "ดาบหนัก เลือดเยอะ"
+  },
+  "ranger": {
+   "name": "พราน",
+   "desc": "เร็ว คริติคอลแรง"
+  },
+  "shaman": {
+   "name": "หมอผี",
+   "desc": "พลังพลอยและมานา"
+  }
+ },
+ "statNames": {
+  "dmgMelee": "ดาเมจดาบ +{}%",
+  "dmgSpell": "ดาเมจพลอย +{}%",
+  "dmgAll": "ดาเมจทั้งหมด +{}%",
+  "hpFlat": "เลือด +{}",
+  "hpInc": "เลือดสูงสุด +{}%",
+  "mpFlat": "มานา +{}",
+  "mpInc": "มานาสูงสุด +{}%",
+  "mpRegenInc": "ฟื้นมานา +{}%",
+  "moveInc": "ความเร็วเดิน +{}%",
+  "atkSpeedInc": "ความเร็วฟัน +{}%",
+  "castSpeedInc": "ความเร็วร่าย +{}%",
+  "crit": "โอกาสคริติคอล +{}%",
+  "critMult": "แรงคริติคอล +{}%",
+  "lifeOnHit": "ฟันโดนฟื้นเลือด {}",
+  "dashCdInc": "คูลดาวน์หลบ {}%",
+  "areaInc": "วงระเบิด +{}%",
+  "projSpeedInc": "ความเร็วกระสุน +{}%"
+ }
+}

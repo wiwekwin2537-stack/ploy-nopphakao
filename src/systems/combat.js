@@ -1,8 +1,8 @@
 // การต่อสู้: ทำดาเมจมอน/ผู้เล่น ลูกกระสุนทุกชนิด
 // กติกาเหล็ก: มอนตายได้ครั้งเดียว → event 'mobKilled' ยิงครั้งเดียวเท่านั้น
-export function rollDamage(base, rng) {
-  const crit = rng.chance(0.06);
-  const v = base * (0.9 + rng.next() * 0.2) * (crit ? 1.6 : 1);
+export function rollDamage(base, rng, critChance = 0.06, critMult = 1.6) {
+  const crit = rng.chance(critChance);
+  const v = base * (0.9 + rng.next() * 0.2) * (crit ? critMult : 1);
   return { amount: Math.max(1, Math.round(v)), crit };
 }
 
@@ -52,7 +52,7 @@ export function hurtPlayer(game, amount, fromX, fromY) {
 }
 
 // ฟันเป็นวงโค้ง โดนได้หลายตัว คืนจำนวนที่โดน
-export function meleeArc(game, x, y, ang, range, arc, base) {
+export function meleeArc(game, x, y, ang, range, arc, base, critChance, critMult) {
   let hits = 0;
   for (const m of game.mobs) {
     if (m.dead) continue;
@@ -63,7 +63,7 @@ export function meleeArc(game, x, y, ang, range, arc, base) {
     while (da > Math.PI) da -= Math.PI * 2;
     while (da < -Math.PI) da += Math.PI * 2;
     if (Math.abs(da) > arc / 2 && d > m.radius + 8) continue;
-    const r = rollDamage(base, game.rng);
+    const r = rollDamage(base, game.rng, critChance, critMult);
     if (damageMob(game, m, r.amount, r.crit)) hits++;
   }
   return hits;
@@ -91,7 +91,7 @@ function explode(game, s) {
   for (const m of game.mobs) {
     if (m.dead || s.hitIds.has(m.id)) continue;
     if (Math.hypot(m.x - s.x, m.y - 8 - s.y) <= s.splash + m.radius) {
-      const r = rollDamage(s.damage * 0.6, game.rng);
+      const r = rollDamage(s.damage * 0.6, game.rng, s.crit, s.critMult);
       damageMob(game, m, r.amount, r.crit, s.kind);
       applyEffects(s, m);
     }
@@ -112,7 +112,7 @@ export function updateShots(game, dt) {
         if (m.dead || s.hitIds.has(m.id)) continue;
         if (Math.hypot(m.x - s.x, m.y - m.height * 0.4 - s.y) <= m.radius + s.radius) {
           s.hitIds.add(m.id);
-          const r = rollDamage(s.damage, game.rng);
+          const r = rollDamage(s.damage, game.rng, s.crit, s.critMult);
           damageMob(game, m, r.amount, r.crit, s.kind);
           applyEffects(s, m);
           if (s.pierce > 0) { s.pierce--; if (s.splash) explode(game, s); continue; }   // ทะลุไปตัวถัดไป

@@ -83,7 +83,7 @@ function head(ctx, L, d, f, x, y, t, side) {
 export function drawHuman(ctx, look, X, Y, o) {
   const L = typeof look === 'string' ? LOOKS[look] : look;
   const d = o.dir ?? 0, side = d === 2 || d === 3, f = d === 2 ? -1 : 1;
-  const k = o.moving ? 1 : 0, ph = (o.walk || 0) * Math.PI * 2, t = o.t || 0;
+  const k = o.amt ?? (o.moving ? 1 : 0), ph = (o.walk || 0) * Math.PI * 2, t = o.t || 0;
   const swinging = o.swing >= 0 && L.weapon === 'sword';
   const pose = swinging ? swingPose(o.swing, o.combo || 0, o.aim) : null;
   // ก้าวเข้าหาเป้าตอนฟัน (ภาพ)

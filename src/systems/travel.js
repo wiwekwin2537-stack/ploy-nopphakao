@@ -1,6 +1,6 @@
 // เดินทางระหว่างพื้นที่ผ่านทางออกจริง และการตาย/ฟื้น
 import { spawnZoneMobs } from './monsters.js';
-import { playerStats } from './player.js';
+import { playerStats } from './stats.js';
 
 export function enterZone(game, id, x, y) {
   const z = game.world.load(id);
@@ -39,7 +39,7 @@ export function respawn(game) {
   const lost = Math.floor(p.coins * B.deathCoinLoss);
   p.coins -= lost;
   p.dead = false;
-  const s = playerStats(p, B);
+  const s = playerStats(p, game.data);
   p.hp = s.maxHp; p.mp = s.maxMp; p.invuln = 1.5;
   game.mode = 'play';
   if (game.flags.reachedTown) enterZone(game, 'town', 20.5 * 32, 17.5 * 32);

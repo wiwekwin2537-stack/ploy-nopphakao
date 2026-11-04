@@ -1,6 +1,6 @@
 // หน้าจอซ้อน: แถบเลือด/มานา/XP เบี้ย ปุ่มสัมผัส คำแนะนำ บทสนทนา หน้าตาย หน้าแรก
 import { C, kanokFrame, rrect, circle, poly } from '../art/draw.js';
-import { playerStats } from '../systems/player.js';
+import { playerStats } from '../systems/stats.js';
 import { xpNeeded } from '../systems/progress.js';
 import { skillOf } from '../systems/skills.js';
 import { hintText, tutorialTarget } from '../systems/tutorial.js';
@@ -106,7 +106,7 @@ function face(ctx, x, y, size) {                      // หน้าตัว�
 }
 
 export function drawHud(ctx, game, L, w, h) {
-  const p = game.player, st = playerStats(p, game.data.balance), s = L.s;
+  const p = game.player, st = playerStats(p, game.data), s = L.s;
   // แผงสถานะมุมซ้ายบน (กรอบรูปหน้า + หลอดเลือด/มานา + เลเวล)
   const px = 8 * s, py = 6 * s, pw = 188 * s, ph = 64 * s;
   ctx.fillStyle = 'rgba(14,12,18,0.72)'; rrect(ctx, px, py, pw, ph, 9 * s); ctx.fill();
@@ -164,6 +164,13 @@ export function drawHud(ctx, game, L, w, h) {
   poly(ctx, [BG.x, BG.y - BG.r * 0.1, BG.x + BG.r * 0.2, BG.y + BG.r * 0.12, BG.x, BG.y + BG.r * 0.35, BG.x - BG.r * 0.2, BG.y + BG.r * 0.12], '#d8283a', null);
   if (p.bag.length) { circle(ctx, BG.x + BG.r * 0.7, BG.y - BG.r * 0.7, 6 * s, '#e0443a', '#fff', 1); text(ctx, String(p.bag.length), BG.x + BG.r * 0.7, BG.y - BG.r * 0.7 + 0.5, 8 * s, '#fff', 'center', '600'); }
   if (game.input.mode === 'keyboard') text(ctx, 'B', BG.x + BG.r + 6 * s, BG.y + BG.r * 0.6, 9 * s, '#f4e6c8', 'center', '600');
+  // ปุ่มต้นพาสซีฟ (ดาว) มีตัวเลขแต้มที่ยังไม่ใช้
+  const TB = L.tree, PS = game.data.passives, ptsLeft = (p.level - 1) * PS.pointsPerLevel - p.passives.filter((id) => PS.nodes[id] && PS.nodes[id].kind !== 'start').length;
+  circle(ctx, TB.x, TB.y, TB.r, 'rgba(14,12,18,0.78)', C.gold, 1.5);
+  const star = []; for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? TB.r * 0.28 : TB.r * 0.62; star.push(TB.x + Math.cos(a) * rr, TB.y + Math.sin(a) * rr); }
+  poly(ctx, star, C.goldHi, null);
+  if (ptsLeft > 0) { circle(ctx, TB.x + TB.r * 0.7, TB.y - TB.r * 0.7, 6 * s, '#3aa85a', '#fff', 1); text(ctx, String(ptsLeft), TB.x + TB.r * 0.7, TB.y - TB.r * 0.7 + 0.5, 8 * s, '#fff', 'center', '600'); }
+  if (game.input.mode === 'keyboard') text(ctx, 'P', TB.x + TB.r + 6 * s, TB.y + TB.r * 0.6, 9 * s, '#f4e6c8', 'center', '600');
   if (game.notice && game.notice.t > 0 && game.mode === 'play') {
     ctx.globalAlpha = Math.min(1, game.notice.t);
     ctx.font = `600 ${12 * s}px ${FONT}`;
@@ -220,7 +227,7 @@ export function drawHud(ctx, game, L, w, h) {
     if (b.locked) { lockButton(ctx, b, s); continue; }
     const gi = b.id === 'skill' ? 0 : b.id === 'skill2' ? 1 : -1, bsk = gi >= 0 ? skillOf(game, gi) : null;
     if (gi >= 0 && !bsk) { lockButton(ctx, b, s); continue; }
-    const cd = gi >= 0 ? p.skillCd[gi] / bsk.cooldown : b.id === 'dash' ? p.dashCd / game.data.balance.player.dashCooldown : 0;
+    const cd = gi >= 0 ? p.skillCd[gi] / bsk.cooldown : b.id === 'dash' ? p.dashCd / st.dashCooldown : 0;
     roundButton(ctx, b, b.id, game, cd, false);
     if (game.input.mode !== 'touch') {
       const key = game.input.mode === 'pad' ? { attack: 'A', dash: 'B', skill: 'X', skill2: 'LT', interact: 'Y' }[b.id] : { attack: 'J', dash: 'Space', skill: 'K', skill2: 'L', interact: 'E' }[b.id];

@@ -4,6 +4,7 @@ import monsters from '../data/monsters.json' with { type: 'json' };
 import zones from '../data/zones.json' with { type: 'json' };
 import dialogue from '../data/dialogue.json' with { type: 'json' };
 import gems from '../data/gems.json' with { type: 'json' };
+import passives from '../data/passives.json' with { type: 'json' };
 import { createEvents } from './core/events.js';
 import { createLoop } from './core/loop.js';
 import { createInput } from './core/input.js';
@@ -26,6 +27,7 @@ import { computeLayout } from './ui/layout.js';
 import { createScene } from './ui/scene.js';
 import { drawHud, drawDialog, drawDeath, drawTitle, titleButtons } from './ui/hud.js';
 import { drawBag, updateBag, bagButtonHit } from './ui/bag.js';
+import { drawTree, updateTree, treeButtonHit, openTree } from './ui/tree.js';
 
 // สองชั้น: โลกวาดความละเอียดต่ำแล้วขยายแบบพิกเซล (สไตล์เอโดเรีย) · หน้าจอซ้อน/ตัวหนังสือวาดคมเต็มความละเอียด
 const PIXEL = 0.62;
@@ -37,15 +39,15 @@ const params = new URLSearchParams(location.search);
 let layout = computeLayout(canvas.clientWidth || innerWidth, canvas.clientHeight || innerHeight);
 
 const game = {
-  data: { balance, monsters, zones, dialogue, gems },
+  data: { balance, monsters, zones, dialogue, gems, passives },
   events: createEvents(), camera: createCamera(), audio: createAudio(), fx: createFx(), rng: createRng(Date.now() & 0xffff),
   flags: {}, mobs: [], shots: [], drops: [], later: [], spawnTimers: [],
   mode: 'title', dialog: null, time: 0, hitStop: 0, toast: null, debug: params.has('debug'),
 };
 game.world = createWorld(zones, (f) => !!game.flags[f]);
 game.input = createInput(canvas, () => layout);
-game.player = createPlayer(balance, gems);
-game.hasSave = !!readSave(zones, gems);
+game.player = createPlayer(game.data);
+game.hasSave = !!readSave(game.data);
 setupLoot(game); setupProgress(game); setupAutosave(game); setupTutorial(game); setupDeath(game);
 game.world.load('road');
 const scene = createScene(game);
@@ -53,16 +55,16 @@ const scene = createScene(game);
 function startNew(skip) {
   clearSave();
   game.flags = {};
-  game.player = createPlayer(balance, gems);
+  game.player = createPlayer(game.data);
   if (skip) { skipTutorial(game); enterZone(game, 'town', 20.5 * 32, 17.5 * 32); } else enterZone(game, 'road');
   game.mode = game.dialog ? 'dialog' : 'play';
   writeSave(game);
 }
 function continueGame() {
-  const s = readSave(zones, gems);
+  const s = readSave(game.data);
   if (!s) return startNew(false);
-  const p = game.player = createPlayer(balance, gems);
-  Object.assign(p, { level: s.level, xp: s.xp, coins: s.coins, bag: s.bag.slice(), sockets: s.sockets.map((r) => r.slice()), hp: s.hp, mp: s.mp });
+  const p = game.player = createPlayer(game.data);
+  Object.assign(p, { level: s.level, xp: s.xp, coins: s.coins, bag: s.bag.slice(), sockets: s.sockets.map((r) => r.slice()), passives: s.passives.slice(), hp: s.hp, mp: s.mp });
   game.flags = { ...s.flags };
   game.mode = 'play';
   enterZone(game, s.zone, s.x, s.y);
@@ -100,6 +102,11 @@ function update(dt) {
   } else if (game.mode === 'dead') {
     game.deadT += dt;
     if (game.deadT > 1.2 && (input.taps.length || input.pressed.attack || input.pressed.interact || input.pressed.dash)) { respawn(game); writeSave(game); }
+  } else if (game.mode === 'tree') {
+    if (updateTree(game, layout, game.camera.viewW, game.camera.viewH)) { game.mode = 'play'; input.setUiMode(false); writeSave(game); }
+  } else if (game.mode === 'play' && (input.pressed.tree || input.taps.some((t) => !t.consumed && treeButtonHit(layout, t)))) {
+    input.taps.forEach((t) => { if (treeButtonHit(layout, t)) t.consumed = true; });
+    game.mode = 'tree'; openTree(game); game.audio.play('click');
   } else if (game.mode === 'bag') {
     if (updateBag(game, layout, game.camera.viewW, game.camera.viewH)) { game.mode = 'play'; game.bagSel = null; writeSave(game); }
   } else if (game.mode === 'play' && (input.pressed.bag || input.taps.some((t) => !t.consumed && bagButtonHit(layout, t)))) {
@@ -144,6 +151,7 @@ function render() {
     if (game.mode === 'dialog') drawDialog(ctx, game, layout, w, h);
     if (game.mode === 'dead') drawDeath(ctx, game, layout, w, h);
     if (game.mode === 'bag') drawBag(ctx, game, layout, w, h);
+    if (game.mode === 'tree') drawTree(ctx, game, layout, w, h);
   }
 }
 

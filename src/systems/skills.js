@@ -1,6 +1,6 @@
 // ใช้สกิลจากชุดพลอย (กดปุ่มสกิล 1 = ชุดที่ 1, สกิล 2 = ชุดที่ 2)
 import { spawnShot } from './combat.js';
-import { playerStats } from './player.js';
+import { playerStats } from './stats.js';
 import { computeSkill } from './gems.js';
 
 export function skillOf(game, group) { return computeSkill(game.data.gems, game.player.sockets, group); }
@@ -22,19 +22,21 @@ function pickTarget(game, p) {
 export function castSkill(game, group) {
   const p = game.player, sk = skillOf(game, group);
   if (!sk || p.skillCd[group] > 0 || p.dashT > 0) return false;
-  if (p.mp < sk.mp) { if (!p._noMpWarn) { game.fx.text(p.x, p.y - 70, 'มานาไม่พอ', '#8fb8ff'); p._noMpWarn = 0.8; } return false; }
+  const st0 = playerStats(p, game.data);
+  if (st0.bloodMagic ? p.hp <= sk.mp : p.mp < sk.mp) { if (!p._noMpWarn) { game.fx.text(p.x, p.y - 70, 'มานาไม่พอ', '#8fb8ff'); p._noMpWarn = 0.8; } return false; }
   const target = pickTarget(game, p);
   const sx = p.x, sy = p.y - 22;
   const ang = target ? Math.atan2(target.y - target.height * 0.4 - sy, target.x - sx) : p.aim;
   p.aim = ang;
-  p.mp -= sk.mp; p.skillCd[group] = sk.cooldown; p.castT = 0.22; p.combatTimer = 4;
-  const dmg = playerStats(p, game.data.balance).damage * sk.damageMult;
+  if (st0.bloodMagic) p.hp = Math.max(1, p.hp - sk.mp); else p.mp -= sk.mp;
+  p.skillCd[group] = sk.cooldown * st0.castCdMult; p.castT = 0.22; p.combatTimer = 4;
+  const st = playerStats(p, game.data), dmg = st.spellDamage * sk.damageMult;
   const spread = 0.2;
   for (let i = 0; i < sk.count; i++) {
     const a = ang + (i - (sk.count - 1) / 2) * spread;
     spawnShot(game, {
-      x: sx + Math.cos(a) * 10, y: sy + Math.sin(a) * 10, vx: Math.cos(a) * sk.speed, vy: Math.sin(a) * sk.speed,
-      life: sk.life, radius: sk.radius, from: 'player', damage: dmg, kind: sk.kind, splash: sk.splash,
+      x: sx + Math.cos(a) * 10, y: sy + Math.sin(a) * 10, vx: Math.cos(a) * sk.speed * st.projSpeedMult, vy: Math.sin(a) * sk.speed * st.projSpeedMult, crit: st.crit, critMult: st.critMult,
+      life: sk.life, radius: sk.radius, from: 'player', damage: dmg, kind: sk.kind, splash: sk.splash * st.areaMult,
       pierce: sk.pierce, slow: sk.slow, slowTime: sk.slowTime, poison: sk.poison ? dmg * sk.poison : 0, poisonTime: sk.poisonTime,
     });
   }

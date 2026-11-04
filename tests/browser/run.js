@@ -12,7 +12,7 @@ async function check(name, fn) {
   catch (e) { results.push({ ok: false, name, note: e.message, ms: Date.now() - t0 }); }
 }
 const assert = (c, msg) => { if (!c) throw new Error(msg); };
-const state = (page) => G(page, () => { const g = __ploy.game, p = g.player; return { mode: g.mode, step: g.flags.tutStep, zone: g.world.zone.id, x: p.x, y: p.y, hp: p.hp, lv: p.level, xp: p.xp, coins: p.coins, gems: p.sockets.flat().filter(Boolean), mobs: g.mobs.length, done: !!g.flags.tutorialDone }; });
+const state = (page) => G(page, () => { const g = __ploy.game, p = g.player; return { mode: g.mode, step: g.flags.tutStep, zone: g.world.zone.id, x: p.x, y: p.y, hp: p.hp, lv: p.level, xp: p.xp, coins: p.coins, gems: p.sockets.flat().filter(Boolean), pas: p.passives.join(','), mobs: g.mobs.length, done: !!g.flags.tutorialDone }; });
 const wait = (page, fn, arg, ms = 8000) => page.waitForFunction(fn, arg, { timeout: ms });
 async function closeDialogs(page) {
   for (let i = 0; i < 20; i++) {
@@ -172,6 +172,32 @@ await check('พลอยเสริม: เก็บจากพื้น → 
   assert(n === 3, 'ลูกไฟ ' + n + ' ลูก');
 });
 
+await check('ต้นพาสซีฟ: กด P → แตะนักรบสองครั้งเลือกสาย → แตะโหนดติดกันสองครั้ง → ดาเมจดาบเพิ่ม', async () => {
+  await G(page, () => { const p = __ploy.game.player; p.level = Math.max(p.level, 3); p.passives = []; });
+  const dmg0 = await G(page, () => __ploy.game.player.level);
+  await page.keyboard.press('KeyP');
+  await wait(page, () => __ploy.game.mode === 'tree', null, 2000);
+  const at = (id) => G(page, (id) => { const g = __ploy.game, v = g.treeView, n = g.data.passives.nodes[id], s = __ploy.layout().s; return { x: g.camera.viewW / 2 + (n.x - v.x) * v.z * s, y: g.camera.viewH / 2 + (n.y - v.y) * v.z * s }; }, id);
+  for (const id of ['warrior', 'warrior_a0']) {
+    const pt = await at(id);
+    await page.mouse.click(pt.x, pt.y); await page.waitForTimeout(80);
+    await page.mouse.click(pt.x, pt.y); await page.waitForTimeout(80);
+  }
+  await page.screenshot({ path: SHOTS + '/10c-tree.png' });
+  const r = await G(page, () => ({ pas: __ploy.game.player.passives.slice() }));
+  assert(r.pas.includes('warrior') && r.pas.includes('warrior_a0'), 'เลือกไม่ได้ ' + JSON.stringify(r.pas));
+  // ลากเลื่อนต้นได้
+  const v0 = await G(page, () => __ploy.game.treeView.x);
+  await page.mouse.move(400, 200); await page.mouse.down(); await page.mouse.move(300, 200, { steps: 5 }); await page.mouse.up();
+  const v1 = await G(page, () => __ploy.game.treeView.x);
+  assert(v1 > v0 + 30, 'ลากเลื่อนไม่ได้');
+  await page.keyboard.press('KeyP'); await page.waitForTimeout(100);
+  assert((await state(page)).mode === 'play', 'ปิดไม่ได้');
+  // เดินได้ปกติหลังปิด (จอย/คีย์ไม่ค้าง)
+  const x0 = (await state(page)).x; await hold(page, 'KeyD', 400); assert((await state(page)).x > x0 + 20, 'เดินไม่ได้หลังปิดต้น');
+  return 'เลเวล ' + dmg0;
+});
+
 await check('เซฟแล้วรีเฟรชหน้า → กด "เล่นต่อ" ได้ของเดิมครบ', async () => {
   await G(page, () => __ploy.writeSave(__ploy.game));
   const before = await state(page);
@@ -181,7 +207,7 @@ await check('เซฟแล้วรีเฟรชหน้า → กด "เ
   await page.waitForTimeout(300);
   const after = await state(page);
   assert(after.mode === 'play', 'โหมด ' + after.mode);
-  for (const k of ['zone', 'lv', 'xp', 'coins', 'done']) assert(before[k] === after[k], `${k}: ${before[k]} → ${after[k]}`);
+  for (const k of ['zone', 'lv', 'xp', 'coins', 'done', 'pas']) assert(before[k] === after[k], `${k}: ${before[k]} → ${after[k]}`);
   assert(after.gems.includes('ruby') && after.gems.includes('multi'), 'พลอยที่ฝังหายหลังโหลด');
 });
 

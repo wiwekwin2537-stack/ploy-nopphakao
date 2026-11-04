@@ -19,5 +19,6 @@ export function computeLayout(w, h) {
     minimap: { x: w - 52 * s, y: 50 * s, r: 40 * s },
     mute: { x: w - 30 * s, y: 128 * s, r: 15 * s },
     bag: { x: 26 * s, y: 116 * s, r: 17 * s },
+    tree: { x: 26 * s, y: 156 * s, r: 17 * s },
   };
 }

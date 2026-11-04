@@ -1,11 +1,11 @@
 // อินพุตทุกแบบรวมที่เดียว: คีย์บอร์ด เมาส์ จอสัมผัส และจอยเกม
 // getLayout() มาจาก ui/layout.js บอกตำแหน่งจอยสัมผัสและปุ่มบนจอ
-const ACTIONS = ['attack', 'dash', 'skill', 'skill2', 'interact', 'pause', 'bag'];
+const ACTIONS = ['attack', 'dash', 'skill', 'skill2', 'interact', 'pause', 'bag', 'tree'];
 
 const KEYMAP = {
   KeyW: 'up', ArrowUp: 'up', KeyS: 'down', ArrowDown: 'down',
   KeyA: 'left', ArrowLeft: 'left', KeyD: 'right', ArrowRight: 'right',
-  KeyJ: 'attack', Space: 'dash', ShiftLeft: 'dash', KeyK: 'skill', KeyQ: 'skill', Digit1: 'skill', KeyL: 'skill2', Digit2: 'skill2', KeyB: 'bag', KeyI: 'bag', Tab: 'bag',
+  KeyJ: 'attack', Space: 'dash', ShiftLeft: 'dash', KeyK: 'skill', KeyQ: 'skill', Digit1: 'skill', KeyL: 'skill2', Digit2: 'skill2', KeyB: 'bag', KeyI: 'bag', Tab: 'bag', KeyP: 'tree', KeyT: 'tree',
   KeyE: 'interact', Enter: 'interact', Escape: 'pause',
 };
 
@@ -49,9 +49,23 @@ export function createInput(target, getLayout) {
     return null;
   }
 
+  // โหมดหน้าต่าง (เช่น ต้นพาสซีฟ): ลากเพื่อเลื่อน แตะ = ปล่อยนิ้วโดยแทบไม่ขยับ ไม่มีจอยเดิน
+  let uiMode = false;
+  const uiPtr = new Map();
+  const drag = { dx: 0, dy: 0, wheel: 0, pinch: 1 };
+  let pinchD = 0;
+  target.addEventListener('wheel', (e) => { if (uiMode) { e.preventDefault(); drag.wheel += e.deltaY; } }, { passive: false });
+
   target.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     const x = e.offsetX, y = e.offsetY;
+    if (uiMode) {
+      if (e.pointerType !== 'mouse') mode = 'touch';
+      uiPtr.set(e.pointerId, { x, y, sx: x, sy: y, moved: 0 });
+      if (uiPtr.size === 2) { const [a, b] = [...uiPtr.values()]; pinchD = Math.hypot(a.x - b.x, a.y - b.y); }
+      target.setPointerCapture?.(e.pointerId);
+      return;
+    }
     if (e.pointerType === 'touch' || e.pointerType === 'pen') {
       mode = 'touch';
       const L = getLayout();
@@ -72,6 +86,17 @@ export function createInput(target, getLayout) {
     target.setPointerCapture?.(e.pointerId);
   });
   target.addEventListener('pointermove', (e) => {
+    const up = uiPtr.get(e.pointerId);
+    if (up) {
+      const dx = e.offsetX - up.x, dy = e.offsetY - up.y;
+      up.x = e.offsetX; up.y = e.offsetY; up.moved += Math.hypot(dx, dy);
+      if (uiPtr.size === 2) {
+        const [a, b] = [...uiPtr.values()], d = Math.hypot(a.x - b.x, a.y - b.y);
+        if (pinchD > 0) drag.pinch *= d / pinchD;
+        pinchD = d;
+      } else { drag.dx += dx; drag.dy += dy; }
+      return;
+    }
     if (e.pointerId === touch.joyId) {
       const L = getLayout();
       const max = L ? L.joyR : 60;
@@ -84,6 +109,12 @@ export function createInput(target, getLayout) {
     }
   });
   const end = (e) => {
+    const up = uiPtr.get(e.pointerId);
+    if (up) {
+      uiPtr.delete(e.pointerId);
+      if (up.moved < 10 && e.type === 'pointerup') taps.push({ sx: up.sx, sy: up.sy, kind: e.pointerType === 'mouse' ? 'mouse' : 'touch' });
+      return;
+    }
     if (e.pointerId === touch.joyId) { touch.joyId = null; touch.dx = 0; touch.dy = 0; }
     const b = touch.buttons.get(e.pointerId);
     if (b) { touch.buttons.delete(e.pointerId); release(b); }
@@ -127,7 +158,15 @@ export function createInput(target, getLayout) {
       if (d > 1) { x /= d; y /= d; }
       move.x = x; move.y = y;
     },
-    endFrame() { ACTIONS.forEach((a) => { pressed[a] = false; }); taps.length = 0; },
+    endFrame() { ACTIONS.forEach((a) => { pressed[a] = false; }); taps.length = 0; drag.dx = 0; drag.dy = 0; drag.wheel = 0; drag.pinch = 1; },
+    drag,
+    setUiMode(on) {
+      if (on === uiMode) return;
+      uiMode = on; uiPtr.clear();
+      touch.joyId = null; touch.dx = 0; touch.dy = 0; mouseHeld = null;
+      for (const [, b] of touch.buttons) release(b);
+      touch.buttons.clear();
+    },
     // ใช้ในเทสต์และ UI: สั่งกดปุ่มแบบเดียวกับผู้เล่น
     tap(action) { press(action); release(action); },
     setMode(m) { mode = m; },

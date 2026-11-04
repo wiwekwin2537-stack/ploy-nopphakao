@@ -4,9 +4,9 @@ import { C, shadow, box, poly, circle } from './draw.js';
 
 function pig(ctx, s, o, colors) {
   const { body, dark, mane } = colors;
-  const run = o.moving ? Math.sin(o.t * (o.charging ? 30 : 16)) : 0;
+  const run = o.moving ? Math.sin((o.walk || 0) * Math.PI * 2) : 0;
   const lean = o.charging ? 3 : 0;
-  if (o.moving) ctx.translate(0, -Math.abs(Math.cos(o.t * (o.charging ? 30 : 16))) * 1.6 * s);   // วิ่งกระเด้ง
+  if (o.moving) ctx.translate(0, -Math.abs(Math.cos((o.walk || 0) * Math.PI * 2)) * 1.6 * s);   // วิ่งกระเด้ง
   // ขา
   ctx.fillStyle = dark;
   [-7, -2, 4, 8].forEach((lx, i) => ctx.fillRect(lx * s, -5 * s + (i % 2 ? run : -run) * s, 2.6 * s, 5 * s));
@@ -27,8 +27,8 @@ function pig(ctx, s, o, colors) {
 }
 
 function monkey(ctx, o) {
-  const run = o.moving ? Math.sin(o.t * 18) : 0;
-  const hop = o.moving ? Math.abs(Math.sin(o.t * 9)) * 3 : 0;
+  const run = o.moving ? Math.sin((o.walk || 0) * Math.PI * 2) : 0;
+  const hop = o.moving ? Math.abs(Math.sin((o.walk || 0) * Math.PI)) * 3 : 0;
   ctx.translate(0, -hop);
   ctx.strokeStyle = '#6b5440'; ctx.lineWidth = 2.4;
   ctx.beginPath(); ctx.moveTo(-6, -8); ctx.bezierCurveTo(-16, -10, -14, -24, -8, -22); ctx.stroke(); // หาง

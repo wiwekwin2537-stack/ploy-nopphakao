@@ -2,25 +2,17 @@
 import { meleeArc } from './combat.js';
 import { castSkill } from './skills.js';
 import { emptySockets } from './gems.js';
+import { playerStats } from './stats.js';
 
-export function playerStats(p, balance) {
-  const B = balance.player, lv = p.level - 1;
-  return {
-    maxHp: Math.round(B.hp + B.hpPerLevel * lv),
-    maxMp: Math.round(B.mp + B.mpPerLevel * lv),
-    damage: B.damage + B.damagePerLevel * lv,
-    speed: B.speed,
-  };
-}
-
-export function createPlayer(balance, gemsData) {
+export function createPlayer(data) {
+  const gemsData = data.gems;
   const p = {
     x: 0, y: 0, radius: 10, level: 1, xp: 0, coins: 0, hp: 1, mp: 1,
     bag: [], sockets: emptySockets(gemsData), dir: 0, aim: 0, walk: 0, moving: false,
     attackCd: 0, swing: -1, combo: 0, comboT: 0, pendingHit: null, dashCd: 0, dashT: 0, dashVx: 0, dashVy: 0, skillCd: Array(gemsData.groups).fill(0), castT: 0,
-    invuln: 0, hurt: 0, dead: false, combatTimer: 0, moveTarget: null, targetMob: null, movedDist: 0,
+    passives: [], invuln: 0, hurt: 0, dead: false, combatTimer: 0, moveTarget: null, targetMob: null, movedDist: 0,
   };
-  const s = playerStats(p, balance);
+  const s = playerStats(p, data);
   p.hp = s.maxHp; p.mp = s.maxMp;
   return p;
 }
@@ -46,7 +38,7 @@ export function doAttack(game) {
   if (p.attackCd > 0 || p.dashT > 0) return false;
   const target = (p.targetMob && !p.targetMob.dead) ? p.targetMob : nearestMob(game, p.x, p.y, B.attackRange * 1.8);
   if (target) faceAngle(p, Math.atan2(target.y - target.height * 0.3 - (p.y - 10), target.x - p.x));
-  p.attackCd = B.attackCooldown;
+  p.attackCd = playerStats(p, game.data).attackCooldown;
   // คอมโบ 3 จังหวะ: ฟันขวา→ซ้าย, ซ้าย→ขวา, แทงตรง (กดต่อเนื่องภายใน 0.7 วิ)
   p.combo = p.comboT > 0 ? (p.combo + 1) % 3 : 0;
   p.comboT = 0.7;
@@ -58,6 +50,8 @@ export function doAttack(game) {
 }
 
 export const SWING_TIME = 0.34;
+// ระยะเดินต่อการก้าวครบ 1 รอบ (ซ้าย+ขวา) — ค่ามากขึ้น = ก้าวยาวช้าลง ดูสมจริงขึ้น
+export const STRIDE = 92;
 
 function applyPendingHit(game, dt) {
   const p = game.player, B = game.data.balance.player, h = p.pendingHit;
@@ -68,8 +62,9 @@ function applyPendingHit(game, dt) {
   const thrust = h.combo === 2;
   const range = thrust ? B.attackRange * 1.25 : B.attackRange, arc = thrust ? 0.9 : B.attackArc;
   if (!thrust) game.fx.slash(p.x, p.y, h.aim, range, arc, h.combo === 1 ? -1 : 1);
-  const dmg = playerStats(p, game.data.balance).damage * (thrust ? 1.25 : 1);
-  const hits = meleeArc(game, p.x, p.y, h.aim, range, arc, dmg);
+  const st = playerStats(p, game.data), dmg = st.damage * (thrust ? 1.25 : 1);
+  const hits = meleeArc(game, p.x, p.y, h.aim, range, arc, dmg, st.crit, st.critMult);
+  if (hits && st.lifeOnHit) p.hp = Math.min(st.maxHp, p.hp + st.lifeOnHit * hits);
   // ก้าวเข้าหาเป้านิดหนึ่งตอนฟัน ให้ดูมีน้ำหนัก
   const m = game.world.moveCircle(p.x, p.y, p.radius, Math.cos(h.aim) * (thrust ? 7 : 4), Math.sin(h.aim) * (thrust ? 7 : 4));
   p.x = m.x; p.y = m.y;
@@ -84,7 +79,7 @@ export function doDash(game) {
   if (!dx && !dy) { dx = Math.cos(p.aim); dy = Math.sin(p.aim); }
   const d = Math.hypot(dx, dy) || 1;
   p.dashVx = dx / d * B.dashSpeed; p.dashVy = dy / d * B.dashSpeed;
-  p.dashT = B.dashTime; p.dashCd = B.dashCooldown;
+  p.dashT = B.dashTime; p.dashCd = playerStats(p, game.data).dashCooldown;
   p.invuln = Math.max(p.invuln, B.dashTime + 0.08);
   p.moveTarget = null;
   game.fx.burst(p.x, p.y, '#d8c49a', 8, 60, 0.4, 3);
@@ -95,7 +90,7 @@ export function doDash(game) {
 
 export function updatePlayer(game, dt) {
   const p = game.player, input = game.input, B = game.data.balance.player;
-  const st = playerStats(p, game.data.balance);
+  const st = playerStats(p, game.data);
   p.attackCd = Math.max(0, p.attackCd - dt);
   p.dashCd = Math.max(0, p.dashCd - dt);
   p.invuln = Math.max(0, p.invuln - dt);
@@ -109,7 +104,7 @@ export function updatePlayer(game, dt) {
   // ฟื้นพลัง
   const regen = game.world.zone.safe ? B.townHpRegen : (p.combatTimer > 0 ? 0 : B.hpRegen * 2);
   p.hp = Math.min(st.maxHp, p.hp + regen * dt);
-  p.mp = Math.min(st.maxMp, p.mp + B.mpRegen * dt);
+  p.mp = Math.min(st.maxMp, p.mp + st.mpRegen * dt);
   if (p.dead) return;
 
   // คลิกเมาส์: ถ้าโดนมอน = ล็อกเป้าแล้วเดินไปตี ถ้าโดนพื้น = เดินไปจุดนั้น
@@ -156,7 +151,8 @@ export function updatePlayer(game, dt) {
   const moved = Math.hypot(p.x - ox, p.y - oy);
   p.movedDist += moved;
   p.moving = moved > 0.3;
-  if (p.moving) p.walk = (p.walk + moved / 34) % 1;
+  if (p.moving) p.walk = (p.walk + moved / STRIDE) % 1;
+  p.walkAmt = (p.walkAmt || 0) + ((p.moving ? 1 : 0) - (p.walkAmt || 0)) * Math.min(1, dt * 9);   // ค่อยๆ เข้า/ออกท่าเดิน ไม่กระตุก
   if (p.moveTarget && moved < 0.05 && !(mx === 0 && my === 0)) p.moveTarget = null; // ติดกำแพง
 }
 

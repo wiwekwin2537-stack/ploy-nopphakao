@@ -103,6 +103,7 @@ function step(game, m, vx, vy, dt) {
   if (Math.abs(vx) > 1) m.face = vx > 0 ? 1 : -1;
   const moved = Math.hypot(m.x - ox, m.y - oy);
   m.moving = moved > 0.2;
+  m.walk = ((m.walk || 0) + moved / (m.radius * 4.5)) % 1;   // จังหวะขาตามระยะที่เดินจริง
   return moved;
 }
 
