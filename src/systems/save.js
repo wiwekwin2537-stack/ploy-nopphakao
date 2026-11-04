@@ -2,7 +2,7 @@
 import { validTree } from './passives.js';
 import { validItems, emptyEquip } from './items.js';
 
-export const SAVE_VERSION = 8;
+export const SAVE_VERSION = 9;
 const KEY = 'ploy.save';
 
 // ตัวแปลงเซฟรุ่นเก่า → รุ่นใหม่ (เพิ่มที่นี่เมื่อเปลี่ยนรูปแบบเซฟ)
@@ -47,6 +47,13 @@ const MIGRATIONS = {
   },
   // v7 → v8: ขวดน้ำมนต์ (มานา) แถมให้ 2 ขวด
   7: (d) => ({ ...d, v: 8, mpPotions: 2 }),
+  // v8 → v9: ช่องพลอยมีสี (แบบ PoE) — ช่องที่มีพลอยได้สีตรงกับพลอย ช่องว่างเป็นสีขาว (ใส่ได้ทุกสี) · แถมหินเจ็ดสี 1
+  8: (d) => {
+    const GC = { ruby: 'r', sapphire: 'b', emerald: 'g', topaz: 'b', multi: 'g', pierce: 'g', area: 'r', haste: 'b', power: 'r' };
+    const paint = (it) => (it && it.sockets !== undefined ? { ...it, colors: it.gems.map((g) => (g && GC[g]) || 'w') } : it);
+    const equip = Object.fromEntries(Object.entries(d.equip || {}).map(([k, it]) => [k, paint(it)]));
+    return { ...d, v: 9, equip, items: (d.items || []).map(paint), currency: { ...(d.currency || {}), chroma: ((d.currency || {}).chroma || 0) + 1 } };
+  },
 };
 
 export function serialize(game) {

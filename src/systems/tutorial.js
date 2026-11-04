@@ -99,7 +99,7 @@ export function updateTutorial(game, dt) {
 
 export function skipTutorial(game) {
   const p = game.player;
-  if (!ownsGem(p, 'ruby')) autoSocket(p, 'ruby');
+  if (!ownsGem(p, 'ruby')) autoSocket(p, 'ruby', game.data.gems);
   Object.assign(game.flags, { gotRuby: true, metChan: true, tutorialDone: true, tutStep: 'done' });
   game.hintT = 0;
 }

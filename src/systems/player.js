@@ -20,12 +20,12 @@ export function createPlayer(data) {
 // ของเริ่มต้น: ดาบไม้ไผ่ 3 ช่องเชื่อมกันหมด + เสื้อผ้าฝ้าย 2 ช่อง + ผ้าคาดหัว + ยาหม้อ
 export function giveStarterGear(p, data) {
   const mk = (base, extra = {}) => ({ uid: ++p.nextUid, base, rarity: 'normal', ilvl: 1, mods: [], rareName: null, ...extra });
-  p.equip.weapon = mk('bamboo_sword', { sockets: 3, links: [true, true], gems: [null, null, null] });
-  p.equip.body = mk('cotton_shirt', { sockets: 2, links: [false], gems: [null, null] });
+  p.equip.weapon = mk('bamboo_sword', { sockets: 3, links: [true, true], gems: [null, null, null], colors: ['r', 'g', 'g'] });
+  p.equip.body = mk('cotton_shirt', { sockets: 2, links: [false], gems: [null, null], colors: ['b', 'g'] });
   p.equip.head = mk('cloth_band');
   p.potions = data.shop ? data.shop.potion.starter : 0;
   p.mpPotions = data.shop ? data.shop.manaPotion.starter : 0;
-  p.currency = { jeweller: 1, fusing: 1 };
+  p.currency = { jeweller: 1, fusing: 1, chroma: 1 };
 }
 
 function nearestMob(game, x, y, maxD) {

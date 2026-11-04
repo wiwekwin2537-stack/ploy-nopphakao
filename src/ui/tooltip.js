@@ -6,6 +6,7 @@ import { itemName, itemStats, longestLink } from '../systems/items.js';
 import { gemInfo, gemType, computeSkill } from '../systems/gems.js';
 import { gemSprite } from '../art/gems.js';
 import { itemSprite } from '../art/items.js';
+import { SOCKET_COL } from './gemtab.js';
 
 const FONT = 'Kanit, sans-serif';
 const MOD_COL = '#8ab4ff';      // ค่าสุ่ม (แบบ PoE สีฟ้า)
@@ -50,7 +51,8 @@ function socketRow(ctx, G, it, x, y, s) {
   for (let i = 0; i < it.sockets - 1; i++) if (it.links[i]) { ctx.fillStyle = C.goldHi; ctx.fillRect(x + r + i * gap, y - 2 * s, gap, 4 * s); }
   for (let i = 0; i < it.sockets; i++) {
     const cx = x + r + i * gap;
-    circle(ctx, cx, y, r, '#1a1210', '#b89a58', 1.5);
+    const sc = SOCKET_COL[(it.colors && it.colors[i]) || 'w'];
+    circle(ctx, cx, y, r, sc.fill, sc.rim, 2);
     if (it.gems[i]) ctx.drawImage(gemSprite(G, it.gems[i], r * 4), cx - r * 1.1, y - r * 1.1, r * 2.2, r * 2.2);
   }
 }
@@ -94,6 +96,8 @@ export function drawGemTip(ctx, game, id, ax, ay, opt = {}) {
   lines.push({ h: 40 * s, draw: (c, x, y, w) => c.drawImage(gemSprite(G, id, 80), x + w / 2 - 18 * s, y, 36 * s, 36 * s) });
   lines.push({ t: info.name, col: info.hi || info.color, size: 12.5, weight: '600', center: true });
   lines.push({ t: main ? 'พลอยสกิล — ฝังแล้วได้สกิล' : 'พลอยเสริม — เสริมพลอยสกิลที่อยู่ในช่องเชื่อมกัน', col: 'rgba(244,230,200,0.65)', size: 9, center: true });
+  const sc = G.socketColors[info.socket];
+  lines.push({ t: `ลงได้ในช่องสี${sc.name} หรือช่องขาว`, col: sc.color, size: 9.5, center: true, weight: '600' });
   lines.push({ sep: true, h: 8 * s });
   if (main) {
     const sk = computeSkill(G, id);

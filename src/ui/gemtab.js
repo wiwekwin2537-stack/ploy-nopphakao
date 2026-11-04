@@ -12,6 +12,7 @@ import { drawItemTip, drawGemTip, drawCurrencyTip } from './tooltip.js';
 
 const COLS = 6;
 const SLOT_NAME = { weapon: 'อาวุธ', body: 'เสื้อ' };
+export const SOCKET_COL = { r: { fill: 'rgba(90,14,16,0.92)', rim: '#e8404a' }, g: { fill: 'rgba(14,60,26,0.92)', rim: '#4ad870' }, b: { fill: 'rgba(14,30,80,0.92)', rim: '#4a8af0' }, w: { fill: 'rgba(60,60,64,0.92)', rim: '#f4f4f4' } };
 
 // ตำแหน่งช่องบนรูปไอเท็มแบบ PoE: 2 แถวตั้งแบบงูเลื้อย (0 1 / 3 2 / 4 5) ศูนย์กลางที่ (cx, cy)
 export function socketSpots(n, cx, cy, gap) {
@@ -29,8 +30,8 @@ export function gemLayout(B, p) {
     const sockets = spots.map((sp, i) => ({ slot, idx: i, x: (real[i] || sp).x, y: (real[i] || sp).y, r: 12 * s }));
     return { group: g, slot, x, y, w: cw, h: ch, art, sockets };
   });
-  const cy = B.y + 42 * s + ch + 6 * s, cw2 = (B.w * 0.5 - 24 * s) / 2;
-  const cur = ['jeweller', 'fusing'].map((k, i) => ({ kind: k, x: B.x + 12 * s + i * (cw2 + 6 * s), y: cy, w: cw2, h: 26 * s }));
+  const cy = B.y + 42 * s + ch + 6 * s, cw2 = (B.w * 0.5 - 30 * s) / 3;
+  const cur = ['jeweller', 'fusing', 'chroma'].map((k, i) => ({ kind: k, x: B.x + 12 * s + i * (cw2 + 6 * s), y: cy, w: cw2, h: 26 * s }));
   return { rows, cur };
 }
 
@@ -53,6 +54,10 @@ export function currencyIcon(ctx, kind, x, y, r) {
   if (kind === 'jeweller') {
     poly(ctx, [x - r * 0.8, y + r * 0.5, x - r * 0.6, y - r * 0.5, x + r * 0.2, y - r * 0.8, x + r * 0.8, y - r * 0.2, x + r * 0.6, y + r * 0.6], '#b8b0a0', C.ink, 1.2);
     circle(ctx, x, y, r * 0.22, '#3a3430', null);
+  } else if (kind === 'chroma') {                                // หินเจ็ดสี: ผลึกสามสีแดง/เขียว/น้ำเงิน
+    poly(ctx, [x - r * 0.9, y + r * 0.6, x - r * 0.3, y - r * 0.8, x, y + r * 0.6], '#e8404a', C.ink, 1);
+    poly(ctx, [x - r * 0.3, y + r * 0.6, x + r * 0.2, y - r * 0.9, x + r * 0.5, y + r * 0.6], '#4ad870', C.ink, 1);
+    poly(ctx, [x + r * 0.1, y + r * 0.6, x + r * 0.6, y - r * 0.7, x + r * 0.95, y + r * 0.6], '#4a8af0', C.ink, 1);
   } else {
     circle(ctx, x, y, r * 0.7, '#f4f0e8', C.ink, 1.2);
     ctx.strokeStyle = '#c9b89a'; ctx.lineWidth = 1;
@@ -84,7 +89,8 @@ export function drawGemTab(ctx, game, B) {
     }
     for (let i = 0; i < n; i++) {
       const so = row.sockets[i], g = it.gems[i], picked = game.sockSel && game.sockSel.slot === row.slot && game.sockSel.idx === i;
-      circle(ctx, so.x, so.y, so.r, 'rgba(20,14,10,0.92)', picked ? '#ffffff' : '#b89a58', picked ? 3 : 2.5);
+      const sc = SOCKET_COL[(it.colors && it.colors[i]) || 'w'];        // ช่องสีแดง/เขียว/น้ำเงิน/ขาว
+      circle(ctx, so.x, so.y, so.r, sc.fill, picked ? '#ffffff' : sc.rim, picked ? 3.5 : 3);
       if (g) gemIcon(ctx, G, g, so.x, so.y, so.r * 0.85);
     }
     text(ctx, `${n}/${socketMax(I, it)} ช่อง`, A.x, row.y + row.h - 10 * s, 9 * s, 'rgba(244,230,200,0.6)', 'center', 'normal');
@@ -95,7 +101,7 @@ export function drawGemTab(ctx, game, B) {
     ctx.fillStyle = on ? 'rgba(217,166,48,0.35)' : 'rgba(0,0,0,0.35)'; rrect(ctx, c.x, c.y, c.w, c.h, 8 * s); ctx.fill();
     ctx.strokeStyle = on ? C.goldHi : 'rgba(184,154,88,0.5)'; ctx.lineWidth = 1.2; ctx.stroke();
     currencyIcon(ctx, c.kind, c.x + 14 * s, c.y + c.h / 2, 9 * s);
-    text(ctx, `${info.name} ×${have}`, c.x + 28 * s, c.y + c.h / 2 + 0.5, 10 * s, have ? C.cream : 'rgba(244,230,200,0.45)', 'left', '600');
+    text(ctx, `${info.name} ×${have}`, c.x + 26 * s, c.y + c.h / 2 + 0.5, 9 * s, have ? C.cream : 'rgba(244,230,200,0.45)', 'left', '600');
   }
   // สกิลที่ได้
   const sk = skillsOf(G, p);
@@ -150,6 +156,7 @@ export function updateGemTab(game, B, t) {
       game.bagGroup = row.group; game.curSel = null; game.cardTip = null;
       if (game.bagSel !== null && game.bagSel !== undefined && p.bag[game.bagSel]) {   // ถือพลอยอยู่ → ฝังลงช่องนี้
         if (socketGem(G, p, game.bagSel, row.slot, so.idx)) changed();
+        else say('สีไม่ตรง — พลอยสีนี้ลงได้เฉพาะช่องสีเดียวกัน (หรือช่องขาว) ใช้หินเจ็ดสีเปลี่ยนสีช่อง');
         game.bagSel = null; game.sockSel = null;
       } else if (game.sockSel && game.sockSel.slot === row.slot && game.sockSel.idx === so.idx) {   // แตะซ้ำ = ถอด
         if (unsocketGem(p, row.slot, so.idx)) { game.audio.play('click'); game.events.emit('gemsChanged', {}); }
@@ -168,7 +175,7 @@ export function updateGemTab(game, B, t) {
     if (game.curSel !== c.kind) { game.curSel = c.kind; game.audio.play('click'); return; }
     const slot = SOCKET_SLOTS[game.bagGroup || 0], it = p.equip[slot], name = I.currency[c.kind].name;
     if (!(p.currency[c.kind] > 0)) { say(`ไม่มี${name} — หาได้จากมอน บอส หรือร้านแม่ค้า`); return; }
-    const r = useCurrency(I, game.rng, p, c.kind, it);
+    const r = useCurrency(I, game.rng, p, c.kind, it, G);
     if (!r) { say(it ? `ใช้${name}กับ${itemName(I, it)}ไม่ได้` : `ยังไม่ได้สวม${SLOT_NAME[slot]}`); return; }
     game.audio.play('level'); say(`${name}: ${r}`, '#9af0b0');
     game.events.emit('currencyUsed', { kind: c.kind }); game.events.emit('gemsChanged', {});
@@ -183,6 +190,7 @@ export function updateGemTab(game, B, t) {
       const slot = SOCKET_SLOTS[game.bagGroup || 0], it = p.equip[slot];
       if (!it || !it.sockets) say(`${SLOT_NAME[slot]}ไม่มีช่องพลอย`);
       else if (socketGem(G, p, i, slot)) changed();
+      else say(`${SLOT_NAME[slot]}ไม่มีช่องสีที่ตรงกับพลอยนี้ — ใช้หินเจ็ดสีสุ่มสีช่อง`);
       game.bagSel = null;
     } else { game.bagSel = i; game.audio.play('click'); }
   }

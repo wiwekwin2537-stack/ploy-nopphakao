@@ -2,7 +2,7 @@
 import { C, rrect, circle, poly } from '../art/draw.js';
 import { itemSprite } from '../art/items.js';
 import { drawItemTip } from './tooltip.js';
-import { socketSpots } from './gemtab.js';
+import { socketSpots, SOCKET_COL } from './gemtab.js';
 import { uiText as text } from './hud.js';
 import { EQUIP_SLOTS, itemName, equipFromBag, unequip, discard } from '../systems/items.js';
 
@@ -27,7 +27,7 @@ export function itemIcon(ctx, I, it, x, y, r) {
     const sp = socketSpots(it.sockets, x, y, r * 0.55);
     ctx.strokeStyle = 'rgba(243,210,122,0.9)'; ctx.lineWidth = Math.max(1, r * 0.12);
     for (let i = 0; i < it.sockets - 1; i++) if (it.links[i]) { ctx.beginPath(); ctx.moveTo(sp[i].x, sp[i].y); ctx.lineTo(sp[i + 1].x, sp[i + 1].y); ctx.stroke(); }
-    sp.forEach((q, i) => { ctx.fillStyle = it.gems && it.gems[i] ? '#e85a6a' : 'rgba(20,14,10,0.85)'; ctx.beginPath(); ctx.arc(q.x, q.y, r * 0.17, 0, 7); ctx.fill(); ctx.strokeStyle = '#d8c090'; ctx.lineWidth = 1; ctx.stroke(); });
+    sp.forEach((q, i) => { const sc = SOCKET_COL[(it.colors && it.colors[i]) || 'w']; ctx.fillStyle = it.gems && it.gems[i] ? sc.rim : sc.fill; ctx.beginPath(); ctx.arc(q.x, q.y, r * 0.17, 0, 7); ctx.fill(); ctx.strokeStyle = sc.rim; ctx.lineWidth = 1; ctx.stroke(); });
   }
 }
 

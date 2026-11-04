@@ -1026,7 +1026,21 @@
    5,
    2
   ],
-  "linkChance": 0.3
+  "linkChance": 0.3,
+  "colorWeights": {
+   "weapon": {
+    "r": 45,
+    "g": 30,
+    "b": 22,
+    "w": 3
+   },
+   "body": {
+    "r": 32,
+    "g": 32,
+    "b": 33,
+    "w": 3
+   }
+  }
  },
  "currency": {
   "jeweller": {
@@ -1084,6 +1098,14 @@
    "dropChance": 0,
    "minLevel": 99,
    "tier": 5
+  },
+  "chroma": {
+   "name": "หินเจ็ดสี",
+   "desc": "สุ่มสีช่องพลอยของอาวุธ/เสื้อใหม่ (แดง เขียว น้ำเงิน หรือขาวที่ใส่ได้ทุกสี) พลอยที่สีไม่ตรงกลับกระเป๋า",
+   "color": "#f080e0",
+   "dropChance": 0.02,
+   "minLevel": 2,
+   "bossGift": true
   }
  }
 }

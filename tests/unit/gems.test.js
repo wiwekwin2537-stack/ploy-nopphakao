@@ -120,3 +120,32 @@ test('พิษมรกตกัดต่อเนื่อง และมอ�
   assert.ok(m.dead || m.hp < hp0);
   assert.ok(kills <= 1);
 });
+
+test('สีช่องแบบ PoE: พลอยลงได้เฉพาะช่องสีตรงหรือช่องขาว · หินเจ็ดสีเปลี่ยนสี และพลอยที่สีไม่ตรงกลับกระเป๋า', () => {
+  const g = makeGame(), G = g.data.gems, I = g.data.items, p = g.player;
+  p.equip.weapon = { uid: ++p.nextUid, base: 'iron_sword', rarity: 'normal', ilvl: 3, mods: [], rareName: null, sockets: 3, links: [true, true], gems: [null, null, null], colors: ['r', 'b', 'w'] };
+  p.bag = ['sapphire', 'ruby', 'emerald'];
+  assert.equal(socketGem(G, p, 0, 'weapon', 0), false, 'ไพลิน (น้ำเงิน) ห้ามลงช่องแดง');
+  assert.equal(socketGem(G, p, 0, 'weapon', 1), true);
+  assert.equal(socketGem(G, p, 0, 'weapon'), true, 'ทับทิมหาช่องแดงเอง');
+  assert.deepEqual(p.equip.weapon.gems, ['ruby', 'sapphire', null]);
+  assert.equal(socketGem(G, p, 0, 'weapon'), true, 'มรกตลงช่องขาวได้');
+  assert.ok(validItems(I, p.items, p.equip, p.nextUid, G));
+  p.currency.chroma = 1;
+  const before = p.equip.weapon.colors.join();
+  assert.ok(useCurrency(I, g.rng, p, 'chroma', p.equip.weapon, G));
+  assert.notEqual(p.equip.weapon.colors.join(), before);
+  assert.equal(p.currency.chroma, 0);
+  const w = p.equip.weapon;
+  w.gems.forEach((gm, i) => { if (gm) assert.ok(['w', (G.main[gm] || G.support[gm]).socket].includes(w.colors[i]), 'พลอยค้างในช่องสีไม่ตรง'); });
+  const total = p.bag.length + w.gems.filter(Boolean).length;
+  assert.equal(total, 3, 'พลอยต้องไม่หาย');
+  assert.ok(validItems(I, p.items, p.equip, p.nextUid, G));
+});
+
+test('ช่องสุ่มมีสีครบทุกช่อง อาวุธเอียงสีแดง', () => {
+  const g = makeGame(), I = g.data.items, rng = createRng(77);
+  let red = 0, all = 0;
+  for (let i = 0; i < 500; i++) { const it = rollItem(I, rng, 10, { slot: 'weapon' }); assert.equal(it.colors.length, it.sockets); red += it.colors.filter((c) => c === 'r').length; all += it.sockets; }
+  assert.ok(red / all > 0.35);
+});

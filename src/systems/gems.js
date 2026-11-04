@@ -7,6 +7,8 @@ export const SOCKET_SLOTS = ['weapon', 'body'];
 
 export function gemType(G, id) { return G.main[id] ? 'main' : G.support[id] ? 'support' : null; }
 export function gemInfo(G, id) { return G.main[id] || G.support[id] || null; }
+// สีช่องแบบ PoE: พลอยลงได้เฉพาะช่องสีเดียวกัน · ช่องขาว (w) รับได้ทุกสี
+export function socketFits(G, id, color) { const g = gemInfo(G, id); return !!g && (color === 'w' || !color || g.socket === color); }
 
 function allItems(p) { return [...Object.values(p.equip || {}).filter(Boolean), ...(p.items || [])]; }
 export function ownsGem(p, id) { return p.bag.includes(id) || allItems(p).some((it) => (it.gems || []).includes(id)); }
@@ -70,8 +72,12 @@ export function skillsOf(G, p) {
 export function socketGem(G, p, bagIndex, slot, idx) {
   const id = p.bag[bagIndex], it = p.equip && p.equip[slot];
   if (!id || !gemType(G, id) || !it || !it.sockets) return false;
-  if (idx === undefined) { idx = it.gems.indexOf(null); if (idx < 0) idx = it.sockets - 1; }
-  if (idx < 0 || idx >= it.sockets) return false;
+  if (idx === undefined) {                                       // ช่องว่างแรกที่สีตรง (ไม่มี = ช่องสีตรงช่องสุดท้าย สลับพลอยเดิม)
+    const fit = (i) => socketFits(G, id, it.colors && it.colors[i]);
+    idx = it.gems.findIndex((g, i) => !g && fit(i));
+    if (idx < 0) { for (let i = it.sockets - 1; i >= 0; i--) if (fit(i)) { idx = i; break; } }
+  }
+  if (idx < 0 || idx >= it.sockets || !socketFits(G, id, it.colors && it.colors[idx])) return false;
   p.bag.splice(bagIndex, 1);
   if (it.gems[idx]) p.bag.push(it.gems[idx]);
   it.gems[idx] = id;
@@ -95,9 +101,9 @@ export function returnGems(p, it) {
 }
 
 // ฝังพลอยให้อัตโนมัติ (ทับทิมจากบทนำ): ช่องว่างแรกของอาวุธ ไม่มีช่อง = เข้ากระเป๋า
-export function autoSocket(p, id) {
+export function autoSocket(p, id, G) {
   const it = p.equip && p.equip.weapon;
-  const i = it && it.gems ? it.gems.indexOf(null) : -1;
+  const i = it && it.gems ? it.gems.findIndex((g, k) => !g && (!G || socketFits(G, id, it.colors && it.colors[k]))) : -1;
   if (i >= 0) it.gems[i] = id; else p.bag.push(id);
 }
 

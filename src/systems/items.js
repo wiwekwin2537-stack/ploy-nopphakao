@@ -1,7 +1,7 @@
 // ไอเท็มสุ่มค่า: ฐานไอเท็ม + ค่าสุ่มหน้า (prefix) / หลัง (suffix) ตามระดับไอเท็ม — ตัวเลขทั้งหมดอยู่ใน data/items.json
 // กติกา: ทุกชิ้นมี uid ไม่ซ้ำ สวม/ถอด/ทิ้ง ย้ายชิ้นเดิม ไม่สร้างของใหม่
 // อาวุธ/เสื้อมีช่องพลอย (sockets/links/gems) แบบ PoE — ทิ้ง/ขายของ พลอยในช่องกลับเข้ากระเป๋าเสมอ
-import { returnGems } from './gems.js';
+import { returnGems, socketFits } from './gems.js';
 
 // ช่องชุดครบแบบเอโดเรีย
 export const EQUIP_SLOTS = ['weapon', 'head', 'body', 'legs', 'arms', 'amulet', 'ring'];
@@ -74,12 +74,27 @@ export function rollSockets(I, rng, it) {
   const max = socketMax(I, it);
   if (!max) return it;
   const n = rollCount(I, rng, max);
-  return Object.assign(it, { sockets: n, links: rollLinks(I, rng, n), gems: Array(n).fill(null) });
+  return Object.assign(it, { sockets: n, links: rollLinks(I, rng, n), gems: Array(n).fill(null), colors: rollColors(I, rng, it, n) });
 }
 
-// ใช้ของเชื่อม/เจาะ: jeweller = สุ่มจำนวนช่องใหม่ (ไม่ซ้ำเดิม) · fusing = สุ่มการเชื่อมใหม่ (ไม่ซ้ำเดิม)
-// พลอยในช่องที่หายไปกลับเข้ากระเป๋า · คืนข้อความผล หรือ null ถ้าใช้ไม่ได้ (ไม่เสียของ)
-export function useCurrency(I, rng, p, kind, it) {
+// สีช่องตามน้ำหนักของชนิดของ (อาวุธเอียงแดง เสื้อพอๆ กัน) ใน data/items.json sockets.colorWeights
+function rollColor(I, rng, it) {
+  const W = I.sockets.colorWeights[I.bases[it.base].slot] || { r: 1, g: 1, b: 1 }, total = Object.values(W).reduce((a, v) => a + v, 0);
+  let r = rng.next() * total;
+  for (const [c, w] of Object.entries(W)) { r -= w; if (r < 0) return c; }
+  return 'r';
+}
+function rollColors(I, rng, it, n, old) {
+  for (let tries = 0; tries < 20; tries++) {
+    const c = Array.from({ length: n }, () => rollColor(I, rng, it));
+    if (!old || c.some((v, i) => v !== old[i])) return c;
+  }
+  return old.map((v) => ({ r: 'g', g: 'b', b: 'r', w: 'r' }[v]));
+}
+
+// ใช้ของเชื่อม/เจาะ/ย้อมสี: jeweller = สุ่มจำนวนช่องใหม่ · fusing = สุ่มการเชื่อมใหม่ · chroma = สุ่มสีช่องใหม่ (ไม่ซ้ำเดิมทุกแบบ)
+// พลอยในช่องที่หายไป/สีไม่ตรงกลับเข้ากระเป๋า · คืนข้อความผล หรือ null ถ้าใช้ไม่ได้ (ไม่เสียของ)
+export function useCurrency(I, rng, p, kind, it, G) {
   if (!it || !I.currency[kind] || !(p.currency && p.currency[kind] > 0)) return null;
   const max = socketMax(I, it);
   if (!max || !it.sockets) return null;
@@ -89,13 +104,18 @@ export function useCurrency(I, rng, p, kind, it) {
     for (let i = n; i < it.sockets; i++) if (it.gems[i]) p.bag.push(it.gems[i]);
     const gems = Array.from({ length: n }, (_, i) => it.gems[i] || null);
     const links = Array.from({ length: Math.max(0, n - 1) }, (_, i) => !!it.links[i]);
-    Object.assign(it, { sockets: n, gems, links });
+    const colors = Array.from({ length: n }, (_, i) => (it.colors && it.colors[i]) || rollColor(I, rng, it));
+    Object.assign(it, { sockets: n, gems, links, colors });
   } else if (kind === 'fusing') {
     if (it.sockets < 2) return null;
     it.links = rollLinks(I, rng, it.sockets, it.links);
+  } else if (kind === 'chroma') {
+    it.colors = rollColors(I, rng, it, it.sockets, it.colors);
+    it.gems.forEach((g, i) => { if (g && G && !socketFits(G, g, it.colors[i])) { p.bag.push(g); it.gems[i] = null; } });
   } else return null;
   p.currency[kind]--;
-  return kind === 'jeweller' ? `ได้ ${it.sockets} ช่อง` : `เชื่อมกันยาวสุด ${longestLink(it)} ช่อง`;
+  const C = { r: 'แดง', g: 'เขียว', b: 'น้ำเงิน', w: 'ขาว' };
+  return kind === 'jeweller' ? `ได้ ${it.sockets} ช่อง` : kind === 'fusing' ? `เชื่อมกันยาวสุด ${longestLink(it)} ช่อง` : 'สีใหม่: ' + it.colors.map((c) => C[c]).join(' ');
 }
 
 export function longestLink(it) {
@@ -180,11 +200,12 @@ export function equipTotals(I, p) {
 // ช่องพลอยถูกต้อง: เฉพาะชนิดที่มีช่อง ไม่เกินสูงสุด links/gems ยาวพอดี พลอยมีจริง
 function validSockets(I, it, G) {
   const slotMax = I.sockets.slots[I.bases[it.base].slot] || 0;
-  if (it.sockets === undefined) return it.links === undefined && it.gems === undefined;
+  if (it.sockets === undefined) return it.links === undefined && it.gems === undefined && it.colors === undefined;
   if (!Number.isInteger(it.sockets) || it.sockets < 0 || it.sockets > slotMax) return false;
   if (!Array.isArray(it.links) || it.links.length !== Math.max(0, it.sockets - 1) || !it.links.every((l) => typeof l === 'boolean')) return false;
   if (!Array.isArray(it.gems) || it.gems.length !== it.sockets) return false;
-  return it.gems.every((g) => g === null || (typeof g === 'string' && (!G || G.main[g] || G.support[g])));
+  if (!Array.isArray(it.colors) || it.colors.length !== it.sockets || !it.colors.every((c) => ['r', 'g', 'b', 'w'].includes(c))) return false;
+  return it.gems.every((g, i) => g === null || (typeof g === 'string' && (!G || ((G.main[g] || G.support[g]) && socketFits(G, g, it.colors[i])))));
 }
 
 export function validItems(I, items, equip, nextUid, G) {

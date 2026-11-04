@@ -13,7 +13,8 @@
    "speed": 380,
    "life": 1.1,
    "radius": 7,
-   "splash": 42
+   "splash": 42,
+   "socket": "r"
   },
   "sapphire": {
    "name": "ไพลิน",
@@ -30,7 +31,8 @@
    "radius": 6,
    "splash": 0,
    "slow": 0.5,
-   "slowTime": 2
+   "slowTime": 2,
+   "socket": "b"
   },
   "emerald": {
    "name": "มรกต",
@@ -47,7 +49,8 @@
    "radius": 8,
    "splash": 0,
    "poison": 1.8,
-   "poisonTime": 3
+   "poisonTime": 3,
+   "socket": "g"
   },
   "topaz": {
    "name": "บุษราคัม",
@@ -63,7 +66,8 @@
    "life": 0.6,
    "radius": 5,
    "splash": 0,
-   "pierce": 2
+   "pierce": 2,
+   "socket": "b"
   }
  },
  "support": {
@@ -72,14 +76,16 @@
    "desc": "ยิงเพิ่มอีก 2 ลูกเป็นพัด ดาเมจต่อลูก ×0.7",
    "color": "#e0e0c8",
    "extra": 2,
-   "damage": 0.7
+   "damage": 0.7,
+   "socket": "g"
   },
   "pierce": {
    "name": "พลอยเสริมทะลวง",
    "desc": "กระสุนทะลุมอนได้อีก 2 ตัว",
    "color": "#c88a3a",
    "pierce": 2,
-   "damage": 1
+   "damage": 1,
+   "socket": "g"
   },
   "area": {
    "name": "พลอยเสริมระเบิด",
@@ -87,7 +93,8 @@
    "color": "#a0302a",
    "splashAdd": 34,
    "splashMult": 1.5,
-   "damage": 0.9
+   "damage": 0.9,
+   "socket": "r"
   },
   "haste": {
    "name": "พลอยเสริมว่องไว",
@@ -95,14 +102,16 @@
    "color": "#7ad0c0",
    "cooldownMult": 0.65,
    "mpMult": 1.2,
-   "damage": 1
+   "damage": 1,
+   "socket": "b"
   },
   "power": {
    "name": "พลอยเสริมทวีคูณ",
    "desc": "ดาเมจ ×1.4 แต่ใช้มานาเพิ่ม 40%",
    "color": "#c8302a",
    "damage": 1.4,
-   "mpMult": 1.4
+   "mpMult": 1.4,
+   "socket": "r"
   }
  },
  "drops": [
@@ -147,5 +156,23 @@
    "minLevel": 10
   }
  ],
- "skillButtons": 3
+ "skillButtons": 3,
+ "socketColors": {
+  "r": {
+   "name": "แดง",
+   "color": "#d8303a"
+  },
+  "g": {
+   "name": "เขียว",
+   "color": "#3ac860"
+  },
+  "b": {
+   "name": "น้ำเงิน",
+   "color": "#3a7ae8"
+  },
+  "w": {
+   "name": "ขาว (ใส่ได้ทุกสี)",
+   "color": "#f0f0f0"
+  }
+ }
 }

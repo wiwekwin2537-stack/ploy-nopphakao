@@ -208,7 +208,7 @@ await check('ต้นพาสซีฟ: กด P → แตะนักรบ�
 });
 
 await check('ช่องพลอยบนอาวุธ: แถบพลอย → แตะด้ายสายสิญจน์สองครั้ง → การเชื่อมเปลี่ยน ด้ายลด 1 → ถอดพลอยจากช่องกลับกระเป๋า', async () => {
-  await G(page, () => { const p = __ploy.game.player; p.currency.fusing = 2; p.equip.weapon.sockets = 4; p.equip.weapon.links = [false, false, false]; p.equip.weapon.gems = ['ruby', 'multi', null, null]; __ploy.game.bagTab = 'gems'; __ploy.game.bagGroup = 0; });
+  await G(page, () => { const p = __ploy.game.player; p.currency.fusing = 2; p.equip.weapon.sockets = 4; p.equip.weapon.links = [false, false, false]; p.equip.weapon.gems = ['ruby', 'multi', null, null]; p.equip.weapon.colors = ['r', 'g', 'b', 'w']; __ploy.game.bagTab = 'gems'; __ploy.game.bagGroup = 0; });
   await page.keyboard.press('KeyB'); await wait(page, () => __ploy.game.mode === 'bag', null, 2000);
   const GL = await G(page, () => __ploy.gemLayout());
   const f = GL.cur.find((c) => c.kind === 'fusing');
@@ -217,13 +217,21 @@ await check('ช่องพลอยบนอาวุธ: แถบพลอ�
   const r = await G(page, () => ({ links: __ploy.game.player.equip.weapon.links.join(), fus: __ploy.game.player.currency.fusing }));
   assert(r.fus === 1 && r.links !== 'false,false,false', 'ใช้ด้ายไม่ได้ ' + JSON.stringify(r));
   await page.screenshot({ path: SHOTS + '/10f-sockets.png' });
+  await G(page, () => { __ploy.game.player.currency.chroma = 1; });
+  const ch = GL.cur.find((c) => c.kind === 'chroma');
+  const c0 = await G(page, () => __ploy.game.player.equip.weapon.colors.join());
+  await page.mouse.click(ch.x + ch.w / 2, ch.y + ch.h / 2); await page.waitForTimeout(100);
+  await page.mouse.click(ch.x + ch.w / 2, ch.y + ch.h / 2); await page.waitForTimeout(150);
+  const c1 = await G(page, () => ({ c: __ploy.game.player.equip.weapon.colors.join(), n: __ploy.game.player.currency.chroma }));
+  assert(c1.n === 0 && c1.c !== c0, 'หินเจ็ดสีไม่ทำงาน ' + JSON.stringify(c1));
+  await G(page, () => { const w = __ploy.game.player.equip.weapon, p = __ploy.game.player; w.gems.forEach((g, i) => { if (g) { p.bag.push(g); w.gems[i] = null; } }); w.colors = ['r', 'g', 'b', 'w']; ['ruby', 'multi'].forEach((g, i) => { p.bag.splice(p.bag.indexOf(g), 1); w.gems[i] = g; }); });
   const so = (await G(page, () => __ploy.gemLayout())).rows[0].sockets[1];
   await page.mouse.click(so.x, so.y); await page.waitForTimeout(100);              // แตะครั้งแรก = ดูรายละเอียดพลอย
   await page.screenshot({ path: SHOTS + '/10g-gem-tip.png' });
   await page.mouse.click(so.x, so.y); await page.waitForTimeout(100);              // แตะซ้ำ = ถอด
   const g2 = await G(page, () => ({ w: __ploy.game.player.equip.weapon.gems.join(), bag: __ploy.game.player.bag.includes('multi') }));
   assert(g2.bag && !g2.w.includes('multi'), 'ถอดพลอยไม่ได้ ' + JSON.stringify(g2));
-  await G(page, () => { const p = __ploy.game.player, i = p.bag.indexOf('multi'); p.bag.splice(i, 1); p.equip.weapon.gems[1] = 'multi'; p.equip.weapon.links = [true, true, true]; });
+  await G(page, () => { const p = __ploy.game.player, i = p.bag.indexOf('multi'); p.bag.splice(i, 1); p.equip.weapon.gems[1] = 'multi'; p.equip.weapon.links = [true, true, true]; p.equip.weapon.sockets = 3; p.equip.weapon.gems = p.equip.weapon.gems.slice(0, 3); p.equip.weapon.colors = ['r', 'g', 'b']; p.equip.weapon.links = [true, true]; });
   await page.keyboard.press('KeyB'); await page.waitForTimeout(100);
   return 'เชื่อม ' + r.links;
 });

@@ -55,7 +55,7 @@ export function spawnDrop(game, d) {
 function pickGem(game, gem) {
   const p = game.player, G = game.data.gems;
   // ทับทิมเม็ดแรกฝังลงช่องอาวุธให้เลย (บทนำ)
-  if (gem === 'ruby' && !ownsGem(p, 'ruby')) autoSocket(p, 'ruby');
+  if (gem === 'ruby' && !ownsGem(p, 'ruby')) autoSocket(p, 'ruby', game.data.gems);
   else p.bag.push(gem);
   if (gem === 'ruby') game.flags.gotRuby = true;
   game.world.refreshFlags();

@@ -18,6 +18,10 @@
    "price": 70
   },
   {
+   "currency": "chroma",
+   "price": 30
+  },
+  {
    "base": "iron_sword",
    "price": 120
   },
