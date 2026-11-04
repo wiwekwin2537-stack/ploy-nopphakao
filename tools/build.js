@@ -11,4 +11,6 @@ writeFileSync('dist/index.html', html);
 const art = html.replace(/<!doctype html>\s*/i, '').replace(/<\/?html[^>]*>\s*/gi, '').replace(/<\/?head>\s*/gi, '').replace(/<\/?body>\s*/gi, '')
   .replace(/<meta charset="utf-8">\s*/i, '').replace(/<meta name="viewport"[^>]*>\s*/i, '');
 writeFileSync('dist/artifact.html', art);
+mkdirSync('docs', { recursive: true });
+writeFileSync('docs/index.html', html);                    // หน้าเล่นเกมบน GitHub Pages (ตั้งให้เสิร์ฟจากโฟลเดอร์ docs)
 console.log(`dist/index.html ${(html.length / 1024).toFixed(1)} KB · dist/artifact.html`);
