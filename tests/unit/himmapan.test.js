@@ -43,11 +43,12 @@ test('พ่อเฒ่าจันทร์เล่าเรื่องป�
   talkTo(g, chan); assert.notDeepEqual(g.dialog.lines, g.data.dialogue.chan_yak);
 });
 
-test('เลเวลขึ้นได้ถึง 20 และหยุดที่ 20', () => {
+test('เลเวลขึ้นได้ถึงเลเวลสูงสุด (40) และหยุดที่นั่น · ตาราง XP ยาวพอดี', () => {
   const g = makeGame(); enterZone(g, 'field');
-  gainXp(g, 1e9);
-  assert.equal(g.player.level, 20);
-  assert.equal(g.data.balance.xpToNext.length, 20);
+  gainXp(g, 1e12);
+  assert.equal(g.player.level, g.data.balance.maxLevel);
+  assert.equal(g.data.balance.maxLevel, 40);
+  assert.equal(g.data.balance.xpToNext.length, 40);
 });
 
 test('พญาคชสีห์ทองคำ: อยู่ปลายป่า เดินไปถึงได้ ล้มแล้วได้ของม่วง/แดง 3 ชิ้นครั้งเดียว เกิดใหม่ช้า', () => {

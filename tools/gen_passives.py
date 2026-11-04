@@ -85,6 +85,22 @@ for a, b, nm, nst, sst in HYB:
     sa = "b" if delta > 0 else "a"; sb = "a" if delta > 0 else "b"
     link(pts[0], f"{a}_{sa}0"); link(pts[2], f"{b}_{sb}0")
 
+# วงนอก (เลเวล 21–40): ต่อจากโน้ตเด่นทั้งสองแขนงออกไปอีก 3 โหนด → โน้ตเด่นวงนอก (ต้องเลือก เพราะแต้มไม่พอเก็บทุกอัน)
+OUTER = {
+    "warrior": [("เกราะเพชรชั้นสอง", {"hpFlat": 20}, ("ขุนศึกทวารวดี", {"dmgMelee": 30, "hpInc": 10})), ("เลือดนักรบ", {"lifeOnHit": 1}, ("หัวใจราชสีห์", {"hpInc": 20, "lifeOnHit": 3}))],
+    "ranger": [("เงาพราย", {"crit": 2}, ("ธนูพระราม", {"crit": 8, "critMult": 40})), ("ลมพัด", {"moveInc": 4}, ("เท้าหนุมาน", {"moveInc": 12, "atkSpeedInc": 12}))],
+    "shaman": [("อาคม", {"dmgSpell": 10}, ("มหาเวทย์นพเก้า", {"dmgSpell": 35, "areaInc": 20})), ("ฌาน", {"mpRegenInc": 15}, ("ฤๅษีเก้าตน", {"mpInc": 25, "castSpeedInc": 12}))],
+}
+for cid, c in CLASSES.items():
+    d = c["deg"]
+    for tag, side, (snm, sst, (nnm, nst)) in (("a", -1, OUTER[cid][0]), ("b", 1, OUTER[cid][1])):
+        prev = f"{cid}_{tag}N"
+        for i in range(3):
+            x, y = polar(R_START + 215 + i * 40, d + side * (48 + i * 6))
+            nid = f"{cid}_{tag}O{i}"; add(nid, x, y, "small", snm, sst); link(prev, nid); prev = nid
+        x, y = polar(R_START + 350, d + side * 62)
+        nid = f"{cid}_{tag}ON"; add(nid, x, y, "notable", nnm, nst); link(prev, nid)
+
 data = {"pointsPerLevel": 1, "nodes": nodes,
         "classes": {k: {"name": v["name"], "desc": v["desc"]} for k, v in CLASSES.items()},
         "statNames": {"dmgFlat": "ดาเมจดาบ +{}", "dmgMelee": "ดาเมจดาบ +{}%", "dmgSpell": "ดาเมจพลอย +{}%", "dmgAll": "ดาเมจทั้งหมด +{}%", "hpFlat": "เลือด +{}", "hpInc": "เลือดสูงสุด +{}%",

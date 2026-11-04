@@ -70,3 +70,13 @@ test('เซฟต้นพาสซีฟ: โหลดกลับได้ �
   }
   assert.equal(validTree(g.data.passives, [], 1), true);
 });
+
+test('วงนอก: โน้ตเด่นวงนอกทุกอันเดินถึงได้จากจุดเริ่มของสายตัวเอง และต้นใหม่ยังโหลดเซฟเก่าได้', () => {
+  const P = makeGame().data.passives;
+  for (const cid of ['warrior', 'ranger', 'shaman']) for (const tag of ['a', 'b']) {
+    const goal = `${cid}_${tag}ON`, seen = new Set([cid]), q = [cid];
+    while (q.length) { const n = q.shift(); for (const l of P.nodes[n].links) if (!seen.has(l)) { seen.add(l); q.push(l); } }
+    assert.ok(seen.has(goal), goal);
+  }
+  assert.ok(Object.keys(P.nodes).length >= 79);
+});

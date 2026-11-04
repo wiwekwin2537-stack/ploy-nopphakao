@@ -44,7 +44,7 @@ export function drawTree(ctx, game, L, w, h) {
   ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
   // ลายวงกลมจางๆ ที่ใจกลาง
   ctx.strokeStyle = 'rgba(217,166,48,0.08)'; ctx.lineWidth = 1;
-  for (const r of [130, 300, 470]) { ctx.beginPath(); ctx.arc(sx(0), sy(0), r * v.z * s, 0, Math.PI * 2); ctx.stroke(); }
+  for (const r of [130, 300, 470, 650]) { ctx.beginPath(); ctx.arc(sx(0), sy(0), r * v.z * s, 0, Math.PI * 2); ctx.stroke(); }
   const own = new Set(p.passives);
   // เส้นเชื่อม
   for (const [id, n] of Object.entries(P.nodes)) {
@@ -118,7 +118,7 @@ export function updateTree(game, L, w, h) {
   if (inp.drag.wheel) v.z *= Math.pow(0.999, inp.drag.wheel);
   if (inp.drag.pinch !== 1) v.z *= inp.drag.pinch;
   v.z = Math.max(0.35, Math.min(2, v.z));
-  v.x = Math.max(-600, Math.min(600, v.x)); v.y = Math.max(-600, Math.min(600, v.y));
+  v.x = Math.max(-800, Math.min(800, v.x)); v.y = Math.max(-800, Math.min(800, v.y));
   const U = ui(w, h, s);
   for (const t of inp.taps) {
     if (t.consumed) continue;

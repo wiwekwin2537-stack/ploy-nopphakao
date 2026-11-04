@@ -364,7 +364,7 @@ await check('ป่าหิมพานต์: หลังล้มยัก�
   await page.screenshot({ path: SHOTS + '/17-khotchasi-king.png' });
   const awake = await G(page, () => __ploy.game.mobs.find((m) => m.type === 'khotchasi_king').aggroed);
   assert(awake, 'บอสไม่ตื่น');
-  await G(page, () => { const g = __ploy.game; g.mobs.forEach((m) => { m.hp = 1; }); const k = g.mobs.find((m) => m.type === 'khotchasi_king'); g.player.x = k.x - 50; g.player.y = k.y; });
+  await G(page, () => { const g = __ploy.game; const k = g.mobs.find((m) => m.type === 'khotchasi_king'); g.mobs.length = 0; g.mobs.push(k); k.hp = 1; g.player.x = k.x - 50; g.player.y = k.y; });   // เหลือแต่บอส ไม่ให้ดาบไปโดนตัวอื่นก่อน
   for (let i = 0; i < 12 && !(await G(page, () => !!__ploy.game.flags.khotchasi_kingSlain)); i++) {   // ยืนชิดบอสทุกครั้ง (บอสพุ่ง/ขยับได้)
     await G(page, () => { const g = __ploy.game, k = g.mobs.find((m) => m.type === 'khotchasi_king' && !m.dead); if (k) { g.player.x = k.x - 45; g.player.y = k.y; g.player.aim = 0; g.player.dir = 3; } });
     await page.keyboard.press('KeyJ'); await page.waitForTimeout(160);
@@ -392,7 +392,7 @@ await check('ยอดเขาไกรลาส: พญาครุฑรา�
   await page.waitForTimeout(1600);
   await page.screenshot({ path: SHOTS + '/19-garuda-king.png' });
   assert(await G(page, () => __ploy.game.mobs.find((m) => m.type === 'garuda_king').aggroed), 'บอสไม่ตื่น');
-  await G(page, () => { const g = __ploy.game; g.mobs.forEach((m) => { m.hp = 1; }); const k = g.mobs.find((m) => m.type === 'garuda_king'); g.player.x = k.x - 50; g.player.y = k.y; });
+  await G(page, () => { const g = __ploy.game; const k = g.mobs.find((m) => m.type === 'garuda_king'); g.mobs.length = 0; g.mobs.push(k); k.hp = 1; g.player.x = k.x - 50; g.player.y = k.y; });
   for (let i = 0; i < 12 && !(await G(page, () => !!__ploy.game.flags.garuda_kingSlain)); i++) {   // ยืนชิดบอสทุกครั้ง (บอสพุ่ง/ขยับได้)
     await G(page, () => { const g = __ploy.game, k = g.mobs.find((m) => m.type === 'garuda_king' && !m.dead); if (k) { g.player.x = k.x - 45; g.player.y = k.y; g.player.aim = 0; g.player.dir = 3; } });
     await page.keyboard.press('KeyJ'); await page.waitForTimeout(160);
@@ -409,7 +409,7 @@ await check('สวรรค์ดาวดึงส์: ล้มครุฑ�
   await page.waitForTimeout(1500);
   await page.screenshot({ path: SHOTS + '/20-tavatimsa.png' });
   assert(await G(page, () => __ploy.game.mobs.find((m) => m.type === 'vessavana').aggroed), 'บอสไม่ตื่น');
-  await G(page, () => { __ploy.game.mobs.forEach((m) => { m.hp = 1; }); });
+  await G(page, () => { const g = __ploy.game, k = g.mobs.find((m) => m.type === 'vessavana'); g.mobs.length = 0; g.mobs.push(k); k.hp = 1; });
   for (let i = 0; i < 12 && !(await G(page, () => !!__ploy.game.flags.vessavanaSlain)); i++) {
     await G(page, () => { const g = __ploy.game, k = g.mobs.find((m) => m.type === 'vessavana' && !m.dead); if (k) { g.player.x = k.x - 45; g.player.y = k.y; g.player.aim = 0; g.player.dir = 3; } });
     await page.keyboard.press('KeyJ'); await page.waitForTimeout(160);
