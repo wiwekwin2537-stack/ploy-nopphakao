@@ -25,7 +25,7 @@ export function makeGame() {
     data: { balance, monsters, zones, dialogue, gems, passives, items, shop, quests },
     events: createEvents(), rng: createRng(42),
     fx: { text: noop, burst: noop, trail: noop, ring: noop, slash: noop, clear: noop, update: noop },
-    audio: { play: noop, music: noop, update: noop, muted: true },
+    audio: { play: noop, blip: noop, music: noop, update: noop, muted: true },
     camera: { shake: 0, snap: noop, toWorld: (x, y) => ({ x, y }) },
     input: { move: { x: 0, y: 0 }, held: {}, pressed: {}, taps: [], mode: 'keyboard' },
     flags: {}, mobs: [], shots: [], drops: [], hazards: [], later: [], spawnTimers: [], mode: 'play', time: 0,

@@ -7,6 +7,7 @@ import { drawBottomBar } from './hudbar.js';
 import { skillSprite } from '../art/skills.js';
 import { skillOf } from '../systems/skills.js';
 import { questTracker } from '../systems/quests.js';
+import { drawHuman } from '../art/characters.js';
 import { fogCanvas, isExplored } from '../systems/explore.js';
 import { hintText, tutorialTarget } from '../systems/tutorial.js';
 
@@ -260,10 +261,18 @@ export function drawDialog(ctx, game, L, w, h) {
   const d = game.dialog; if (!d) return;
   const s = L.s, bw = Math.min(w - 24, 640 * s), bh = 104 * s, x = w / 2 - bw / 2, y = h - bh - 14 * s;
   ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(0, 0, w, h);
+  if (d.look) {                                                   // รูปผู้พูดยืนเหนือกล่อง (ขยับตัวตอนพูด แบบเอโดเรีย)
+    const k = 2.2 * s, px = x + 52 * s, py = y + 6 * s, talking = d.shown < d.lines[d.i].length;
+    ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(px, py - 2 * s, 22 * s, 6 * s, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.save(); ctx.translate(px, py - (talking ? Math.abs(Math.sin(game.time * 14)) * 2 * s : 0)); ctx.scale(k, k);
+    drawHuman(ctx, d.look, 0, 0, { dir: 0, t: game.time, moving: false, swing: -1 });
+    ctx.restore();
+  }
   kanokFrame(ctx, x, y, bw, bh, 12);
   const nameW = 140 * s;
-  kanokFrame(ctx, x + 18 * s, y - 16 * s, nameW, 28 * s, 8);
-  text(ctx, d.speaker, x + 18 * s + nameW / 2, y - 2 * s, 13 * s, C.goldHi, 'center');
+  const nx = d.look ? x + 96 * s : x + 18 * s;
+  kanokFrame(ctx, nx, y - 16 * s, nameW, 28 * s, 8);
+  text(ctx, d.speaker, nx + nameW / 2, y - 2 * s, 13 * s, C.goldHi, 'center');
   ctx.font = `normal ${15 * s}px ${FONT}`;
   const shown = Array.from(d.lines[d.i]).slice(0, Math.floor(d.shown)).join('');
   wrap(ctx, shown, bw - 44 * s).forEach((l, i) => text(ctx, l, x + 22 * s, y + 32 * s + i * 22 * s, 15 * s, C.cream, 'left', 'normal'));

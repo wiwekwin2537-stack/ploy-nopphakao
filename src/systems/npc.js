@@ -1,8 +1,10 @@
 // ชาวเวียงและกล่องบทสนทนา
 import { readyQuestFor, claimQuest } from './quests.js';
 import { classGem } from './player.js';
-export function openDialog(game, speaker, lines, onDone) {
-  game.dialog = { speaker, lines, i: 0, shown: 0, onDone };
+// ระดับเสียงพูดตามหน้าตาตัวละคร (ผู้เฒ่าเสียงต่ำ ยาย/แม่ค้าเสียงสูง)
+const VOICE = { elder: 170, guard: 230, merchant: 380, granny: 440, hero: 300 };
+export function openDialog(game, speaker, lines, onDone, look) {
+  game.dialog = { speaker, lines, i: 0, shown: 0, onDone, pitch: VOICE[look] || 320, blipN: 0, look: look || null };
   game.mode = 'dialog';
   game.audio.play('talk');
 }
@@ -34,11 +36,11 @@ export function talkTo(game, npc) {
   p.moveTarget = null; p.targetMob = null; game.pendingTalk = null;
   npc.face = p.x < npc.x ? -1 : 1;
   if (npc.shop && !readyQuestFor(game, npc.id)) {                                      // แม่ค้า: ทักทายแล้วเปิดร้าน
-    openDialog(game, npc.name, game.data.dialogue[npc.id], () => { game.mode = 'shop'; game.shopSel = null; });
+    openDialog(game, npc.name, game.data.dialogue[npc.id], () => { game.mode = 'shop'; game.shopSel = null; }, npc.look);
     return;
   }
   const { lines, done } = lineFor(game, npc);
-  openDialog(game, npc.name, lines, done);
+  openDialog(game, npc.name, lines, done, npc.look);
 }
 
 export function updateNpcs(game) {
@@ -64,7 +66,9 @@ export function updateDialog(game, dt) {
   const d = game.dialog;
   if (!d) return;
   const line = d.lines[d.i];
+  const prev = Math.floor(d.shown);
   d.shown = Math.min(line.length, d.shown + dt * 40);
+  for (let i = prev; i < Math.floor(d.shown); i++) { const c = line[i]; if (c !== ' ' && !/[ั-ฺ็-๎]/.test(c) && ++d.blipN % 2 === 0) game.audio.blip(d.pitch); }   // เสียงพูดทีละพยางค์ (ข้ามสระบน/ล่าง วรรณยุกต์)
   if (d.close && game.input.taps.some((t) => !t.consumed && Math.hypot(t.sx - d.close.x, t.sy - d.close.y) < d.close.r * 1.5)) { d.i = d.lines.length - 1; d.shown = d.lines[d.i].length; }   // ✕ = ข้ามไปจบ
   const tapped = game.input.taps.some((t) => !t.consumed);
   game.input.taps.forEach((t) => { t.consumed = true; });

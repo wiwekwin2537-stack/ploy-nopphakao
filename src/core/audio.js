@@ -168,6 +168,14 @@ export function createAudio() {
   return {
     unlock() { if (!ensure()) return; if (ctx.state === 'suspended') ctx.resume(); },
     play(name) { if (!ctx || muted || !SFX[name]) return; SFX[name](ctx.currentTime + 0.01); },
+    // เสียงพูดของ NPC แบบเอโดเรีย: เสียง "บลิป" สั้นๆ ตามตัวอักษรที่พิมพ์ขึ้น ระดับเสียงตามตัวละคร
+    blip(pitch) {
+      if (!ctx || muted) return;
+      const t = ctx.currentTime + 0.005, p = pitch * (0.9 + Math.random() * 0.3);
+      const o = osc(pitch > 500 ? 'triangle' : 'square', p, t, 0.055, 0.035, sfxBus);
+      o.frequency.exponentialRampToValueAtTime(p * (0.94 + Math.random() * 0.1), t + 0.05);
+      if (Math.random() < 0.25) osc('sine', p * 1.5, t, 0.03, 0.02, sfxBus);
+    },
     music(name) {
       if (name === songName) return;
       songName = name; song = SONGS[name] || null; stepIdx = 0;
