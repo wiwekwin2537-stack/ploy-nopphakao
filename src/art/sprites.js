@@ -3,8 +3,9 @@ import { PROPS } from './props.js';
 import { BUILDINGS } from './buildings.js';
 import { RUINS } from './ruins.js';
 import { MOUNTAIN } from './mountain.js';
+import { HEAVEN } from './heaven.js';
 
-const SPEC = { ...PROPS, ...BUILDINGS, ...RUINS, ...MOUNTAIN };
+const SPEC = { ...PROPS, ...BUILDINGS, ...RUINS, ...MOUNTAIN, ...HEAVEN };
 
 export function createSpriteCache(scale) {
   const cache = new Map();

@@ -400,6 +400,23 @@ await check('ยอดเขาไกรลาส: พญาครุฑรา�
   assert(await G(page, () => !!__ploy.game.flags.garuda_kingSlain), 'ล้มพญาครุฑราชไม่ได้');
 });
 
+await check('สวรรค์ดาวดึงส์: ล้มครุฑราชแล้วประตูสวรรค์เปิด → เดินเข้าสวรรค์ → ท้าวเวสสุวรรณตื่น → ล้มได้', async () => {
+  await G(page, () => { const g = __ploy.game; g.flags.garuda_kingSlain = true; g.world.refreshFlags(); __ploy.enterZone(g, 'kailash', 56 * 32, 5.5 * 32); g.player.invuln = 999; g.mobs.length = 0; });
+  await page.waitForTimeout(300);
+  await hold(page, 'KeyD', 1200);
+  assert((await state(page)).zone === 'tavatimsa', 'เข้าสวรรค์ไม่ได้: ' + (await state(page)).zone);
+  await G(page, () => { const g = __ploy.game, k = g.mobs.find((m) => m.type === 'vessavana'); g.player.x = k.x; g.player.y = k.y + 170; });
+  await page.waitForTimeout(1500);
+  await page.screenshot({ path: SHOTS + '/20-tavatimsa.png' });
+  assert(await G(page, () => __ploy.game.mobs.find((m) => m.type === 'vessavana').aggroed), 'บอสไม่ตื่น');
+  await G(page, () => { __ploy.game.mobs.forEach((m) => { m.hp = 1; }); });
+  for (let i = 0; i < 12 && !(await G(page, () => !!__ploy.game.flags.vessavanaSlain)); i++) {
+    await G(page, () => { const g = __ploy.game, k = g.mobs.find((m) => m.type === 'vessavana' && !m.dead); if (k) { g.player.x = k.x - 45; g.player.y = k.y; g.player.aim = 0; g.player.dir = 3; } });
+    await page.keyboard.press('KeyJ'); await page.waitForTimeout(160);
+  }
+  assert(await G(page, () => !!__ploy.game.flags.vessavanaSlain), 'ล้มท้าวเวสสุวรรณไม่ได้');
+});
+
 await check('ความเร็ว: มอน 100 ตัวไล่ล้อม ใช้เวลาคำนวณ+วาดต่อเฟรมไม่เกิน 8ms', async () => {
   await G(page, () => { const g = __ploy.game, p = g.player; const types = ['boar', 'monkey', 'krasue', 'piglet']; for (let i = 0; i < 2000 && g.mobs.length < 100; i++) { const m = __ploy.makeMob(g, types[i % 4], 3, p.x + (Math.random() - 0.5) * 700, p.y + (Math.random() - 0.5) * 400, -1); if (!g.world.blocked(m.x, m.y, m.radius)) g.mobs.push(m); } g.mobs.forEach((m) => { m.aggroed = true; }); p.invuln = 99; });
   await page.waitForTimeout(1500);

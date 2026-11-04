@@ -10,6 +10,7 @@ const BASE = {
   field: ['#8fae55', '#86a64f', '#97b55c'],
   dungeon: ['#2a2430', '#262029', '#2e2734'],
   snow: ['#e8eef4', '#dfe7ef', '#eef3f8'],
+  cloud: ['#f2ecf8', '#ede4f4', '#f6f0fb'],
 };
 
 // ดันเจี้ยนวัดร้าง: นอกห้อง = กำแพงศิลาแลง (ด้านบนมืด มีหน้ากำแพงอิฐเมื่อติดพื้น) ในห้อง = พื้นหินแผ่นแตกร้าว
@@ -66,6 +67,18 @@ export function createGround(zone, scale) {
     const v = at(tx, ty), x = tx * T - ox, y = ty * T - oy;
     const h = hash2(tx, ty, 7);
     if (zone.def.ground === 'dungeon') { dungeonTile(g, x, y, v, h, tx, ty, at); return; }
+    if (zone.def.ground === 'cloud' && v !== 2) {                   // ดาวดึงส์: พื้นเมฆชมพูอ่อน ทางปูทองลายกนก
+      if (v === 1) {
+        g.fillStyle = h > 0.5 ? '#f0d890' : '#ecd080'; g.fillRect(x, y, T, T);
+        g.strokeStyle = 'rgba(160,110,20,0.45)'; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, T - 1, T - 1);
+        g.fillStyle = 'rgba(200,60,40,0.35)'; g.beginPath(); g.moveTo(x + 16, y + 9); g.lineTo(x + 23, y + 16); g.lineTo(x + 16, y + 23); g.lineTo(x + 9, y + 16); g.closePath(); g.fill();
+      } else {
+        g.fillStyle = base[Math.floor(h * 3)]; g.fillRect(x, y, T, T);
+        g.fillStyle = 'rgba(190,170,230,0.35)'; g.beginPath(); g.ellipse(x + h * 20 + 6, y + hash2(tx, ty, 3) * 20 + 6, 9, 4, 0, 0, 7); g.fill();
+        if (h > 0.7) { g.fillStyle = '#f3d27a'; g.fillRect(x + hash2(tx, ty, 5) * 28, y + hash2(tx, ty, 6) * 28, 2, 2); }
+      }
+      return;
+    }
     if (v === 0 && zone.def.ground === 'snow') {                     // หิมะ: ขาวอมฟ้า มีประกายและรอยเงา
       g.fillStyle = base[Math.floor(h * 3)]; g.fillRect(x, y, T, T);
       g.fillStyle = 'rgba(140,170,210,0.25)'; g.fillRect(x + h * 18, y + hash2(tx, ty, 3) * 24, 10, 3);

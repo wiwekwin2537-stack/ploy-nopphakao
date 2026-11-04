@@ -185,27 +185,73 @@ function garudaChick(ctx, o) {                    // ครุฑน้อย: �
   poly(ctx, [4 + lean, -36, 8 + lean, -44, 12 + lean, -36], C.gold, C.line, 1);             // มงกุฎ
 }
 
-function yak(ctx, o) {                             // ยักษ์วัด: ยักษ์ทวารบาลหน้าเขียว ชฎายอด กระบองใหญ่
+const YAK_GREEN = { leg: '#2f7a52', body: '#3a9a62', face: '#3fae6c', cloth: '#a3262a' };
+const VESSAVANA = { leg: '#1e3a7a', body: '#2a5ab8', face: '#3a6ad0', cloth: '#d9a630' };   // ท้าวเวสสุวรรณ: กายน้ำเงิน ผ้าทอง
+
+function devaWarrior(ctx, o) {                    // เทวดานักรบ: ชุดทองแดง ชฎายอด ถือพระขรรค์
+  const run = o.moving ? Math.sin((o.walk || 0) * Math.PI * 2) : 0;
+  box(ctx, -5 + run * 2, -10, 4, 10, '#c8302a', C.line, 1); box(ctx, 1 - run * 2, -10, 4, 10, '#c8302a', C.line, 1);
+  box(ctx, -7, -14, 14, 5, '#f2c230', C.line, 1.1);                                         // ผ้านุ่งทอง
+  box(ctx, -6, -28, 12, 15, '#f3d27a', C.line, 1.2);                                         // เกราะอกทอง
+  ctx.fillStyle = '#c8302a'; ctx.fillRect(-6, -24, 12, 2); ctx.fillRect(-1, -28, 2, 14);
+  box(ctx, -5, -38, 10, 10, '#f1d2b0', C.line, 1.2);
+  poly(ctx, [-6, -37, 0, -52, 6, -37], C.gold, C.line, 1);                                   // ชฎายอดแหลม
+  ctx.fillStyle = o.windup > 0 ? '#ff3a2a' : '#1b1410'; ctx.fillRect(-3, -34, 2, 2); ctx.fillRect(1, -34, 2, 2);
+  ctx.save(); ctx.translate(8, -22); ctx.rotate(o.windup > 0 ? -1.4 : -0.3 + run * 0.1);
+  box(ctx, -1.5, -20, 3, 20, '#eef4ff', C.line, 1); box(ctx, -3, -2, 6, 3, C.gold, C.line, 1);  // พระขรรค์
+  ctx.restore();
+}
+
+function apsara(ctx, o) {                         // นางอัปสร: ลอยร่ายแสงทอง ผ้าสไบพลิ้ว
+  const bob = Math.sin(o.t * 3) * 3, sway = Math.sin(o.t * 4) * 3;
+  ctx.translate(0, -18 + bob);
+  ctx.strokeStyle = 'rgba(255,200,220,0.8)'; ctx.lineWidth = 2.5;                              // สไบพลิ้ว
+  ctx.beginPath(); ctx.moveTo(-6, -20); ctx.quadraticCurveTo(-18 + sway, -8, -12 + sway, 6); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(6, -20); ctx.quadraticCurveTo(18 - sway, -8, 12 - sway, 6); ctx.stroke();
+  poly(ctx, [-7, -8, 7, -8, 9, 8, -9, 8], '#e85a8a', C.line, 1.1);                             // ผ้านุ่ง
+  box(ctx, -5, -20, 10, 12, '#f1d2b0', C.line, 1.1);
+  ctx.fillStyle = C.gold; ctx.fillRect(-5, -18, 10, 3);
+  box(ctx, -5, -31, 10, 11, '#f1d2b0', C.line, 1.1);
+  poly(ctx, [-5, -31, 0, -45, 5, -31], C.gold, C.line, 1);
+  ctx.fillStyle = '#1b1410'; ctx.fillRect(-3, -27, 2, 2); ctx.fillRect(1, -27, 2, 2);
+  const glow = o.windup > 0 ? 5 + o.windup * 5 : 3;
+  ctx.fillStyle = 'rgba(255,236,160,0.75)'; ctx.beginPath(); ctx.arc(9, -16, glow, 0, Math.PI * 2); ctx.fill();
+}
+
+function erawanCalf(ctx, o) {                     // ช้างเอราวัณน้อย: ช้างเผือกสามเศียร เครื่องทรงทอง
+  const run = o.moving ? Math.sin((o.walk || 0) * Math.PI * 2) : 0, lean = o.charging ? 3 : 0;
+  ctx.fillStyle = '#c8c4d0'; [-9, -3, 4, 10].forEach((lx, i) => ctx.fillRect(lx, -8 + (i % 2 ? run : -run) * 1.5, 4, 8));
+  poly(ctx, [-13, -22, 9 + lean, -24, 13 + lean, -10, -12, -8], '#f2f0f4', C.line, 1.4);
+  box(ctx, -8, -24, 14, 6, '#c8302a', C.line, 1.1); ctx.fillStyle = C.gold; ctx.fillRect(-8, -20, 14, 2);   // ผ้าทรง
+  for (const [hx, hy] of [[8, -30], [13, -26], [3, -28]]) {                                    // สามเศียร
+    box(ctx, hx + lean, hy, 8, 8, '#ece8f0', C.line, 1.1);
+    ctx.strokeStyle = '#ece8f0'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(hx + 6 + lean, hy + 7); ctx.quadraticCurveTo(hx + 10 + lean, hy + 14, hx + 7 + lean, hy + 18); ctx.stroke();
+    poly(ctx, [hx + 2 + lean, hy, hx + 4 + lean, hy - 5, hx + 6 + lean, hy], C.gold, C.line, 0.8);
+  }
+  ctx.fillStyle = o.windup > 0 ? '#ff3a2a' : '#1b1410'; ctx.fillRect(18 + lean, -23, 2, 2);
+}
+
+function yak(ctx, o, P = YAK_GREEN) {                             // ยักษ์วัด: ยักษ์ทวารบาลหน้าเขียว ชฎายอด กระบองใหญ่
   const run = o.moving ? Math.sin((o.walk || 0) * Math.PI * 2) : 0, w = o.windup > 0;
   const lift = w ? -18 : o.charging ? -6 : 0;
   ctx.translate(0, Math.abs(run) * -1.2);
   if (o.enraged) { ctx.fillStyle = 'rgba(255,60,40,0.22)'; ctx.beginPath(); ctx.ellipse(0, -30, 26, 34, 0, 0, Math.PI * 2); ctx.fill(); }
-  box(ctx, -10 + run * 2, -14, 7, 14, '#2f7a52', C.line, 1.4); box(ctx, 3 - run * 2, -14, 7, 14, '#2f7a52', C.line, 1.4);
+  box(ctx, -10 + run * 2, -14, 7, 14, P.leg, C.line, 1.4); box(ctx, 3 - run * 2, -14, 7, 14, P.leg, C.line, 1.4);
   ctx.fillStyle = C.gold; ctx.fillRect(-10 + run * 2, -4, 7, 2); ctx.fillRect(3 - run * 2, -4, 7, 2);
-  box(ctx, -13, -22, 26, 10, '#a3262a', C.line, 1.4);                                  // ผ้านุ่งแดงลายทอง
+  box(ctx, -13, -22, 26, 10, P.cloth, C.line, 1.4);                                  // ผ้านุ่งแดงลายทอง
   ctx.fillStyle = C.gold; for (let i = 0; i < 5; i++) ctx.fillRect(-12 + i * 5.5, -18, 3, 3);
-  box(ctx, -14, -44, 28, 23, '#3a9a62', C.line, 1.5);                                  // ลำตัวเขียว
+  box(ctx, -14, -44, 28, 23, P.body, C.line, 1.5);                                  // ลำตัวเขียว
   box(ctx, -15, -46, 30, 8, C.gold, C.line, 1.3);                                      // กรองคอทอง
-  ctx.fillStyle = '#a3262a'; for (let i = 0; i < 4; i++) ctx.fillRect(-11 + i * 7, -44, 3, 3);
+  ctx.fillStyle = P.cloth; for (let i = 0; i < 4; i++) ctx.fillRect(-11 + i * 7, -44, 3, 3);
   ctx.fillStyle = C.gold; ctx.fillRect(-14, -30, 28, 2.5);                              // ทับทรวง/เข็มขัด
-  box(ctx, -20, -42, 7, 18, '#3a9a62', C.line, 1.3);                                   // แขนซ้าย
+  box(ctx, -20, -42, 7, 18, P.body, C.line, 1.3);                                   // แขนซ้าย
   ctx.save(); ctx.translate(16, -40 + lift * 0.3); ctx.rotate(w ? -1.6 : o.charging ? -0.5 : 0.25 + run * 0.15);
-  box(ctx, -3, 0, 7, 18, '#3a9a62', C.line, 1.3);                                      // แขนถือกระบอง
+  box(ctx, -3, 0, 7, 18, P.body, C.line, 1.3);                                      // แขนถือกระบอง
   box(ctx, -2, 14, 6, 26, '#6b4423', C.line, 1.3);                                     // ด้ามกระบอง
   box(ctx, -6, 36, 14, 18, '#4a2e17', C.line, 1.5);                                    // หัวกระบอง
   ctx.fillStyle = C.gold; ctx.fillRect(-6, 38, 14, 2.5); ctx.fillRect(-6, 48, 14, 2.5);
   ctx.restore();
-  box(ctx, -11, -64, 22, 19, '#3fae6c', C.line, 1.5);                                  // หน้า
+  box(ctx, -11, -64, 22, 19, P.face, C.line, 1.5);                                  // หน้า
   ctx.fillStyle = '#f4ecd8'; ctx.fillRect(-9, -58, 7, 5); ctx.fillRect(2, -58, 7, 5);    // ตาโปน
   ctx.fillStyle = w || o.enraged ? '#ff3a2a' : '#1b1410'; ctx.fillRect(-6, -57, 3, 3); ctx.fillRect(5, -57, 3, 3);
   ctx.fillStyle = '#7a1420'; ctx.fillRect(-7, -50, 14, 3);
@@ -213,7 +259,7 @@ function yak(ctx, o) {                             // ยักษ์วัด: 
   box(ctx, -12, -68, 24, 6, C.gold, C.line, 1.3);                                      // ชฎา
   poly(ctx, [-10, -68, 0, -96, 10, -68], C.gold, C.line, 1.4);
   ctx.fillStyle = C.goldHi; for (let i = 0; i < 4; i++) ctx.fillRect(-1.5, -90 + i * 5, 3, 2);
-  ctx.fillStyle = '#a3262a'; ctx.fillRect(-2, -75, 4, 4);
+  ctx.fillStyle = P.cloth; ctx.fillRect(-2, -75, 4, 4);
 }
 
 // o: { t, moving, face(1/-1), charging, windup, flash, dying(0..1), level }
@@ -221,18 +267,18 @@ export function drawMonster(ctx, type, x, y, o) {
   const big = type === 'bigboar' ? 1.45 : type === 'piglet' ? 0.75 : 1;
   ctx.save();
   if (o.dying > 0) ctx.globalAlpha = Math.max(0, 1 - o.dying);
-  if (type === 'krasue' || type === 'phi_phong' || type === 'hatsadi' || type === 'kinnorn') shadow(ctx, x, y, 10, 3, 0.18);
+  if (type === 'krasue' || type === 'phi_phong' || type === 'hatsadi' || type === 'kinnorn' || type === 'apsara') shadow(ctx, x, y, 10, 3, 0.18);
   else if (type === 'khotchasi') shadow(ctx, x, y, 22, 6);
   else if (type === 'khotchasi_king') shadow(ctx, x, y, 40, 11, 0.32);
   else if (type === 'garuda_king') shadow(ctx, x, y, 38, 11, 0.32);
-  else if (type === 'yak') shadow(ctx, x, y, 30, 9, 0.32);
+  else if (type === 'yak' || type === 'vessavana') shadow(ctx, x, y, type === 'yak' ? 30 : 40, 10, 0.32);
   else shadow(ctx, x, y, 13 * big, 4.5 * big);
   if (o.recoil > 0) ctx.translate(o.kbx * o.recoil * 30, o.kby * o.recoil * 20);   // สะดุ้งถอยตอนโดนฟัน
   ctx.translate(x, y);
   ctx.scale(SCALE, SCALE);
   if (o.recoil > 0) ctx.scale(1 + o.recoil * 0.8, 1 - o.recoil * 0.8);
   if (o.stun) ctx.rotate(Math.sin(o.t * 30) * 0.06);                                    // ขยายให้สมกับตัวละครสูงแบบเอโดเรีย
-  if (o.windup > 0 && type !== 'krasue' && type !== 'yak' && type !== 'khotchasi_king' && type !== 'garuda_king') ctx.translate(Math.sin(o.t * 60) * 1.2, 0);
+  if (o.windup > 0 && type !== 'krasue' && type !== 'yak' && type !== 'khotchasi_king' && type !== 'garuda_king' && type !== 'vessavana') ctx.translate(Math.sin(o.t * 60) * 1.2, 0);
   ctx.scale(o.face < 0 ? -1 : 1, 1);
   if (o.dying > 0) { const k = Math.min(1, o.dying * 2.2); ctx.translate(-4 * k, -6 * Math.sin(k * Math.PI)); ctx.rotate(-k * 1.4); } // ล้มตะแคง
   if (o.flash > 0 && Math.floor(o.t * 30) % 2) ctx.globalAlpha *= 0.55;
@@ -250,6 +296,15 @@ export function drawMonster(ctx, type, x, y, o) {
   else if (type === 'kumbhan') kumbhan(ctx, o);
   else if (type === 'kinnorn') kinnorn(ctx, o);
   else if (type === 'garuda_chick') garudaChick(ctx, o);
+  else if (type === 'deva_warrior') devaWarrior(ctx, o);
+  else if (type === 'apsara') apsara(ctx, o);
+  else if (type === 'erawan_calf') erawanCalf(ctx, o);
+  else if (type === 'vessavana') {                            // ท้าวเวสสุวรรณ: ยักษ์กายน้ำเงินใหญ่กว่ายักษ์วัด รัศมีทอง
+    const gl = ctx.createRadialGradient(0, -50, 4, 0, -50, 60);
+    gl.addColorStop(0, o.enraged ? 'rgba(255,70,30,0.4)' : 'rgba(255,220,100,0.35)'); gl.addColorStop(1, 'rgba(255,210,80,0)');
+    ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(0, -50, 60, 0, Math.PI * 2); ctx.fill();
+    ctx.scale(1.3, 1.3); yak(ctx, o, VESSAVANA);
+  }
   else if (type === 'garuda_king') {                          // พญาครุฑราช: ใหญ่สองเท่ากว่า รัศมีทอง คลั่งแล้วเปลวแดง
     const gl = ctx.createRadialGradient(4, -24, 2, 4, -24, 40);
     gl.addColorStop(0, o.enraged ? 'rgba(255,70,30,0.5)' : 'rgba(255,220,90,0.45)'); gl.addColorStop(1, 'rgba(255,200,60,0)');
@@ -268,5 +323,5 @@ export function drawMonster(ctx, type, x, y, o) {
 }
 
 export function monsterHeight(type) {
-  return Math.round(({ piglet: 18, boar: 24, bigboar: 34, monkey: 34, krasue: 50, phi_pob: 42, phi_phong: 40, yak: 96, khotchasi: 32, naga_noi: 40, hatsadi: 50, khotchasi_king: 62, kumbhan: 48, kinnorn: 52, garuda_chick: 44, garuda_king: 96 }[type] || 26) * SCALE);
+  return Math.round(({ piglet: 18, boar: 24, bigboar: 34, monkey: 34, krasue: 50, phi_pob: 42, phi_phong: 40, yak: 96, khotchasi: 32, naga_noi: 40, hatsadi: 50, khotchasi_king: 62, kumbhan: 48, kinnorn: 52, garuda_chick: 44, garuda_king: 96, deva_warrior: 52, apsara: 62, erawan_calf: 36, vessavana: 125 }[type] || 26) * SCALE);
 }

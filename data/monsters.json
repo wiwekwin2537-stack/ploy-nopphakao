@@ -355,5 +355,99 @@
   "waveThick": 26,
   "summon": "garuda_chick",
   "summonCount": 3
+ },
+ "deva_warrior": {
+  "name": "เทวดานักรบ",
+  "hp": 300,
+  "damage": 38,
+  "xp": 90,
+  "speed": 96,
+  "radius": 14,
+  "ai": "melee",
+  "aggro": 280,
+  "attackRange": 28,
+  "attackCooldown": 0.9,
+  "coins": [
+   6,
+   12
+  ],
+  "coinChance": 0.7
+ },
+ "apsara": {
+  "name": "นางอัปสร",
+  "hp": 200,
+  "damage": 34,
+  "xp": 85,
+  "speed": 100,
+  "radius": 13,
+  "ai": "caster",
+  "aggro": 320,
+  "keepDistance": 180,
+  "attackRange": 300,
+  "attackCooldown": 1.5,
+  "shotSpeed": 280,
+  "coins": [
+   6,
+   12
+  ],
+  "coinChance": 0.7,
+  "shotKind": "holy",
+  "flying": true
+ },
+ "erawan_calf": {
+  "name": "ช้างเอราวัณน้อย",
+  "hp": 380,
+  "damage": 42,
+  "xp": 110,
+  "speed": 84,
+  "radius": 20,
+  "ai": "charger",
+  "aggro": 300,
+  "attackRange": 30,
+  "attackCooldown": 1.2,
+  "chargeSpeed": 500,
+  "chargeWindup": 0.75,
+  "chargeTime": 0.75,
+  "chargeCooldown": 3.2,
+  "coins": [
+   8,
+   14
+  ],
+  "coinChance": 0.75
+ },
+ "vessavana": {
+  "name": "ท้าวเวสสุวรรณ",
+  "hp": 4800,
+  "damage": 58,
+  "xp": 3000,
+  "speed": 86,
+  "radius": 34,
+  "ai": "boss",
+  "aggro": 360,
+  "attackRange": 70,
+  "attackCooldown": 0.95,
+  "chargeSpeed": 560,
+  "chargeWindup": 0.7,
+  "chargeTime": 0.8,
+  "coins": [
+   160,
+   240
+  ],
+  "coinChance": 1,
+  "boss": true,
+  "bossLoot": {
+   "items": 4,
+   "rarity": "purple",
+   "redChance": 0.6,
+   "gems": 3
+  },
+  "slamRadius": 100,
+  "slamWindup": 0.7,
+  "stompWindup": 0.9,
+  "waveSpeed": 280,
+  "waveMax": 340,
+  "waveThick": 28,
+  "summon": "deva_warrior",
+  "summonCount": 3
  }
 }
