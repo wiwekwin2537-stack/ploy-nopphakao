@@ -14,7 +14,7 @@ export function bagLayout(w, h, s) {
   const gx = x + pw * 0.5 + 6 * s, gy = y + 52 * s, cell = Math.min(46 * s, (pw * 0.5 - 24 * s) / COLS);
   const close = { x: x + pw - 20 * s, y: y + 20 * s, r: 14 * s };
   const tabs = [['stats', 'ตัวละคร'], ['gear', 'ชุด'], ['gems', 'พลอย'], ['tree', 'พาสซีฟ']].map(([id, label], i) => ({ id, label, x: x + 104 * s + i * 72 * s, y: y + 8 * s, w: 66 * s, h: 24 * s }));
-  return { x, y, w: pw, h: ph, grid: { x: gx, y: gy, cell }, close, tabs, s };
+  return { x, y, w: pw, h: ph, grid: { x: gx, y: gy, cell }, close, tabs, s, W: w, H: h };
 }
 
 export function drawBag(ctx, game, L, w, h) {
@@ -33,9 +33,11 @@ export function drawBag(ctx, game, L, w, h) {
   }
   circle(ctx, B.close.x, B.close.y, B.close.r, 'rgba(120,30,20,0.9)', C.gold, 1.5);
   text(ctx, '✕', B.close.x, B.close.y + 1, 13 * s, '#fff', 'center');
-  if (tab === 'gear') { drawEquip(ctx, game, B); return; }
-  if (tab === 'stats') { drawProfileStats(ctx, game, B); return; }
-  drawGemTab(ctx, game, B);
+  game.tipLater = null;
+  if (tab === 'gear') drawEquip(ctx, game, B);
+  else if (tab === 'stats') drawProfileStats(ctx, game, B);
+  else drawGemTab(ctx, game, B);
+  if (game.tipLater) game.tipLater();                          // กล่องรายละเอียดวาดทับบนสุด
 }
 
 // รับการแตะ/คลิกในหน้าโปรไฟล์ คืน true ถ้าควรปิด หรือ 'tree' ถ้าเลือกแถบพาสซีฟ (เปิดต้นเต็มจอ)

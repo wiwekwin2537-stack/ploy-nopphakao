@@ -1,24 +1,36 @@
 // แถบ "พลอย" ในโปรไฟล์: ช่องพลอยบนอาวุธ/เสื้อแบบ PoE (สูงสุด 6 ช่อง เส้นทอง = เชื่อมกัน)
-// แตะพลอยในกระเป๋า → แตะช่อง = ฝังลงช่องนั้น (หรือแตะพลอยซ้ำ = ฝังช่องว่างแรก) · แตะช่องที่มีพลอย = ถอด
+// แตะพลอยในกระเป๋า → แตะช่อง = ฝังลงช่องนั้น (หรือแตะพลอยซ้ำ = ฝังช่องว่างแรก) · แตะช่องที่มีพลอย = ดูรายละเอียด แตะซ้ำ = ถอด
+// ช่องพลอยวาดทับบนรูปไอเท็ม (แบบ PoE) ไม่ใช่แถวแยก
 // ศิลาเจาะ / ด้ายสายสิญจน์: แตะเลือก แล้วแตะซ้ำ = ใช้กับของแถวที่เลือก
 import { C, rrect, circle, poly } from '../art/draw.js';
 import { gemSprite } from '../art/gems.js';
 import { uiText as text } from './hud.js';
-import { gemInfo, gemType, socketGem, unsocketGem, skillsOf, SOCKET_SLOTS } from '../systems/gems.js';
+import { socketGem, unsocketGem, skillsOf, SOCKET_SLOTS } from '../systems/gems.js';
 import { useCurrency, socketMax, itemName } from '../systems/items.js';
+import { itemSprite } from '../art/items.js';
+import { drawItemTip, drawGemTip, drawCurrencyTip } from './tooltip.js';
 
 const COLS = 6;
 const SLOT_NAME = { weapon: 'อาวุธ', body: 'เสื้อ' };
 
-export function gemLayout(B) {
-  const s = B.s, rows = SOCKET_SLOTS.map((slot, g) => {
-    const ry = B.y + 42 * s + g * 70 * s, rw = B.w * 0.5 - 18 * s;
-    const gap = Math.min(40 * s, (rw - 40 * s) / 6);
-    const sockets = Array.from({ length: 6 }, (_, i) => ({ slot, idx: i, x: B.x + 34 * s + i * gap, y: ry + 40 * s, r: 14 * s }));
-    return { group: g, slot, x: B.x + 12 * s, y: ry, w: rw, h: 64 * s, sockets };
+// ตำแหน่งช่องบนรูปไอเท็มแบบ PoE: 2 แถวตั้งแบบงูเลื้อย (0 1 / 3 2 / 4 5) ศูนย์กลางที่ (cx, cy)
+export function socketSpots(n, cx, cy, gap) {
+  const order = [[0, 0], [1, 0], [1, 1], [0, 1], [0, 2], [1, 2]].slice(0, n), cols = n > 1 ? 2 : 1, rows = Math.ceil(n / 2);
+  return order.map(([c, r]) => ({ x: cx + (c - (cols - 1) / 2) * gap, y: cy + (r - (rows - 1) / 2) * gap }));
+}
+
+// การ์ดอาวุธ/เสื้อ (รูปไอเท็มใหญ่ + ช่องพลอยบนตัวของ) วางคู่กัน · ปุ่มศิลา/ด้าย · รายการสกิล
+export function gemLayout(B, p) {
+  const s = B.s, cw = (B.w * 0.5 - 30 * s) / 2, ch = 150 * s;
+  const rows = SOCKET_SLOTS.map((slot, g) => {
+    const x = B.x + 12 * s + g * (cw + 6 * s), y = B.y + 42 * s, it = p && p.equip[slot];
+    const art = { x: x + cw / 2, y: y + 84 * s, size: Math.min(cw - 16 * s, 104 * s) };
+    const spots = socketSpots(6, art.x, art.y, 30 * s), real = it && it.sockets ? socketSpots(it.sockets, art.x, art.y, 30 * s) : [];
+    const sockets = spots.map((sp, i) => ({ slot, idx: i, x: (real[i] || sp).x, y: (real[i] || sp).y, r: 12 * s }));
+    return { group: g, slot, x, y, w: cw, h: ch, art, sockets };
   });
-  const cy = B.y + 42 * s + 2 * 70 * s + 4 * s, cw = (B.w * 0.5 - 24 * s) / 2;
-  const cur = ['jeweller', 'fusing'].map((k, i) => ({ kind: k, x: B.x + 12 * s + i * (cw + 6 * s), y: cy, w: cw, h: 26 * s }));
+  const cy = B.y + 42 * s + ch + 6 * s, cw2 = (B.w * 0.5 - 24 * s) / 2;
+  const cur = ['jeweller', 'fusing'].map((k, i) => ({ kind: k, x: B.x + 12 * s + i * (cw2 + 6 * s), y: cy, w: cw2, h: 26 * s }));
   return { rows, cur };
 }
 
@@ -50,27 +62,32 @@ export function currencyIcon(ctx, kind, x, y, r) {
 }
 
 export function drawGemTab(ctx, game, B) {
-  const G = game.data.gems, I = game.data.items, p = game.player, s = B.s, GL = gemLayout(B);
+  const G = game.data.gems, I = game.data.items, p = game.player, s = B.s, GL = gemLayout(B, p);
   const sel = game.bagGroup || 0;
   for (const row of GL.rows) {
     const on = row.group === sel, it = p.equip[row.slot];
-    ctx.fillStyle = on ? 'rgba(217,166,48,0.16)' : 'rgba(0,0,0,0.25)'; rrect(ctx, row.x, row.y, row.w, row.h, 8 * s); ctx.fill();
-    if (on) { ctx.strokeStyle = C.gold; ctx.lineWidth = 1.5; ctx.stroke(); }
-    const title = it ? `${SLOT_NAME[row.slot]}: ${itemName(I, it)}` : `${SLOT_NAME[row.slot]}: (ไม่ได้สวม)`;
-    text(ctx, title, row.x + 10 * s, row.y + 11 * s, 10 * s, it ? I.rarity[it.rarity].color : 'rgba(244,230,200,0.5)', 'left', '600');
-    if (!it) continue;
+    ctx.fillStyle = on ? 'rgba(217,166,48,0.16)' : 'rgba(0,0,0,0.28)'; rrect(ctx, row.x, row.y, row.w, row.h, 8 * s); ctx.fill();
+    ctx.strokeStyle = on ? C.gold : 'rgba(184,154,88,0.35)'; ctx.lineWidth = on ? 1.5 : 1; ctx.stroke();
+    text(ctx, SLOT_NAME[row.slot], row.x + 8 * s, row.y + 10 * s, 9 * s, 'rgba(244,230,200,0.6)', 'left', 'normal');
+    if (!it) { text(ctx, '(ไม่ได้สวม)', row.x + row.w / 2, row.art.y, 10 * s, 'rgba(244,230,200,0.45)', 'center', 'normal'); continue; }
+    ctx.font = `600 ${10 * s}px Kanit, sans-serif`;
+    let nm = itemName(I, it); while (nm.length > 4 && ctx.measureText(nm).width > row.w - 12 * s) nm = nm.slice(0, -2);
+    text(ctx, nm === itemName(I, it) ? nm : nm + '…', row.x + row.w / 2, row.y + 24 * s, 10 * s, I.rarity[it.rarity].color, 'center', '600');
+    const A = row.art;                                             // รูปไอเท็มใหญ่ แล้ววางช่องพลอยทับบนตัวของ (แบบ PoE)
+    ctx.globalAlpha = 0.9; ctx.drawImage(itemSprite(I, it.base, A.size * 2), A.x - A.size / 2, A.y - A.size / 2, A.size, A.size); ctx.globalAlpha = 1;
     const n = it.sockets || 0;
-    if (n) text(ctx, `${n}/${socketMax(I, it)} ช่อง`, row.x + row.w - 8 * s, row.y + 11 * s, 9 * s, 'rgba(244,230,200,0.6)', 'right', 'normal');
-    else text(ctx, 'ของชิ้นนี้ไม่มีช่องพลอย', row.x + 10 * s, row.y + 40 * s, 10 * s, 'rgba(244,230,200,0.5)', 'left', 'normal');
-    for (let i = 0; i < n - 1; i++) {                               // เส้นเชื่อมแบบด้ายสายสิญจน์
+    if (!n) { text(ctx, 'ไม่มีช่องพลอย', A.x, row.y + row.h - 10 * s, 9 * s, 'rgba(244,230,200,0.5)', 'center', 'normal'); continue; }
+    for (let i = 0; i < n - 1; i++) if (it.links[i]) {               // เส้นเชื่อม (ด้ายสายสิญจน์) ระหว่างช่อง
       const a = row.sockets[i], b = row.sockets[i + 1];
-      if (it.links[i]) { ctx.fillStyle = C.goldHi; ctx.fillRect(a.x, a.y - 3 * s, b.x - a.x, 6 * s); ctx.fillStyle = '#8a6a10'; ctx.fillRect(a.x, a.y - 0.5 * s, b.x - a.x, 1 * s); }
+      ctx.strokeStyle = '#6a4a10'; ctx.lineWidth = 8 * s; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      ctx.strokeStyle = C.goldHi; ctx.lineWidth = 5 * s; ctx.stroke();
     }
     for (let i = 0; i < n; i++) {
-      const so = row.sockets[i], g = it.gems[i];
-      circle(ctx, so.x, so.y, so.r, '#1a1210', '#b89a58', 2.5);
-      if (g) gemIcon(ctx, G, g, so.x, so.y, so.r * 0.8);
+      const so = row.sockets[i], g = it.gems[i], picked = game.sockSel && game.sockSel.slot === row.slot && game.sockSel.idx === i;
+      circle(ctx, so.x, so.y, so.r, 'rgba(20,14,10,0.92)', picked ? '#ffffff' : '#b89a58', picked ? 3 : 2.5);
+      if (g) gemIcon(ctx, G, g, so.x, so.y, so.r * 0.85);
     }
+    text(ctx, `${n}/${socketMax(I, it)} ช่อง`, A.x, row.y + row.h - 10 * s, 9 * s, 'rgba(244,230,200,0.6)', 'center', 'normal');
   }
   // ของเชื่อม/เจาะ
   for (const c of GL.cur) {
@@ -84,7 +101,7 @@ export function drawGemTab(ctx, game, B) {
   const sk = skillsOf(G, p);
   const ky = GL.cur[0].y + 40 * s;
   text(ctx, 'สกิล:', B.x + 14 * s, ky, 10 * s, C.goldHi, 'left', '600');
-  if (!sk.length) text(ctx, 'ฝังพลอยหลัก (เม็ดเหลี่ยม) ลงช่อง จะได้สกิล', B.x + 50 * s, ky, 10 * s, 'rgba(244,230,200,0.6)', 'left', 'normal');
+  if (!sk.length) text(ctx, 'ฝังพลอยสกิล (เม็ดกลมมีรูปสกิล) ลงช่อง จะได้สกิล', B.x + 50 * s, ky, 10 * s, 'rgba(244,230,200,0.6)', 'left', 'normal');
   sk.slice(0, 3).forEach((k, i) => {
     const sup = k.supports.map((id) => G.support[id].name.replace('พลอยเสริม', '')).join('+');
     text(ctx, `${i + 1}. ${k.name}${sup ? ' (' + sup + ')' : ''} · มานา ${k.mp}${k.count > 1 ? ' · ' + k.count + ' ลูก' : ''}`, B.x + 50 * s, ky + i * 15 * s, 9.5 * s, k.hi || C.cream, 'left', 'normal');
@@ -100,35 +117,54 @@ export function drawGemTab(ctx, game, B) {
     ctx.fillStyle = game.bagSel === i ? 'rgba(217,166,48,0.35)' : 'rgba(0,0,0,0.3)'; rrect(ctx, cx - g.cell / 2 + 2, cy - g.cell / 2 + 2, g.cell - 4, g.cell - 4, 6 * s); ctx.fill();
     gemIcon(ctx, G, id, cx, cy, g.cell * 0.3);
   });
-  // คำอธิบาย
-  let desc = 'เส้นทองเชื่อมช่อง = พลอยเสริมในช่องที่เชื่อมกันจะเสริมพลอยหลักในกลุ่มนั้น', col = C.goldHi;
-  const showId = game.bagSel !== undefined && game.bagSel !== null ? p.bag[game.bagSel] : null;
-  if (showId) desc = `${gemInfo(G, showId).name}: ${gemInfo(G, showId).desc}`;
-  else if (game.curSel) desc = `${I.currency[game.curSel].name}: ${I.currency[game.curSel].desc} — แตะซ้ำเพื่อใช้กับ${SLOT_NAME[SOCKET_SLOTS[sel]]}`;
+  // คำอธิบายล่าง + กล่องรายละเอียดของที่เลือก (วาดทับบนสุดใน bag.js)
+  let desc = 'แตะพลอย/ช่อง/ของ 1 ครั้งดูรายละเอียด · เส้นทอง = ช่องเชื่อมกัน พลอยเสริมเสริมพลอยสกิลในกลุ่มเดียวกัน', col = C.goldHi;
   if (game.gemMsg && game.gemMsg.t > game.time) { desc = game.gemMsg.text; col = game.gemMsg.col; }
-  text(ctx, desc, B.x + 20 * s, B.y + B.h - 18 * s, 10 * s, col, 'left', 'normal');
+  text(ctx, desc, B.x + 20 * s, B.y + B.h - 18 * s, 9.5 * s, col, 'left', 'normal');
+  const o = { s, W: B.W, H: B.H }, slotName = SLOT_NAME[SOCKET_SLOTS[sel]];
+  const showId = game.bagSel !== undefined && game.bagSel !== null ? p.bag[game.bagSel] : null;
+  if (showId) {
+    const i = game.bagSel, cx = g.x + (i % COLS) * g.cell + g.cell / 2, cy = g.y + Math.floor(i / COLS) * g.cell + g.cell / 2;
+    game.tipLater = () => drawGemTip(ctx, game, showId, cx - g.cell / 2, cy, { ...o, hint: `แตะช่องบน${slotName}เพื่อฝัง (แตะพลอยซ้ำ = ช่องว่างแรก)` });
+  } else if (game.sockSel) {
+    const row = GL.rows.find((r) => r.slot === game.sockSel.slot), it = p.equip[game.sockSel.slot], gid = it && it.gems && it.gems[game.sockSel.idx];
+    if (gid) { const so = row.sockets[game.sockSel.idx]; game.tipLater = () => drawGemTip(ctx, game, gid, so.x, so.y, { ...o, hint: 'แตะช่องนี้อีกครั้งเพื่อถอดเข้ากระเป๋า' }); }
+  } else if (game.curSel) {
+    const c = GL.cur.find((q) => q.kind === game.curSel);
+    game.tipLater = () => drawCurrencyTip(ctx, game, game.curSel, c.x + c.w / 2, c.y, { ...o, hint: `มี ${p.currency[game.curSel] || 0} · แตะอีกครั้งเพื่อใช้กับ${slotName}` });
+  } else if (game.cardTip) {
+    const row = GL.rows.find((r) => r.slot === game.cardTip), it = p.equip[game.cardTip];
+    if (it) game.tipLater = () => drawItemTip(ctx, game, it, row.x + row.w, row.y + row.h / 2, o);
+  }
 }
 
 export function updateGemTab(game, B, t) {
-  const G = game.data.gems, I = game.data.items, p = game.player, GL = gemLayout(B);
+  const G = game.data.gems, I = game.data.items, p = game.player, GL = gemLayout(B, p);
   const say = (text, col = '#ff8a7a') => { game.gemMsg = { text, col, t: game.time + 2.5 }; };
   const changed = () => { game.audio.play('gem'); game.events.emit('gemsChanged', {}); };
+  const clear = () => { game.sockSel = null; game.cardTip = null; };
   for (const row of GL.rows) {
     const it = p.equip[row.slot];
     for (const so of row.sockets) {
-      if (!it || so.idx >= (it.sockets || 0) || Math.hypot(t.sx - so.x, t.sy - so.y) > so.r * 1.25) continue;
-      game.bagGroup = row.group; game.curSel = null;
-      if (game.bagSel !== null && game.bagSel !== undefined && p.bag[game.bagSel]) {
+      if (!it || so.idx >= (it.sockets || 0) || Math.hypot(t.sx - so.x, t.sy - so.y) > so.r * 1.3) continue;
+      game.bagGroup = row.group; game.curSel = null; game.cardTip = null;
+      if (game.bagSel !== null && game.bagSel !== undefined && p.bag[game.bagSel]) {   // ถือพลอยอยู่ → ฝังลงช่องนี้
         if (socketGem(G, p, game.bagSel, row.slot, so.idx)) changed();
-        game.bagSel = null;
-      } else if (unsocketGem(p, row.slot, so.idx)) { game.audio.play('click'); game.events.emit('gemsChanged', {}); }
+        game.bagSel = null; game.sockSel = null;
+      } else if (game.sockSel && game.sockSel.slot === row.slot && game.sockSel.idx === so.idx) {   // แตะซ้ำ = ถอด
+        if (unsocketGem(p, row.slot, so.idx)) { game.audio.play('click'); game.events.emit('gemsChanged', {}); }
+        game.sockSel = null;
+      } else { game.sockSel = it.gems[so.idx] ? { slot: row.slot, idx: so.idx } : null; game.audio.play('click'); }
       return;
     }
-    if (t.sx >= row.x && t.sx <= row.x + row.w && t.sy >= row.y && t.sy <= row.y + row.h) { game.bagGroup = row.group; game.audio.play('click'); return; }
+    if (t.sx >= row.x && t.sx <= row.x + row.w && t.sy >= row.y && t.sy <= row.y + row.h) {
+      game.bagGroup = row.group; game.sockSel = null; game.curSel = null; game.bagSel = null;
+      game.cardTip = game.cardTip === row.slot ? null : row.slot; game.audio.play('click'); return;
+    }
   }
   for (const c of GL.cur) {
     if (t.sx < c.x || t.sx > c.x + c.w || t.sy < c.y || t.sy > c.y + c.h) continue;
-    game.bagSel = null;
+    game.bagSel = null; clear();
     if (game.curSel !== c.kind) { game.curSel = c.kind; game.audio.play('click'); return; }
     const slot = SOCKET_SLOTS[game.bagGroup || 0], it = p.equip[slot], name = I.currency[c.kind].name;
     if (!(p.currency[c.kind] > 0)) { say(`ไม่มี${name} — หาได้จากมอน บอส หรือร้านแม่ค้า`); return; }
@@ -142,7 +178,7 @@ export function updateGemTab(game, B, t) {
   if (col >= 0 && col < COLS && r >= 0) {
     const i = r * COLS + col;
     if (i >= p.bag.length) return;
-    game.curSel = null;
+    game.curSel = null; clear();
     if (game.bagSel === i) {                                   // แตะซ้ำ = ฝังช่องว่างแรกของแถวที่เลือก
       const slot = SOCKET_SLOTS[game.bagGroup || 0], it = p.equip[slot];
       if (!it || !it.sockets) say(`${SLOT_NAME[slot]}ไม่มีช่องพลอย`);

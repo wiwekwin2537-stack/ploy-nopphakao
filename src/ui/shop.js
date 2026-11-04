@@ -4,6 +4,7 @@ import { uiText as text } from './hud.js';
 import { flaskIcon } from './hudbar.js';
 import { itemIcon } from './equip.js';
 import { currencyIcon } from './gemtab.js';
+import { drawItemTip, drawCurrencyTip } from './tooltip.js';
 import { itemName, itemStats } from '../systems/items.js';
 import { buyPotion, buyItem, sellItem, sellPrice } from '../systems/shop.js';
 
@@ -79,6 +80,16 @@ export function drawShop(ctx, game, L, w, h) {
   }
   if (game.shopMsg && game.shopMsg.t > game.time) { info = game.shopMsg.text; col = game.shopMsg.col; }
   text(ctx, info, B.x + 20 * s, B.y + B.h - 18 * s, 10 * s, col, 'left', 'normal');
+  // กล่องรายละเอียดแบบ PoE ของที่เลือก (ซื้อ: ของในร้าน · ขาย: ของในกระเป๋า + ราคาขาย)
+  const o = { s, W: w, H: h };
+  if (sel && sel.side === 'buy') {
+    const g = B.goods[sel.i], st = g.kind === 'item' ? S.stock[g.idx] : null;
+    if (st && st.base) drawItemTip(ctx, game, { base: st.base, rarity: 'normal', ilvl: I.bases[st.base].req, mods: [], rareName: null }, g.x + g.w, g.y + g.h / 2, { ...o, price: st.price, priceLabel: 'ราคา', compare: p.equip[I.bases[st.base].slot], hint: 'แตะซ้ำเพื่อซื้อ (ช่องพลอยสุ่มตอนซื้อ)' });
+    else if (st && st.currency) drawCurrencyTip(ctx, game, st.currency, g.x + g.w, g.y + g.h / 2, { ...o, hint: `ราคา ${st.price} เบี้ย · แตะซ้ำเพื่อซื้อ` });
+  } else if (sel && sel.side === 'sell') {
+    const i = p.items.findIndex((x) => x.uid === sel.uid), it = p.items[i];
+    if (it) drawItemTip(ctx, game, it, G.x + (i % COLS) * G.cell, G.y + Math.floor(i / COLS) * G.cell + G.cell / 2, { ...o, price: sellPrice(S, it), compare: p.equip[I.bases[it.base].slot], hint: 'แตะซ้ำเพื่อขาย' });
+  }
 }
 
 // รับการแตะ/คลิกในหน้าร้าน คืน true ถ้าควรปิด

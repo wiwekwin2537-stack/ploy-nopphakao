@@ -217,8 +217,10 @@ await check('ช่องพลอยบนอาวุธ: แถบพลอ�
   const r = await G(page, () => ({ links: __ploy.game.player.equip.weapon.links.join(), fus: __ploy.game.player.currency.fusing }));
   assert(r.fus === 1 && r.links !== 'false,false,false', 'ใช้ด้ายไม่ได้ ' + JSON.stringify(r));
   await page.screenshot({ path: SHOTS + '/10f-sockets.png' });
-  const so = GL.rows[0].sockets[1];
-  await page.mouse.click(so.x, so.y); await page.waitForTimeout(100);
+  const so = (await G(page, () => __ploy.gemLayout())).rows[0].sockets[1];
+  await page.mouse.click(so.x, so.y); await page.waitForTimeout(100);              // แตะครั้งแรก = ดูรายละเอียดพลอย
+  await page.screenshot({ path: SHOTS + '/10g-gem-tip.png' });
+  await page.mouse.click(so.x, so.y); await page.waitForTimeout(100);              // แตะซ้ำ = ถอด
   const g2 = await G(page, () => ({ w: __ploy.game.player.equip.weapon.gems.join(), bag: __ploy.game.player.bag.includes('multi') }));
   assert(g2.bag && !g2.w.includes('multi'), 'ถอดพลอยไม่ได้ ' + JSON.stringify(g2));
   await G(page, () => { const p = __ploy.game.player, i = p.bag.indexOf('multi'); p.bag.splice(i, 1); p.equip.weapon.gems[1] = 'multi'; p.equip.weapon.links = [true, true, true]; });

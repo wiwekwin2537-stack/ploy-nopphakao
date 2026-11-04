@@ -174,7 +174,7 @@ export function createScene(game) {
     }
     for (const m of game.mobs) {
       if (m.dead || !vis(m.x, m.y)) continue;
-      if (m.state === 'windup' && m.def.ai === 'charger') {      // เส้นเตือนก่อนพุ่ง
+      if (m.state === 'windup' && m.def.boss && m.def.chargeSpeed) {   // เส้นเตือนก่อนพุ่ง — เฉพาะบอส (มอนธรรมดาไม่มีแถบเตือน)
         const len = m.def.chargeSpeed * m.def.chargeTime, k = 1 - m.windup / m.def.chargeWindup;
         ctx.save(); ctx.translate(m.x, m.y); ctx.rotate(Math.atan2(m.dirY, m.dirX));
         ctx.fillStyle = `rgba(220,40,30,${0.16 + k * 0.22})`; ctx.fillRect(0, -m.radius, len, m.radius * 2);

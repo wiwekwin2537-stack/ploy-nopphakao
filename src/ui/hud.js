@@ -4,7 +4,7 @@ import { playerStats } from '../systems/stats.js';
 import { xpNeeded } from '../systems/progress.js';
 import { pointsLeft } from '../systems/passives.js';
 import { drawBottomBar } from './hudbar.js';
-import { gemSprite } from '../art/gems.js';
+import { skillSprite } from '../art/skills.js';
 import { skillOf } from '../systems/skills.js';
 import { hintText, tutorialTarget } from '../systems/tutorial.js';
 
@@ -48,8 +48,8 @@ export function icon(ctx, id, x, y, r, game) {
   } else if (SKILL_BTN[id] !== undefined) {                 // ไอคอนสกิล = พลอยหลักที่ฝัง + จุดสีพลอยเสริม
     const sk = skillOf(game, SKILL_BTN[id]);
     if (sk) {
-      const px = r * 1.5 * (ctx.getTransform().a || 1);
-      ctx.drawImage(gemSprite(game.data.gems, sk.gem, px), -r * 0.75, -r * 0.8, r * 1.5, r * 1.5);
+      const px = r * 1.6 * (ctx.getTransform().a || 1);
+      ctx.drawImage(skillSprite(sk.kind, px), -r * 0.8, -r * 0.85, r * 1.6, r * 1.6);   // รูปสกิล (ไม่ใช่รูปพลอย) แบบแถบสกิล PoE
       sk.supports.forEach((sid, i) => circle(ctx, -r * 0.5 + i * r * 0.5, r * 0.68, r * 0.15, game.data.gems.support[sid].color, C.ink, 1));
     }
   } else if (id === 'interact') {

@@ -1,3 +1,5 @@
+import { skillSprite } from './skills.js';
+
 // ภาพพลอยแบบเจียระไน ทุกเม็ดรูปทรงและสัญลักษณ์ไม่ซ้ำกัน (แบบ PoE: ดูไอคอนก็รู้ว่าเม็ดไหน)
 // พลอยหลัก = ทรงใหญ่ประกายแรง · พลอยเสริม = ทรงเล็กกว่าในกรอบทอง
 const SHAPES = {
@@ -36,8 +38,22 @@ function symbol(g, kind, col) {
   g.restore();
 }
 
+// พลอยสกิล (แบบ PoE skill gem): ลูกแก้วกลมขัดมัน มีรูปสกิลสลักอยู่ข้างใน ขอบเงิน — ต่างจากพลอยเสริมที่เป็นเม็ดเจียระไนในกรอบทองชัดเจน
+function paintSkillGem(g, info) {
+  g.save(); g.shadowColor = info.color; g.shadowBlur = 10;
+  const sp = g.createRadialGradient(24, 20, 3, 32, 32, 28);
+  sp.addColorStop(0, info.hi || '#ffffff'); sp.addColorStop(0.35, info.color); sp.addColorStop(1, mix(info.color, '#000000', 0.7));
+  g.fillStyle = sp; g.beginPath(); g.arc(32, 32, 26, 0, Math.PI * 2); g.fill(); g.restore();
+  g.save(); g.beginPath(); g.arc(32, 32, 22, 0, Math.PI * 2); g.clip();
+  g.globalAlpha = 0.95; g.drawImage(skillSprite(info.kind, 64, false), 8, 8, 48, 48); g.restore();
+  g.strokeStyle = '#dfe6ea'; g.lineWidth = 3; g.beginPath(); g.arc(32, 32, 27, 0, Math.PI * 2); g.stroke();
+  g.strokeStyle = 'rgba(20,10,10,0.8)'; g.lineWidth = 1.2; g.beginPath(); g.arc(32, 32, 28.8, 0, Math.PI * 2); g.stroke();
+  g.fillStyle = 'rgba(255,255,255,0.55)'; g.beginPath(); g.ellipse(23, 17, 9, 5, -0.6, 0, Math.PI * 2); g.fill();
+}
+
 function paintGem(g, G, id) {
   const main = !!G.main[id], info = G.main[id] || G.support[id], look = LOOK[id] || { shape: 'round', sym: null };
+  if (main) { paintSkillGem(g, info); return; }
   const [hi, mid, lo] = main ? [info.hi || mix(info.color, '#ffffff', 0.5), info.color, mix(info.color, '#000000', 0.55)] : (SUPPORT_TINT[id] || ['#ffffff', info.color, '#555555']);
   if (!main) {                                                  // พลอยเสริม: กรอบทองรองรับ
     g.fillStyle = '#6a4a10'; g.beginPath(); g.arc(32, 32, 29, 0, 7); g.fill();

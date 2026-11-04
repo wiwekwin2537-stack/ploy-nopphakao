@@ -1,8 +1,10 @@
 // แถบ "ชุด" ในกระเป๋า: ช่องสวมใส่ 6 ช่อง + กระเป๋าของ · แตะของ 1 ครั้งดู/เทียบค่า แตะซ้ำเพื่อสวม · แตะช่องที่สวมแล้วซ้ำเพื่อถอด
 import { C, rrect, circle, poly } from '../art/draw.js';
 import { itemSprite } from '../art/items.js';
+import { drawItemTip } from './tooltip.js';
+import { socketSpots } from './gemtab.js';
 import { uiText as text } from './hud.js';
-import { EQUIP_SLOTS, itemName, itemStats, equipFromBag, unequip, discard, longestLink } from '../systems/items.js';
+import { EQUIP_SLOTS, itemName, equipFromBag, unequip, discard } from '../systems/items.js';
 
 const COLS = 6;
 
@@ -21,17 +23,17 @@ export function equipLayout(B, I) {
 // ภาพไอเท็มเดียวกับที่ตกพื้นและในร้าน (art/items.js)
 export function itemIcon(ctx, I, it, x, y, r) {
   ctx.drawImage(itemSprite(I, it.base, r * 2 * (ctx.getTransform().a || 1)), x - r, y - r, r * 2, r * 2);
+  if (it.sockets) {                                              // ช่องพลอยเล็กบนรูปของ (แบบ PoE) จุดเต็ม = มีพลอย
+    const sp = socketSpots(it.sockets, x, y, r * 0.55);
+    ctx.strokeStyle = 'rgba(243,210,122,0.9)'; ctx.lineWidth = Math.max(1, r * 0.12);
+    for (let i = 0; i < it.sockets - 1; i++) if (it.links[i]) { ctx.beginPath(); ctx.moveTo(sp[i].x, sp[i].y); ctx.lineTo(sp[i + 1].x, sp[i + 1].y); ctx.stroke(); }
+    sp.forEach((q, i) => { ctx.fillStyle = it.gems && it.gems[i] ? '#e85a6a' : 'rgba(20,14,10,0.85)'; ctx.beginPath(); ctx.arc(q.x, q.y, r * 0.17, 0, 7); ctx.fill(); ctx.strokeStyle = '#d8c090'; ctx.lineWidth = 1; ctx.stroke(); });
+  }
 }
 
-function statLines(I, P, it) {
-  const names = P.statNames;
-  const out = Object.entries(itemStats(I, it)).map(([k, v]) => (names[k] || k + ' {}').replace('{}', String(v)));
-  if (it.sockets) out.push(`ช่องพลอย ${it.sockets} (เชื่อมยาวสุด ${longestLink(it)})`);   // แบบ PoE: ●=●-●
-  return out;
-}
 
 export function drawEquip(ctx, game, B) {
-  const I = game.data.items, P = game.data.passives, p = game.player, s = B.s, E = equipLayout(B, I), sel = game.gearSel;
+  const I = game.data.items, p = game.player, s = B.s, E = equipLayout(B, I), sel = game.gearSel;
   for (const sl of Object.values(E.slots)) {
     const it = p.equip[sl.id];
     const on = sel && sel.slot === sl.id;
@@ -62,25 +64,17 @@ export function drawEquip(ctx, game, B) {
   }
   const b = I.bases[it.base], col = I.rarity[it.rarity].color;
   text(ctx, itemName(I, it), N.x + 10 * s, N.y + 13 * s, 12 * s, col);
-  text(ctx, `${I.rarity[it.rarity].name} · ${I.slots[b.slot].name} · ต้องเลเวล ${b.req} · ระดับของ ${it.ilvl}`, N.x + 10 * s, N.y + 30 * s, 9 * s, 'rgba(244,230,200,0.7)', 'left', 'normal');
-  text(ctx, statLines(I, P, it).join(' · '), N.x + 10 * s, N.y + 46 * s, 10 * s, C.cream, 'left', 'normal');
-  let hint;
+  text(ctx, `${I.rarity[it.rarity].name} · ${I.slots[b.slot].name} · ต้องเลเวล ${b.req}`, N.x + 10 * s, N.y + 30 * s, 9 * s, 'rgba(244,230,200,0.7)', 'left', 'normal');
+  let hint, ax, ay;
   if (sel.uid) {
-    const cur = p.equip[b.slot];
-    if (cur) {                                                  // เทียบค่ากับของที่สวมอยู่
-      const a = itemStats(I, it), c = itemStats(I, cur), keys = [...new Set([...Object.keys(a), ...Object.keys(c)])];
-      const diff = keys.map((k) => [k, (a[k] || 0) - (c[k] || 0)]).filter(([, v]) => v);
-      ctx.font = `600 ${9 * s}px Kanit, sans-serif`;
-      let dx = N.x + 10 * s;
-      for (const [k, v] of diff.slice(0, 5)) {
-        const str = (P.statNames[k] || k).replace('+{}', (v > 0 ? '+' : '') + v).replace('{}', String(v));
-        text(ctx, str, dx, N.y + 60 * s, 9 * s, v > 0 ? '#7dff8a' : '#ff7a6a', 'left', '600'); dx += ctx.measureText(str).width + 12 * s;
-      }
-    }
+    const i = p.items.findIndex((x) => x.uid === it.uid);
+    ax = g.x + (i % COLS) * g.cell + g.cell / 2; ay = g.y + Math.floor(i / COLS) * g.cell + g.cell / 2;
     hint = p.level < b.req ? `ต้องเลเวล ${b.req}` : 'แตะอีกครั้งเพื่อสวม';
     ctx.fillStyle = game.confirmDiscard === it.uid ? '#a02a20' : 'rgba(120,40,30,0.7)'; rrect(ctx, E.del.x, E.del.y, E.del.w, E.del.h, 6 * s); ctx.fill();
     text(ctx, game.confirmDiscard === it.uid ? 'ยืนยันทิ้ง' : 'ทิ้ง', E.del.x + E.del.w / 2, E.del.y + E.del.h / 2 + 0.5, 9.5 * s, '#fff', 'center');
-  } else hint = 'แตะอีกครั้งเพื่อถอดเข้ากระเป๋า';
+  } else { hint = 'แตะอีกครั้งเพื่อถอดเข้ากระเป๋า'; const sl = E.slots[sel.slot]; ax = sl.x + sl.w; ay = sl.y + sl.h / 2; }
+  // กล่องรายละเอียดแบบ PoE ข้างของที่เลือก (ค่าทุกบรรทัด ช่องพลอย เทียบกับที่สวม)
+  game.tipLater = () => drawItemTip(ctx, game, it, ax, ay, { s, W: B.W, H: B.H, compare: sel.uid ? p.equip[b.slot] : null, hint });
   text(ctx, hint, N.x + N.w - 80 * s, N.y + 13 * s, 10 * s, '#9af0b0', 'right', '600');
 }
 

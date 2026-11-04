@@ -206,4 +206,4 @@ game.loopStats = loop.stats;
 loop.start();
 
 // test-hook: เปิดเฉพาะเมื่อมี ?test ใน URL ใช้ในเทสต์อัตโนมัติเท่านั้น
-if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, layout: () => layout, bagLayout: () => bagLayout(game.camera.viewW, game.camera.viewH, layout.s), gemLayout: () => gemLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s)) }; // test-hook
+if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, layout: () => layout, bagLayout: () => bagLayout(game.camera.viewW, game.camera.viewH, layout.s), gemLayout: () => gemLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s), game.player) }; // test-hook
