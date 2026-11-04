@@ -79,15 +79,26 @@ function speaker(ctx, x, y, r, muted) {
 
 // แผนที่เล็ก: วาดพื้นที่ย่อส่วนครั้งเดียวต่อพื้นที่
 const miniCache = new Map();
+// แถบเลือดบอสใหญ่กลางบน เมื่อบอสตื่นแล้ว
+function bossBar(ctx, game, w, s) {
+  const b = game.mobs.find((m) => m.def.boss && !m.dead && m.aggroed);
+  if (!b) return;
+  const bw = Math.min(w * 0.6, 360 * s), x = w / 2 - bw / 2, y = 34 * s;
+  ctx.fillStyle = 'rgba(14,8,10,0.85)'; rrect(ctx, x - 4 * s, y - 2 * s, bw + 8 * s, 30 * s, 6 * s); ctx.fill();
+  ctx.strokeStyle = b.enraged ? '#ff5a3a' : C.gold; ctx.lineWidth = 1.5; ctx.stroke();
+  text(ctx, b.def.name + '  Lv.' + b.level + (b.enraged ? '  · คลั่ง!' : ''), w / 2, y + 7 * s, 11 * s, b.enraged ? '#ff9a7a' : C.goldHi, 'center', '600');
+  bar(ctx, x, y + 14 * s, bw, 10 * s, b.hp / b.maxHp, b.enraged ? '#ff5a2a' : '#c9302a');
+}
+
 function miniMap(zone) {
   if (miniCache.has(zone.id)) return miniCache.get(zone.id);
   const S = 140 / Math.max(zone.W, zone.H);
   const c = document.createElement('canvas'); c.width = Math.ceil(zone.W * S); c.height = Math.ceil(zone.H * S);
   const g = c.getContext('2d');
-  g.fillStyle = { forest: '#3e5e2c', town: '#6f8f45', field: '#7d9c4a' }[zone.def.ground] || '#6f8f45'; g.fillRect(0, 0, c.width, c.height);
+  g.fillStyle = { forest: '#3e5e2c', town: '#6f8f45', field: '#7d9c4a', dungeon: '#141016' }[zone.def.ground] || '#6f8f45'; g.fillRect(0, 0, c.width, c.height);
   const R = (r, col) => { g.fillStyle = col; g.fillRect(r.x * S, r.y * S, Math.max(1, r.w * S), Math.max(1, r.h * S)); };
   zone.paddies.forEach((r) => R(r, '#5f8e7c'));
-  zone.roads.forEach((r) => R(r, zone.def.ground === 'town' ? '#c4ae86' : '#b98a55'));
+  zone.roads.forEach((r) => R(r, zone.def.ground === 'town' ? '#c4ae86' : zone.def.ground === 'dungeon' ? '#6e665e' : '#b98a55'));
   zone.water.forEach((r) => R(r, '#3f7fa3'));
   for (const o of zone.objects) {
     if (o.type === 'thicket' || o.type === 'flower' || o.type === 'bush') continue;
@@ -134,6 +145,7 @@ export function drawHud(ctx, game, L, w, h) {
   const zn = game.world.zone.name, zw = ctx.measureText(zn).width + 28 * s;
   ctx.fillStyle = 'rgba(14,12,18,0.72)'; rrect(ctx, w / 2 - zw / 2, 6 * s, zw, 22 * s, 6 * s); ctx.fill();
   text(ctx, zn, w / 2, 17 * s + 1, 13 * s, '#f4e6c8', 'center', '600');
+  bossBar(ctx, game, w, s);
   if (game.toast && game.toast.t > 0) {
     ctx.globalAlpha = Math.min(1, game.toast.t);
     text(ctx, '— ' + game.toast.text + ' —', w / 2, h * 0.3, 24 * s, C.goldHi, 'center');

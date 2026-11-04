@@ -24,9 +24,9 @@ export function makeGame() {
     audio: { play: noop, music: noop, update: noop, muted: true },
     camera: { shake: 0, snap: noop, toWorld: (x, y) => ({ x, y }) },
     input: { move: { x: 0, y: 0 }, held: {}, pressed: {}, taps: [], mode: 'keyboard' },
-    flags: {}, mobs: [], shots: [], drops: [], later: [], spawnTimers: [], mode: 'play', time: 0,
+    flags: {}, mobs: [], shots: [], drops: [], hazards: [], later: [], spawnTimers: [], mode: 'play', time: 0,
   };
-  game.world = createWorld(zones, (f) => !!game.flags[f]);
+  game.world = createWorld(zones, (f) => !!game.flags[f], (t) => game.mobs.some((m) => m.type === t && !m.dead));
   game.player = createPlayer(game.data);
   setupLoot(game); setupProgress(game); setupTutorial(game); setupDeath(game);
   return game;

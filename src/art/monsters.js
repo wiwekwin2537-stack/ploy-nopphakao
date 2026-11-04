@@ -71,19 +71,80 @@ function krasue(ctx, o) {
   if (o.windup > 0) circle(ctx, 0, 1.5, 3 + o.windup * 4, 'rgba(140,255,120,0.6)', null);
 }
 
+function phiPob(ctx, o) {                         // ผีปอบ: ร่างผอมโซ ผิวเทาเขียว ผ้าขาวม้าขาด แขนยาวเอื้อม
+  const run = o.moving ? Math.sin((o.walk || 0) * Math.PI * 2) : 0, reach = o.windup > 0 ? 6 : 0;
+  ctx.translate(0, Math.abs(run) * -1);
+  box(ctx, -5 + run * 2, -10, 3.5, 10, '#6f7a68', C.line, 1); box(ctx, 2 - run * 2, -10, 3.5, 10, '#6f7a68', C.line, 1);
+  box(ctx, -6, -16, 12, 7, '#7a2a2a', C.line, 1.2);                                    // ผ้าขาวม้าแดงซีด
+  ctx.fillStyle = '#d8c8a8'; for (let i = 0; i < 3; i++) ctx.fillRect(-6 + i * 4, -16, 2, 7);
+  box(ctx, -6, -30, 12, 15, '#87927c', C.line, 1.3);                                   // อก เห็นซี่โครง
+  ctx.fillStyle = '#5f6a56'; for (let i = 0; i < 3; i++) ctx.fillRect(-4, -27 + i * 4, 8, 1.2);
+  box(ctx, 5 + reach, -29 - reach * 0.6, 3, 15, '#87927c', C.line, 1);                  // แขนเอื้อม
+  ctx.fillStyle = '#e8e0c8'; ctx.fillRect(6 + reach, -14 - reach * 0.6, 3, 3);           // เล็บยาว
+  box(ctx, -9, -29, 3, 13, '#87927c', C.line, 1);
+  box(ctx, -6, -42, 12, 12, '#9aa48c', C.line, 1.3);
+  poly(ctx, [-7, -42, 7, -42, 8, -34, 6, -38, 2, -40, -2, -38, -6, -36, -8, -32], '#1a1418', C.line, 1);  // ผมยุ่ง
+  ctx.fillStyle = o.windup > 0 ? '#ffffff' : '#e8f04a'; ctx.fillRect(-1, -37, 2.5, 2); ctx.fillRect(3, -37, 2.5, 2);
+  ctx.fillStyle = '#5a1018'; ctx.fillRect(0, -33, 5, 1.6);
+}
+
+function phiPhong(ctx, o) {                       // ผีโพง: ลอยต่ำ มีดวงไฟส้มที่จมูก ร่างคลุมผ้าดำ
+  const bob = Math.sin(o.t * 2.6) * 2;
+  ctx.translate(0, -6 + bob);
+  const gl = ctx.createRadialGradient(6, -30, 1, 6, -30, 20); gl.addColorStop(0, 'rgba(255,160,60,0.6)'); gl.addColorStop(1, 'rgba(255,120,40,0)');
+  ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(6, -30, 20, 0, Math.PI * 2); ctx.fill();
+  poly(ctx, [-9, -2, -7, -28, 0, -36, 7, -28, 9, -2, 5, -5, 2, 0, -2, -5, -6, 0], '#221a26', C.line, 1.2);
+  box(ctx, -5, -34, 10, 9, '#4a3a42', C.line, 1.1);
+  ctx.fillStyle = '#ffb04a'; ctx.fillRect(-3, -31, 2, 2); ctx.fillRect(2, -31, 2, 2);
+  const f = o.windup > 0 ? 6 : 3.5 + Math.sin(o.t * 9);
+  circle(ctx, 7, -29, f, '#ff9a3a', null); circle(ctx, 7, -29, f * 0.5, '#fff0b0', null);   // ดวงไฟโพง
+}
+
+function yak(ctx, o) {                             // ยักษ์วัด: ยักษ์ทวารบาลหน้าเขียว ชฎายอด กระบองใหญ่
+  const run = o.moving ? Math.sin((o.walk || 0) * Math.PI * 2) : 0, w = o.windup > 0;
+  const lift = w ? -18 : o.charging ? -6 : 0;
+  ctx.translate(0, Math.abs(run) * -1.2);
+  if (o.enraged) { ctx.fillStyle = 'rgba(255,60,40,0.22)'; ctx.beginPath(); ctx.ellipse(0, -30, 26, 34, 0, 0, Math.PI * 2); ctx.fill(); }
+  box(ctx, -10 + run * 2, -14, 7, 14, '#2f7a52', C.line, 1.4); box(ctx, 3 - run * 2, -14, 7, 14, '#2f7a52', C.line, 1.4);
+  ctx.fillStyle = C.gold; ctx.fillRect(-10 + run * 2, -4, 7, 2); ctx.fillRect(3 - run * 2, -4, 7, 2);
+  box(ctx, -13, -22, 26, 10, '#a3262a', C.line, 1.4);                                  // ผ้านุ่งแดงลายทอง
+  ctx.fillStyle = C.gold; for (let i = 0; i < 5; i++) ctx.fillRect(-12 + i * 5.5, -18, 3, 3);
+  box(ctx, -14, -44, 28, 23, '#3a9a62', C.line, 1.5);                                  // ลำตัวเขียว
+  box(ctx, -15, -46, 30, 8, C.gold, C.line, 1.3);                                      // กรองคอทอง
+  ctx.fillStyle = '#a3262a'; for (let i = 0; i < 4; i++) ctx.fillRect(-11 + i * 7, -44, 3, 3);
+  ctx.fillStyle = C.gold; ctx.fillRect(-14, -30, 28, 2.5);                              // ทับทรวง/เข็มขัด
+  box(ctx, -20, -42, 7, 18, '#3a9a62', C.line, 1.3);                                   // แขนซ้าย
+  ctx.save(); ctx.translate(16, -40 + lift * 0.3); ctx.rotate(w ? -1.6 : o.charging ? -0.5 : 0.25 + run * 0.15);
+  box(ctx, -3, 0, 7, 18, '#3a9a62', C.line, 1.3);                                      // แขนถือกระบอง
+  box(ctx, -2, 14, 6, 26, '#6b4423', C.line, 1.3);                                     // ด้ามกระบอง
+  box(ctx, -6, 36, 14, 18, '#4a2e17', C.line, 1.5);                                    // หัวกระบอง
+  ctx.fillStyle = C.gold; ctx.fillRect(-6, 38, 14, 2.5); ctx.fillRect(-6, 48, 14, 2.5);
+  ctx.restore();
+  box(ctx, -11, -64, 22, 19, '#3fae6c', C.line, 1.5);                                  // หน้า
+  ctx.fillStyle = '#f4ecd8'; ctx.fillRect(-9, -58, 7, 5); ctx.fillRect(2, -58, 7, 5);    // ตาโปน
+  ctx.fillStyle = w || o.enraged ? '#ff3a2a' : '#1b1410'; ctx.fillRect(-6, -57, 3, 3); ctx.fillRect(5, -57, 3, 3);
+  ctx.fillStyle = '#7a1420'; ctx.fillRect(-7, -50, 14, 3);
+  poly(ctx, [-7, -50, -5, -45, -4, -50], '#f4ecd8', null); poly(ctx, [7, -50, 5, -45, 4, -50], '#f4ecd8', null);  // เขี้ยวงอก
+  box(ctx, -12, -68, 24, 6, C.gold, C.line, 1.3);                                      // ชฎา
+  poly(ctx, [-10, -68, 0, -96, 10, -68], C.gold, C.line, 1.4);
+  ctx.fillStyle = C.goldHi; for (let i = 0; i < 4; i++) ctx.fillRect(-1.5, -90 + i * 5, 3, 2);
+  ctx.fillStyle = '#a3262a'; ctx.fillRect(-2, -75, 4, 4);
+}
+
 // o: { t, moving, face(1/-1), charging, windup, flash, dying(0..1), level }
 export function drawMonster(ctx, type, x, y, o) {
   const big = type === 'bigboar' ? 1.45 : type === 'piglet' ? 0.75 : 1;
   ctx.save();
   if (o.dying > 0) ctx.globalAlpha = Math.max(0, 1 - o.dying);
-  if (type === 'krasue') shadow(ctx, x, y, 8, 3, 0.18);
+  if (type === 'krasue' || type === 'phi_phong') shadow(ctx, x, y, 8, 3, 0.18);
+  else if (type === 'yak') shadow(ctx, x, y, 30, 9, 0.32);
   else shadow(ctx, x, y, 13 * big, 4.5 * big);
   if (o.recoil > 0) ctx.translate(o.kbx * o.recoil * 30, o.kby * o.recoil * 20);   // สะดุ้งถอยตอนโดนฟัน
   ctx.translate(x, y);
   ctx.scale(SCALE, SCALE);
   if (o.recoil > 0) ctx.scale(1 + o.recoil * 0.8, 1 - o.recoil * 0.8);
   if (o.stun) ctx.rotate(Math.sin(o.t * 30) * 0.06);                                    // ขยายให้สมกับตัวละครสูงแบบเอโดเรีย
-  if (o.windup > 0 && type !== 'krasue') ctx.translate(Math.sin(o.t * 60) * 1.2, 0);
+  if (o.windup > 0 && type !== 'krasue' && type !== 'yak') ctx.translate(Math.sin(o.t * 60) * 1.2, 0);
   ctx.scale(o.face < 0 ? -1 : 1, 1);
   if (o.dying > 0) { const k = Math.min(1, o.dying * 2.2); ctx.translate(-4 * k, -6 * Math.sin(k * Math.PI)); ctx.rotate(-k * 1.4); } // ล้มตะแคง
   if (o.flash > 0 && Math.floor(o.t * 30) % 2) ctx.globalAlpha *= 0.55;
@@ -94,9 +155,12 @@ export function drawMonster(ctx, type, x, y, o) {
     pig(ctx, big, { ...o, glowEye: true, eye: '#ffd24a' }, { body: '#4a2e22', dark: '#2a1a12', mane: fl });
   } else if (type === 'monkey') monkey(ctx, o);
   else if (type === 'krasue') krasue(ctx, o);
+  else if (type === 'phi_pob') phiPob(ctx, o);
+  else if (type === 'phi_phong') phiPhong(ctx, o);
+  else if (type === 'yak') yak(ctx, o);
   ctx.restore();
 }
 
 export function monsterHeight(type) {
-  return Math.round(({ piglet: 18, boar: 24, bigboar: 34, monkey: 34, krasue: 50 }[type] || 26) * SCALE);
+  return Math.round(({ piglet: 18, boar: 24, bigboar: 34, monkey: 34, krasue: 50, phi_pob: 42, phi_phong: 40, yak: 96 }[type] || 26) * SCALE);
 }

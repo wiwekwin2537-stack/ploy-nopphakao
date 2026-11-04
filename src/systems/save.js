@@ -29,10 +29,10 @@ const MIGRATIONS = {
 };
 
 export function serialize(game) {
-  const p = game.player;
+  const p = game.player, z = game.world.zone, at = z.def.saveAt;   // ในดันเจี้ยน: เซฟไว้ที่หน้าทางเข้า (โหลดแล้วเริ่มดันใหม่)
   return {
     v: SAVE_VERSION, savedAt: Date.now(),
-    zone: game.world.zone.id, x: Math.round(p.x), y: Math.round(p.y),
+    zone: at ? at.zone : z.id, x: Math.round(at ? at.x * 32 : p.x), y: Math.round(at ? at.y * 32 : p.y),
     level: p.level, xp: p.xp, coins: p.coins, hp: Math.round(p.hp), mp: Math.round(p.mp),
     items: JSON.parse(JSON.stringify(p.items)), equip: JSON.parse(JSON.stringify(p.equip)), nextUid: p.nextUid,
     passives: p.passives.slice(), bag: p.bag.slice(), sockets: p.sockets.map((r) => r.slice()), flags: { ...game.flags },
@@ -71,7 +71,7 @@ export function clearSave() { try { localStorage.removeItem(KEY); } catch { /* �
 
 export function setupAutosave(game) {
   const save = () => { if (game.mode !== 'title') writeSave(game); };
-  ['zoneChanged', 'levelUp', 'gemPicked', 'metChan', 'gemsChanged', 'passivesChanged', 'itemPicked', 'gearChanged'].forEach((e) => game.events.on(e, save));
+  ['zoneChanged', 'levelUp', 'gemPicked', 'metChan', 'gemsChanged', 'passivesChanged', 'itemPicked', 'gearChanged', 'bossKilled'].forEach((e) => game.events.on(e, save));
   game.autosaveT = 0;
 }
 

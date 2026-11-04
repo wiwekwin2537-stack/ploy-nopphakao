@@ -79,7 +79,7 @@ const J = (p) => JSON.parse(readFileSync(join(root, 'data', p), 'utf8'));
 const monsters = J('monsters.json'), zones = J('zones.json'), dialogue = J('dialogue.json'), balance = J('balance.json');
 for (const [id, m] of Object.entries(monsters)) {
   for (const k of ['name', 'hp', 'damage', 'xp', 'speed', 'radius', 'ai', 'aggro', 'attackRange', 'attackCooldown', 'coins', 'coinChance']) if (m[k] === undefined) bad('data/monsters.json', `${id} ไม่มี ${k}`);
-  if (!['melee', 'charger', 'caster'].includes(m.ai)) bad('data/monsters.json', `${id} ai ไม่รู้จัก: ${m.ai}`);
+  if (!['melee', 'charger', 'caster', 'boss'].includes(m.ai)) bad('data/monsters.json', `${id} ai ไม่รู้จัก: ${m.ai}`);
 }
 for (const [id, z] of Object.entries(zones)) {
   for (const e of z.exits) {

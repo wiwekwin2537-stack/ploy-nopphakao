@@ -94,6 +94,58 @@ export function createScene(game) {
     circle(ctx, s.x, s.y, s.radius, col[1], null); circle(ctx, s.x, s.y, s.radius * 0.5, col[2], null);
   }
 
+  // วงเตือนท่าบอส: แดงจางแล้วเข้มขึ้นจนเต็มวง = ระเบิด / คลื่นกระแทกเป็นวงแหวน
+  function drawHazards(ctx) {
+    for (const h of game.hazards || []) {
+      ctx.save(); ctx.translate(h.x, h.y); ctx.scale(1, 1 / 1.4);
+      if (h.kind === 'circle') {
+        if (h.done) { ctx.globalAlpha = Math.max(0, h.fade / 0.3); ctx.fillStyle = 'rgba(255,220,160,0.6)'; ctx.beginPath(); ctx.arc(0, 0, h.r, 0, Math.PI * 2); ctx.fill(); }
+        else {
+          const k = 1 - h.t / h.max;
+          ctx.fillStyle = `rgba(200,30,20,${0.14 + k * 0.2})`; ctx.beginPath(); ctx.arc(0, 0, h.r, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = 'rgba(255,90,60,0.9)'; ctx.lineWidth = 2; ctx.stroke();
+          ctx.fillStyle = 'rgba(255,80,50,0.35)'; ctx.beginPath(); ctx.arc(0, 0, h.r * k, 0, Math.PI * 2); ctx.fill();
+        }
+      } else if (h.t > 0) {
+        const k = 1 - h.t / h.max;
+        ctx.strokeStyle = `rgba(255,120,60,${0.3 + k * 0.5})`; ctx.lineWidth = 3; ctx.setLineDash([8, 6]);
+        ctx.beginPath(); ctx.arc(0, 0, 20 + k * 30, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+      } else {
+        ctx.strokeStyle = 'rgba(220,190,140,0.85)'; ctx.lineWidth = h.thick; ctx.beginPath(); ctx.arc(0, 0, h.r, 0, Math.PI * 2); ctx.stroke();
+        ctx.strokeStyle = 'rgba(255,240,200,0.9)'; ctx.lineWidth = 3; ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
+  function drawPortal(ctx, o) {
+    const cx = o.x + o.w / 2, cy = o.y + o.h / 2, t = game.time;
+    ctx.save(); ctx.translate(cx, cy - 26);
+    const gl = ctx.createRadialGradient(0, 0, 4, 0, 0, 46); gl.addColorStop(0, 'rgba(190,140,255,0.7)'); gl.addColorStop(1, 'rgba(120,80,220,0)');
+    ctx.fillStyle = gl; ctx.fillRect(-46, -46, 92, 92);
+    for (let i = 0; i < 3; i++) {
+      ctx.strokeStyle = ['#e8d8ff', '#b48aff', '#7a4ae0'][i]; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.ellipse(0, 0, 18 - i * 4, 28 - i * 6, 0, t * (2 + i) , t * (2 + i) + Math.PI * 1.4); ctx.stroke();
+    }
+    ctx.restore();
+    shadow(ctx, cx, cy + 4, 18, 5, 0.3);
+  }
+  // ความมืดในดันเจี้ยน: สว่างรอบตัวผู้เล่นและคบเพลิง
+  function drawDark(ctx, b, z) {
+    const p = game.player, t = game.time;
+    const g = ctx.createRadialGradient(p.x, p.y - 20, 60, p.x, p.y - 20, 330);
+    g.addColorStop(0, 'rgba(8,4,14,0)'); g.addColorStop(1, 'rgba(8,4,14,0.62)');
+    ctx.fillStyle = g; ctx.fillRect(b.l - 40, b.t - 40, b.r - b.l + 80, b.b - b.t + 80);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for (const o of z.objects) {
+      if (o.type !== 'torch' || o.x < b.l - 100 || o.x > b.r + 100 || o.y < b.t - 100 || o.y > b.b + 100) continue;
+      const fl = 70 + Math.sin(t * 9 + o.x) * 6 + Math.sin(t * 23 + o.y) * 3, x = o.x + o.w / 2, y = o.y - 30;
+      const tg = ctx.createRadialGradient(x, y, 2, x, y, fl);
+      tg.addColorStop(0, 'rgba(255,150,60,0.32)'); tg.addColorStop(1, 'rgba(255,120,40,0)');
+      ctx.fillStyle = tg; ctx.fillRect(x - fl, y - fl, fl * 2, fl * 2);
+    }
+    ctx.restore();
+  }
+
   // ป้ายชื่อแบบเอโดเรีย: แผ่นสีเข้มมุมมน ขอบทอง
   function plate(ctx, text, x, y, size, color = '#f4e6c8', border = 'rgba(217,166,48,0.9)', lv = null) {
     ctx.font = `600 ${size}px Kanit, sans-serif`;
@@ -111,7 +163,7 @@ export function createScene(game) {
     const vis = (x, y) => x > b.l - 60 && x < b.r + 60 && y > b.t - 60 && y < b.b + 80;
     for (const o of z.objects) {
       if (!o.label || !game.world.isVisible(o)) continue;
-      const tall = { temple: 220, sala: 150, gate: 160, well: 64, stall: 66, shrine: 80, tree_bodhi: 110 }[o.type] || 60;
+      const tall = { temple: 220, sala: 150, gate: 160, well: 64, stall: 66, shrine: 80, tree_bodhi: 110, ruin_gate: 150, portal: 90, stairs_down: 30, stairs_up: 30 }[o.type] || 60;
       const lx = o.x + o.w / 2, ly = o.y + o.h - tall;
       if (vis(lx, ly)) plate(ctx, o.label, lx, ly, 12, '#ffe9a8');
     }
@@ -124,6 +176,7 @@ export function createScene(game) {
         ctx.fillStyle = 'rgba(255,90,70,0.8)'; ctx.fillRect(0, -m.radius, len * k, 2); ctx.fillRect(0, m.radius - 2, len * k, 2);
         ctx.restore();
       }
+      if (m.def.boss) continue;                                    // บอสมีแถบเลือดใหญ่บนจอ (hud.js)
       if (m.hp < m.maxHp || m.aggroed || m.type === 'bigboar') {
         const w = Math.max(28, m.radius * 2.6), x = m.x - w / 2, y = m.y - m.height - 8;
         ctx.fillStyle = 'rgba(20,12,8,0.85)'; rrect(ctx, x - 1, y - 1, w + 2, 6, 3); ctx.fill();
@@ -167,6 +220,8 @@ export function createScene(game) {
       const b = cam.bounds(), m = 40;
       const vb = { l: b.l - m, r: b.r + m, t: b.t - m, b: b.b + m };
       ground.draw(ctx, vb);
+      drawHazards(ctx);
+      for (const o of z.objects) if (o.type === 'portal' && game.world.isVisible(o)) drawPortal(ctx, o);
       list.length = 0;
       for (const o of z.objects) {
         if (!game.world.isVisible(o) || sprites.isHidden(o)) continue;
@@ -188,7 +243,7 @@ export function createScene(game) {
         if (it.o) sprites.draw(ctx, it.o);
         else if (it.mob) {
           const mo = it.mob;
-          drawMonster(ctx, mo.type, mo.x, mo.y, { t: mo.t, walk: mo.walk, moving: mo.moving, face: mo.face, charging: mo.state === 'charge', windup: mo.state === 'windup' ? 1 : 0, flash: mo.flash, dying: mo.dying, recoil: mo.recoil || 0, kbx: mo.kbx || 0, kby: mo.kby || 0, stun: mo.state === 'stun' });
+          drawMonster(ctx, mo.type, mo.x, mo.y, { t: mo.t, walk: mo.walk, moving: mo.moving, face: mo.face, charging: mo.state === 'charge', windup: mo.state === 'windup' || mo.state === 'slam' || mo.state === 'stomp' ? 1 : 0, enraged: mo.enraged, flash: mo.flash, dying: mo.dying, recoil: mo.recoil || 0, kbx: mo.kbx || 0, kby: mo.kby || 0, stun: mo.state === 'stun' });
         } else if (it.npc) {
           const n = it.npc;
           drawHuman(ctx, n.look, n.x, n.y, { dir: n.face ? (n.face < 0 ? 2 : 3) : 0, t: t + n.x, moving: false, swing: -1 });
@@ -204,6 +259,7 @@ export function createScene(game) {
       }
       for (const s of game.shots) drawShot(ctx, s);
       game.fx.drawWorld(ctx);
+      if (z.def.ground === 'dungeon') drawDark(ctx, b, z);
       game.sceneStats = { sprites: sprites.size, chunks: ground.size, drawn: list.length };
     },
     // ชั้นบน (คมชัด): ป้ายชื่อ แถบเลือด ตัวเลขดาเมจ ลูกศรนำทาง — วาดด้วยพิกัดโลกบนแคนวาสหน้าจอ

@@ -8,7 +8,36 @@ const BASE = {
   forest: ['#4c6e34', '#476830', '#527538'],
   town: ['#86a653', '#7fa04e', '#8cad58'],
   field: ['#8fae55', '#86a64f', '#97b55c'],
+  dungeon: ['#2a2430', '#262029', '#2e2734'],
 };
+
+// ดันเจี้ยนวัดร้าง: นอกห้อง = กำแพงศิลาแลง (ด้านบนมืด มีหน้ากำแพงอิฐเมื่อติดพื้น) ในห้อง = พื้นหินแผ่นแตกร้าว
+function dungeonTile(g, x, y, v, h, tx, ty, at) {
+  if (v !== 1) {
+    g.fillStyle = h > 0.5 ? '#1c1720' : '#201a24'; g.fillRect(x, y, T, T);
+    g.fillStyle = 'rgba(90,70,60,0.25)';
+    for (let i = 0; i < 3; i++) g.fillRect(x + hash2(tx, ty, i + 3) * 28, y + hash2(tx, ty, i + 8) * 28, 3, 2);
+    if (at(tx, ty + 1) === 1) {                                      // หน้ากำแพงอิฐแดงหม่น หันหาผู้เล่น
+      g.fillStyle = '#6a3b2c'; g.fillRect(x, y + 10, T, T - 10);
+      g.fillStyle = '#4e2a20';
+      for (let r = 0; r < 3; r++) { const yy = y + 12 + r * 7; g.fillRect(x, yy + 5, T, 1.5); for (let c = 0; c < 3; c++) g.fillRect(x + ((c * 12 + (r % 2) * 6) % 32), yy, 1.5, 5); }
+      g.fillStyle = 'rgba(80,120,60,0.55)'; if (h > 0.6) g.fillRect(x + h * 20, y + 10, 4, 8 + h * 8);   // ตะไคร่
+      g.fillStyle = '#8a5a3e'; g.fillRect(x, y + 9, T, 2);
+      g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(x, y + T - 3, T, 3);
+    }
+    if (at(tx, ty - 1) === 1) { g.fillStyle = '#3a2f36'; g.fillRect(x, y, T, 3); }
+    if (at(tx - 1, ty) === 1) { g.fillStyle = '#3a2f36'; g.fillRect(x, y, 3, T); }
+    if (at(tx + 1, ty) === 1) { g.fillStyle = '#3a2f36'; g.fillRect(x + T - 3, y, 3, T); }
+    return;
+  }
+  g.fillStyle = h > 0.66 ? '#6e665e' : h > 0.33 ? '#675f58' : '#726a61'; g.fillRect(x, y, T, T);
+  g.strokeStyle = 'rgba(30,24,22,0.55)'; g.lineWidth = 1;
+  g.strokeRect(x + 0.5, y + 0.5, T - 1, T - 1); g.beginPath(); g.moveTo(x, y + 16); g.lineTo(x + T, y + 16); g.moveTo(x + (ty % 2 ? 10 : 22), y); g.lineTo(x + (ty % 2 ? 10 : 22), y + 16); g.stroke();
+  if (h > 0.75) { g.beginPath(); g.moveTo(x + 4, y + 20); g.lineTo(x + 12, y + 25); g.lineTo(x + 18, y + 22); g.stroke(); }  // รอยร้าว
+  g.fillStyle = 'rgba(255,240,220,0.06)'; g.fillRect(x + 1, y + 1, T - 2, 2);
+  if (hash2(tx, ty, 31) > 0.85) { g.fillStyle = 'rgba(70,110,50,0.4)'; g.fillRect(x + h * 22, y + hash2(tx, ty, 5) * 26, 5, 3); }
+  if (at(tx, ty - 1) !== 1) { g.fillStyle = 'rgba(0,0,0,0.4)'; g.fillRect(x, y, T, 6); }        // เงาใต้กำแพง
+}
 
 function classify(zone) {
   const cols = Math.ceil(zone.W / T), rows = Math.ceil(zone.H / T);
@@ -35,6 +64,7 @@ export function createGround(zone, scale) {
   function drawTile(g, tx, ty, ox, oy) {
     const v = at(tx, ty), x = tx * T - ox, y = ty * T - oy;
     const h = hash2(tx, ty, 7);
+    if (zone.def.ground === 'dungeon') { dungeonTile(g, x, y, v, h, tx, ty, at); return; }
     if (v === 0) {
       g.fillStyle = base[Math.floor(h * 3)]; g.fillRect(x, y, T, T);
       for (let i = 0; i < 5; i++) {                                   // ใบหญ้า

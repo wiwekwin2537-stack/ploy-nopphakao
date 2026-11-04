@@ -21,15 +21,39 @@ function rectsOverlap(a, b, pad = 0) {
   return a.x - pad < b.x + b.w && a.x + a.w + pad > b.x && a.y - pad < b.y + b.h && a.y + a.h + pad > b.y;
 }
 
+// ดันเจี้ยน: ทุกช่องที่ไม่อยู่ในห้อง/ทางเดิน (roads) เป็นกำแพงทึบ รวมเป็นสี่เหลี่ยมใหญ่เพื่อให้ชนเร็ว
+// ใช้กติกาเดียวกับการวาดพื้น: ช่องเป็นพื้นถ้าจุดกลางช่องอยู่ในห้อง
+export function isFloorTile(rooms, tx, ty) {
+  const x = tx * T + T / 2, y = ty * T + T / 2;
+  return rooms.some((r) => x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h);
+}
+function carveWalls(def, rooms) {
+  const runs = [];
+  for (let ty = 0; ty < def.h; ty++) {
+    let start = -1;
+    for (let tx = 0; tx <= def.w; tx++) {
+      const wall = tx < def.w && !isFloorTile(rooms, tx, ty);
+      if (wall && start < 0) start = tx;
+      if (!wall && start >= 0) { runs.push({ tx: start, ty, tw: tx - start, th: 1 }); start = -1; }
+    }
+  }
+  const out = [];                                   // ต่อแถวที่กว้างเท่ากันลงไปด้านล่าง
+  for (const r of runs) {
+    const up = out.find((o) => o.tx === r.tx && o.tw === r.tw && o.ty + o.th === r.ty);
+    if (up) up.th++; else out.push({ ...r });
+  }
+  return out.map((o) => ({ x: o.tx * T, y: o.ty * T, w: o.tw * T, h: o.th * T, wall: true }));
+}
+
 export function buildZone(id, def) {
   const px = (r) => ({ x: r.x * T, y: r.y * T, w: r.w * T, h: r.h * T });
   const objects = [];
   for (const o of def.objects || []) {
-    objects.push({ type: o.type, ...px(o), solid: o.solid === undefined ? !NON_SOLID_TYPES.has(o.type) : o.solid, untilFlag: o.untilFlag || null, label: o.label || null });
+    objects.push({ type: o.type, ...px(o), solid: o.solid === undefined ? !NON_SOLID_TYPES.has(o.type) : o.solid, untilFlag: o.untilFlag || null, label: o.label || null, requiresClear: o.requiresClear || null });
   }
   const roads = (def.roads || []).map(px);
   const water = (def.water || []).map(px);
-  const exits = (def.exits || []).map((e) => ({ ...px(e), to: e.to, tx: e.tx * T, ty: e.ty * T }));
+  const exits = (def.exits || []).map((e) => ({ ...px(e), to: e.to, tx: e.tx * T, ty: e.ty * T, requiresClear: e.requiresClear || null }));
   const start = { x: def.start.x * T, y: def.start.y * T };
   const keepClear = [
     { x: start.x - 2 * T, y: start.y - 2 * T, w: 4 * T, h: 4 * T },
@@ -57,7 +81,7 @@ export function buildZone(id, def) {
     }
   }
   return {
-    id, def, name: def.name, W: def.w * T, H: def.h * T, safe: !!def.safe, music: def.music,
+    id, def, name: def.name, walls: def.walled ? carveWalls(def, roads) : [], W: def.w * T, H: def.h * T, safe: !!def.safe, music: def.music,
     objects, roads, water, exits, start,
     paddies: (def.paddies || []).map((p) => ({ ...px(p), cell: p.cell * T })),
     npcs: (def.npcs || []).map((n) => ({ ...n, x: n.x * T, y: n.y * T })),
@@ -65,13 +89,14 @@ export function buildZone(id, def) {
   };
 }
 
-export function createWorld(zonesData, hasFlag) {
+// isAlive(type): ยังมีมอนชนิดนี้ที่ยังไม่ตายในพื้นที่ไหม (ใช้กับประตูที่เปิดเมื่อล้มบอส)
+export function createWorld(zonesData, hasFlag, isAlive = () => false) {
   const cache = new Map();
   let zone = null;
   let grid = null; const CELL = 128;
 
   function solids() {
-    return zone.objects.filter((o) => o.solid && !(o.untilFlag && hasFlag(o.untilFlag))).concat(zone.water);
+    return zone.objects.filter((o) => o.solid && !(o.untilFlag && hasFlag(o.untilFlag))).concat(zone.water, zone.walls);
   }
   function rebuildGrid() {
     const cols = Math.ceil(zone.W / CELL), rows = Math.ceil(zone.H / CELL);
@@ -100,7 +125,7 @@ export function createWorld(zonesData, hasFlag) {
       return zone;
     },
     refreshFlags() { rebuildGrid(); },
-    isVisible(o) { return !(o.untilFlag && hasFlag(o.untilFlag)); },
+    isVisible(o) { return !(o.untilFlag && hasFlag(o.untilFlag)) && !(o.requiresClear && isAlive(o.requiresClear)); },
     // ขยับวงกลมแบบแยกแกน แล้วดันออกจากสิ่งกีดขวาง คืนค่าตำแหน่งใหม่
     moveCircle(x, y, r, dx, dy) {
       let nx = x + dx, ny = y;
@@ -139,7 +164,7 @@ export function createWorld(zonesData, hasFlag) {
       return true;
     },
     exitAt(x, y) {
-      return zone.exits.find((e) => x >= e.x && x <= e.x + e.w && y >= e.y && y <= e.y + e.h) || null;
+      return zone.exits.find((e) => x >= e.x && x <= e.x + e.w && y >= e.y && y <= e.y + e.h && !(e.requiresClear && isAlive(e.requiresClear))) || null;
     },
   };
 }

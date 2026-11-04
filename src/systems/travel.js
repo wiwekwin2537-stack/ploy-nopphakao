@@ -7,7 +7,7 @@ export function enterZone(game, id, x, y) {
   const p = game.player;
   p.x = x ?? z.start.x; p.y = y ?? z.start.y;
   p.moveTarget = null; p.targetMob = null; p.dashT = 0;
-  game.shots.length = 0; game.drops.length = 0; game.fx.clear();
+  game.shots.length = 0; game.drops.length = 0; if (game.hazards) game.hazards.length = 0; game.fx.clear();
   game.pendingTalk = null;
   spawnZoneMobs(game);
   game.camera.snap(p.x, p.y);

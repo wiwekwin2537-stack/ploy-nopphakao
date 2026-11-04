@@ -15,6 +15,7 @@ import { createRng } from './core/rng.js';
 import { createWorld } from './systems/world.js';
 import { createPlayer, updatePlayer } from './systems/player.js';
 import { updateMonsters, makeMob } from './systems/monsters.js';
+import { updateHazards } from './systems/boss.js';
 import { updateShots } from './systems/combat.js';
 import { setupLoot, updateLoot } from './systems/loot.js';
 import { setupProgress } from './systems/progress.js';
@@ -42,10 +43,10 @@ let layout = computeLayout(canvas.clientWidth || innerWidth, canvas.clientHeight
 const game = {
   data: { balance, monsters, zones, dialogue, gems, passives, items },
   events: createEvents(), camera: createCamera(), audio: createAudio(), fx: createFx(), rng: createRng(Date.now() & 0xffff),
-  flags: {}, mobs: [], shots: [], drops: [], later: [], spawnTimers: [],
+  flags: {}, mobs: [], shots: [], drops: [], hazards: [], later: [], spawnTimers: [],
   mode: 'title', dialog: null, time: 0, hitStop: 0, toast: null, debug: params.has('debug'),
 };
-game.world = createWorld(zones, (f) => !!game.flags[f]);
+game.world = createWorld(zones, (f) => !!game.flags[f], (type) => game.mobs.some((m) => m.type === type && !m.dead));
 game.input = createInput(canvas, () => layout);
 game.player = createPlayer(game.data);
 game.hasSave = !!readSave(game.data);
@@ -131,6 +132,7 @@ function update(dt) {
       updateSkillTimers(game, dt);
       updatePlayer(game, dt);
       updateMonsters(game, dt);
+      updateHazards(game, dt);
       updateShots(game, dt);
       updateLoot(game, dt);
       updateTravel(game, dt);

@@ -1,8 +1,9 @@
 // แคชภาพของที่ไม่ขยับ: วาดลงแคนวาสครั้งเดียว แล้วใช้ drawImage ทุกเฟรม
 import { PROPS } from './props.js';
 import { BUILDINGS } from './buildings.js';
+import { RUINS } from './ruins.js';
 
-const SPEC = { ...PROPS, ...BUILDINGS };
+const SPEC = { ...PROPS, ...BUILDINGS, ...RUINS };
 
 export function createSpriteCache(scale) {
   const cache = new Map();

@@ -14,7 +14,7 @@ export function damageMob(game, mob, amount, crit = false, element = 'phys') {
   // สะดุ้งถอยจากผู้เล่นเล็กน้อย (ท่าโดนตี)
   const p = game.player, dx = mob.x - p.x, dy = mob.y - p.y, d = Math.hypot(dx, dy) || 1;
   if (element !== 'poison') { mob.recoil = 0.14; mob.kbx = dx / d; mob.kby = dy / d; }
-  if (element !== 'poison' && mob.state !== 'charge' && mob.type !== 'bigboar') {
+  if (element !== 'poison' && mob.state !== 'charge' && mob.type !== 'bigboar' && !mob.def.boss) {
     const r = mob.def.flying ? { x: mob.x + dx / d * 5, y: mob.y + dy / d * 5 } : game.world.moveCircle(mob.x, mob.y, mob.radius, dx / d * 5, dy / d * 5);
     mob.x = r.x; mob.y = r.y;
   }
@@ -73,7 +73,7 @@ export function meleeArc(game, x, y, ang, range, arc, base, critChance, critMult
 export function spawnShot(game, shot) { game.shots.push({ hitIds: new Set(), ...shot }); }
 
 export const SHOT_COLORS = {
-  fire: ['#ff7a2a', '#ffe08a', '#ffb84a'], ice: ['#7ac0ff', '#e8f4ff', '#a8d8ff'], poison: ['#3ad06a', '#c8ffb0', '#7dff8a'], ghost: ['#8cff9a', '#e8ffe8', '#8cff9a'],
+  fire: ['#ff7a2a', '#ffe08a', '#ffb84a'], ice: ['#7ac0ff', '#e8f4ff', '#a8d8ff'], poison: ['#3ad06a', '#c8ffb0', '#7dff8a'], ghost: ['#8cff9a', '#e8ffe8', '#8cff9a'], phong: ['#ff9a3a', '#fff0b0', '#ffc070'],
 };
 
 // ผลพิเศษของกระสุนพลอย: ทำให้ช้า / ติดพิษ

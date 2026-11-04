@@ -1,6 +1,7 @@
 // มอนสเตอร์: เกิด เกิดใหม่ และ AI (ประชิด / พุ่งชน / ร่ายระยะไกล)
 import { hurtPlayer, spawnShot, damageMob } from './combat.js';
 import { monsterHeight } from '../art/monsters.js';
+import { updateBoss } from './boss.js';
 
 let nextId = 1;
 
@@ -115,6 +116,7 @@ function updateAI(game, m, dt) {
   if (!m.aggroed && canSee && d < def.aggro) m.aggroed = true;
   if (m.aggroed && (!canSee || Math.hypot(m.x - m.homeX, m.y - m.homeY) > def.aggro * 2.6)) { m.aggroed = false; m.state = 'return'; m.stateT = 0; }
 
+  if (def.ai === 'boss') { updateBoss(game, m, dt, { seek, step, makeMob }); return; }
   if (m.state === 'windup') {
     m.windup = Math.max(0, m.stateT);
     if (m.stateT <= 0) {
@@ -122,7 +124,7 @@ function updateAI(game, m, dt) {
       if (def.ai === 'charger' && m.chargeNext) { m.state = 'charge'; m.stateT = def.chargeTime; m.hitThisCharge = false; m.dodged = false; m.chargeNext = false; }
       else if (def.ai === 'caster') {
         const a = Math.atan2(p.y - 14 - (m.y - 24), p.x - m.x);
-        spawnShot(game, { x: m.x, y: m.y - 24, vx: Math.cos(a) * def.shotSpeed, vy: Math.sin(a) * def.shotSpeed, life: 2.2, radius: 6, from: 'mob', damage: m.damage, kind: 'ghost', flying: true });
+        spawnShot(game, { x: m.x, y: m.y - 24, vx: Math.cos(a) * def.shotSpeed, vy: Math.sin(a) * def.shotSpeed, life: 2.2, radius: 6, from: 'mob', damage: m.damage, kind: def.shotKind || 'ghost', flying: true });
         m.state = 'chase'; m.attackCd = def.attackCooldown;
       } else {
         if (d < def.attackRange + p.radius + 12) hurtPlayer(game, m.damage, m.x, m.y);
@@ -191,7 +193,7 @@ export function updateMonsters(game, dt) {
       m.dying += dt * 1.8;
       if (m.dying >= 1) {
         game.mobs.splice(i, 1);
-        if (m.group >= 0 && z.spawns[m.group]) game.spawnTimers[m.group].push(z.spawns[m.group].respawn);
+        if (m.group >= 0 && z.spawns[m.group] && z.spawns[m.group].respawn) game.spawnTimers[m.group].push(z.spawns[m.group].respawn);
       }
       continue;
     }

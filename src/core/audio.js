@@ -29,7 +29,13 @@ const SONGS = {
     lead: [2, null, 4, 2, 1, null, 0, null, 1, 2, 4, null, 2, 1, 0, null, -1, 0, 1, null, 2, null, 1, 0, 0, null, null, null, null, null, null, null],
     voice: 'ranat', bass: [0, null, null, null, -1, null, null, null], ching: 4, drum: true,
   },
-};
+  dungeon: {                                       // วัดร้าง: ขลุ่ยต่ำช้า ฆ้องห่าง ๆ วังเวง
+    bpm: 58, sub: 2,
+    lead: [0, null, null, -1, 0, null, null, null, 2, null, 1, null, 0, null, null, null,
+      -1, null, -2, null, -1, null, 0, null, null, null, null, null, null, null, null, null],
+    voice: 'khlui', bass: [-2, null, null, null, null, null, -3, null], ching: 8, drum: false,
+  },
+}
 
 export function createAudio() {
   let ctx = null, master = null, musicBus = null, sfxBus = null, noiseBuf = null;

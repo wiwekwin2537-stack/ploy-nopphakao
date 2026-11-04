@@ -240,6 +240,39 @@ await check('เซฟแล้วรีเฟรชหน้า → กด "เ
   assert(after.gems.includes('ruby') && after.gems.includes('multi'), 'พลอยที่ฝังหายหลังโหลด');
 });
 
+await check('วัดร้าง: เดินเข้าซุ้มประตูจากทุ่งนา → ลงถึงห้องยักษ์ → บอสมีวงเตือน → ล้มบอส → ประตูมิติพากลับ', async () => {
+  await G(page, () => { const g = __ploy.game; __ploy.enterZone(g, 'field', 65.5 * 32, 7 * 32); g.player.invuln = 0; });
+  await page.waitForTimeout(400);
+  await hold(page, 'KeyW', 900);
+  let s = await state(page);
+  assert(s.zone === 'dungeon1', 'เดินเข้าซุ้มแล้วไม่เข้าดันเจี้ยน: ' + s.zone);
+  await page.waitForTimeout(600);
+  await page.screenshot({ path: SHOTS + '/12-dungeon1.png' });
+  await G(page, () => { const g = __ploy.game; __ploy.enterZone(g, 'dungeon3'); const y = g.mobs.find((m) => m.type === 'yak'); g.player.x = y.x - 130; g.player.y = y.y; g.player.invuln = 999; });
+  await page.waitForTimeout(2500);
+  const seen = await G(page, () => { const g = __ploy.game, y = g.mobs.find((m) => m.type === 'yak'); return { aggro: y.aggroed, hz: g.hazards.length, st: y.state }; });
+  await page.screenshot({ path: SHOTS + '/13-boss.png' });
+  assert(seen.aggro, 'บอสไม่ตื่น');
+  await G(page, () => { const g = __ploy.game, y = g.mobs.find((m) => m.type === 'yak'); y.hp = Math.floor(y.maxHp * 0.45); });
+  await page.waitForTimeout(700);
+  const minions = await G(page, () => __ploy.game.mobs.filter((m) => m.type === 'monkey').length);
+  assert(minions === 3, 'บอสคลั่งแล้วต้องเรียกลิง 3 ตัว ได้ ' + minions);
+  await page.screenshot({ path: SHOTS + '/13b-enrage.png' });
+  await G(page, () => { const g = __ploy.game; g.mobs.forEach((m) => { m.hp = 1; }); const y = g.mobs.find((m) => m.type === 'yak'); g.player.x = y.x - 40; g.player.y = y.y; g.player.dir = 3; });
+  for (let i = 0; i < 12; i++) { await page.keyboard.press('KeyJ'); await page.waitForTimeout(160); }
+  const dead = await G(page, () => !__ploy.game.mobs.some((m) => m.type === 'yak' && !m.dead));
+  assert(dead, 'ฟันบอสไม่ตาย');
+  await page.waitForTimeout(800);
+  await page.screenshot({ path: SHOTS + '/14-boss-loot.png' });
+  const slain = await G(page, () => __ploy.game.flags.yakSlain);
+  assert(slain, 'ไม่ได้ธงล้มยักษ์');
+  await G(page, () => { const g = __ploy.game, e = g.world.zone.exits.find((x) => x.requiresClear); g.player.x = e.x - 50; g.player.y = e.y + e.h / 2; });
+  await hold(page, 'KeyD', 900);
+  s = await state(page);
+  assert(s.zone === 'field', 'ประตูมิติไม่พากลับทุ่งนา: ' + s.zone);
+  return 'สถานะบอสตอนสู้ ' + seen.st + ' วงเตือน ' + seen.hz;
+});
+
 await check('ความเร็ว: มอน 100 ตัวไล่ล้อม ใช้เวลาคำนวณ+วาดต่อเฟรมไม่เกิน 8ms', async () => {
   await G(page, () => { const g = __ploy.game, p = g.player; const types = ['boar', 'monkey', 'krasue', 'piglet']; for (let i = 0; i < 2000 && g.mobs.length < 100; i++) { const m = __ploy.makeMob(g, types[i % 4], 3, p.x + (Math.random() - 0.5) * 700, p.y + (Math.random() - 0.5) * 400, -1); if (!g.world.blocked(m.x, m.y, m.radius)) g.mobs.push(m); } g.mobs.forEach((m) => { m.aggroed = true; }); p.invuln = 99; });
   await page.waitForTimeout(1500);

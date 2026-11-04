@@ -11,6 +11,7 @@ export function setupLoot(game) {
       const amount = rng.int(def.coins[0], def.coins[1]) * mob.level;
       spawnDrop(game, { kind: 'coin', amount, x: mob.x, y: mob.y });
     }
+    if (def.bossLoot) bossLoot(game, mob);
     // พลอยประจำบอส (เช่น ทับทิมจากพญาหมูป่า) ได้เม็ดเดียวต่อตัวละคร
     if (def.drop && !ownsGem(game.player, def.drop) && !game.drops.some((d) => d.gem === def.drop)) {
       spawnDrop(game, { kind: 'gem', gem: def.drop, x: mob.x, y: mob.y });
@@ -24,6 +25,21 @@ export function setupLoot(game) {
       }
     }
   });
+}
+
+// ของบอส: ไอเท็มม่วงขึ้นไป (มีโอกาสแดง) + พลอยแน่นอน — เกิดครั้งเดียวต่อการล้มบอสหนึ่งครั้ง
+function bossLoot(game, mob) {
+  const L = mob.def.bossLoot, rng = game.rng, I = game.data.items, G = game.data.gems;
+  for (let i = 0; i < L.items; i++) {
+    const it = rollItem(I, rng, mob.level, { rarity: rng.chance(L.redChance) ? 'red' : L.rarity });
+    if (it) spawnDrop(game, { kind: 'item', item: it, x: mob.x + (i - 0.5) * 30, y: mob.y });
+  }
+  const pool = G.drops.filter((d) => mob.level >= d.minLevel).map((d) => d.gem);
+  for (let i = 0; i < L.gems && pool.length; i++) spawnDrop(game, { kind: 'gem', gem: rng.pick(pool), x: mob.x, y: mob.y + 10 });
+  game.flags[mob.type + 'Slain'] = true;
+  game.notice = { text: 'ล้ม' + mob.def.name + 'สำเร็จ! ประตูมิติกลับทุ่งนาเปิดแล้ว', t: 6 };
+  game.audio.play('level');
+  game.events.emit('bossKilled', { mob });
 }
 
 export function spawnDrop(game, d) {
