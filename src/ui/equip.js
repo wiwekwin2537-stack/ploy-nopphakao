@@ -1,5 +1,6 @@
 // แถบ "ชุด" ในกระเป๋า: ช่องสวมใส่ 6 ช่อง + กระเป๋าของ · แตะของ 1 ครั้งดู/เทียบค่า แตะซ้ำเพื่อสวม · แตะช่องที่สวมแล้วซ้ำเพื่อถอด
 import { C, rrect, circle, poly } from '../art/draw.js';
+import { itemSprite } from '../art/items.js';
 import { uiText as text } from './hud.js';
 import { EQUIP_SLOTS, itemName, itemStats, equipFromBag, unequip, discard, longestLink } from '../systems/items.js';
 
@@ -17,17 +18,9 @@ export function equipLayout(B, I) {
   return { slots, grid: { x: gx, y: gy, cell, rows: Math.max(1, Math.floor((info.y - gy - 4 * s) / cell)) }, info, del };
 }
 
+// ภาพไอเท็มเดียวกับที่ตกพื้นและในร้าน (art/items.js)
 export function itemIcon(ctx, I, it, x, y, r) {
-  const b = I.bases[it.base], col = b.color;
-  ctx.save(); ctx.translate(x, y);
-  if (b.slot === 'weapon') { ctx.rotate(-0.8); ctx.fillStyle = col; ctx.fillRect(-r * 0.12, -r * 0.8, r * 0.24, r * 1.2); ctx.fillStyle = C.gold; ctx.fillRect(-r * 0.4, r * 0.35, r * 0.8, r * 0.14); ctx.fillStyle = '#5a2f1a'; ctx.fillRect(-r * 0.1, r * 0.48, r * 0.2, r * 0.35); }
-  else if (b.slot === 'head') { poly(ctx, [-r * 0.8, r * 0.3, 0, -r * 0.6, r * 0.8, r * 0.3], col, C.ink, 1.2); ctx.fillStyle = C.gold; ctx.fillRect(-r * 0.6, r * 0.2, r * 1.2, r * 0.15); }
-  else if (b.slot === 'body') { poly(ctx, [-r * 0.7, -r * 0.5, -r * 0.25, -r * 0.7, r * 0.25, -r * 0.7, r * 0.7, -r * 0.5, r * 0.55, r * 0.7, -r * 0.55, r * 0.7], col, C.ink, 1.2); }
-  else if (b.slot === 'legs') { ctx.fillStyle = col; ctx.fillRect(-r * 0.5, -r * 0.6, r * 0.42, r * 1.3); ctx.fillRect(r * 0.08, -r * 0.6, r * 0.42, r * 1.3); ctx.fillStyle = C.gold; ctx.fillRect(-r * 0.5, -r * 0.6, r, r * 0.15); }
-  else if (b.slot === 'arms') { ctx.fillStyle = col; ctx.fillRect(-r * 0.6, -r * 0.4, r * 0.45, r * 0.9); ctx.fillRect(r * 0.15, -r * 0.4, r * 0.45, r * 0.9); ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(-r * 0.6, 0, r * 1.2, r * 0.12); }
-  else if (b.slot === 'ring') { circle(ctx, 0, r * 0.1, r * 0.5, null, col, r * 0.22); circle(ctx, 0, -r * 0.42, r * 0.2, '#e84a5a', C.ink, 1); }
-  else { ctx.strokeStyle = col; ctx.lineWidth = r * 0.12; ctx.beginPath(); ctx.arc(0, -r * 0.3, r * 0.55, 0.2, Math.PI - 0.2); ctx.stroke(); poly(ctx, [0, r * 0.25, r * 0.22, r * 0.55, 0, r * 0.85, -r * 0.22, r * 0.55], col, C.ink, 1); }
-  ctx.restore();
+  ctx.drawImage(itemSprite(I, it.base, r * 2 * (ctx.getTransform().a || 1)), x - r, y - r, r * 2, r * 2);
 }
 
 function statLines(I, P, it) {

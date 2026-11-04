@@ -4,6 +4,7 @@ import { playerStats } from '../systems/stats.js';
 import { xpNeeded } from '../systems/progress.js';
 import { pointsLeft } from '../systems/passives.js';
 import { drawBottomBar } from './hudbar.js';
+import { gemSprite } from '../art/gems.js';
 import { skillOf } from '../systems/skills.js';
 import { hintText, tutorialTarget } from '../systems/tutorial.js';
 
@@ -44,11 +45,13 @@ export function icon(ctx, id, x, y, r, game) {
     ctx.strokeStyle = C.cream; ctx.lineWidth = r * 0.14; ctx.lineCap = 'round';
     for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo(-r * 0.5, (i - 1) * r * 0.28); ctx.lineTo(r * 0.15 - i * r * 0.12, (i - 1) * r * 0.28); ctx.stroke(); }
     poly(ctx, [r * 0.15, -r * 0.4, r * 0.55, 0, r * 0.15, r * 0.4], C.cream, null);
-  } else if (SKILL_BTN[id] !== undefined) {
+  } else if (SKILL_BTN[id] !== undefined) {                 // ไอคอนสกิล = พลอยหลักที่ฝัง + จุดสีพลอยเสริม
     const sk = skillOf(game, SKILL_BTN[id]);
-    poly(ctx, [0, -r * 0.55, r * 0.5, -r * 0.18, r * 0.3, r * 0.5, -r * 0.3, r * 0.5, -r * 0.5, -r * 0.18], sk ? sk.color : '#555', C.ink, 1.5);
-    poly(ctx, [0, -r * 0.55, r * 0.2, -r * 0.18, -r * 0.2, -r * 0.18], sk ? sk.hi : '#777', null);
-    if (sk && sk.supports.length) sk.supports.forEach((sid, i) => circle(ctx, -r * 0.45 + i * r * 0.9, r * 0.62, r * 0.17, game.data.gems.support[sid].color, C.ink, 1));
+    if (sk) {
+      const px = r * 1.5 * (ctx.getTransform().a || 1);
+      ctx.drawImage(gemSprite(game.data.gems, sk.gem, px), -r * 0.75, -r * 0.8, r * 1.5, r * 1.5);
+      sk.supports.forEach((sid, i) => circle(ctx, -r * 0.5 + i * r * 0.5, r * 0.68, r * 0.15, game.data.gems.support[sid].color, C.ink, 1));
+    }
   } else if (id === 'interact') {
     ctx.fillStyle = C.cream; rrect(ctx, -r * 0.5, -r * 0.4, r, r * 0.65, r * 0.2); ctx.fill();
     poly(ctx, [-r * 0.15, r * 0.24, -r * 0.3, r * 0.5, r * 0.1, r * 0.24], C.cream, null);
@@ -122,21 +125,23 @@ function face(ctx, x, y, size) {                      // หน้าตัว�
 
 export function drawHud(ctx, game, L, w, h) {
   const p = game.player, st = playerStats(p, game.data), s = L.s;
-  // แผงมุมซ้ายบน: รูปตัวละคร + เลเวล + XP (เลือด/มานาอยู่ในลูกแก้วล่างจอแบบ PoE) — แตะเปิดโปรไฟล์
-  const px = 8 * s, py = 6 * s, pw = 188 * s, ph = 50 * s;
+  // แผงสถานะมุมซ้ายบน (กรอบรูปหน้า + หลอดเลือด/มานา + เลเวล) — แตะเปิดโปรไฟล์
+  const px = 8 * s, py = 6 * s, pw = 188 * s, ph = 64 * s;
   ctx.fillStyle = 'rgba(14,12,18,0.72)'; rrect(ctx, px, py, pw, ph, 9 * s); ctx.fill();
   ctx.strokeStyle = 'rgba(217,166,48,0.35)'; ctx.lineWidth = 1; ctx.stroke();
-  const fs = 38 * s, fx = px + 6 * s, fy = py + 6 * s;
+  const fs = 44 * s, fx = px + 6 * s, fy = py + 10 * s;
   ctx.fillStyle = '#3a5a8a'; rrect(ctx, fx, fy, fs, fs, 6 * s); ctx.fill();
-  ctx.save(); rrect(ctx, fx, fy, fs, fs, 6 * s); ctx.clip(); face(ctx, fx + 5 * s, fy + 7 * s, fs - 10 * s); ctx.restore();
+  ctx.save(); rrect(ctx, fx, fy, fs, fs, 6 * s); ctx.clip(); face(ctx, fx + 6 * s, fy + 8 * s, fs - 12 * s); ctx.restore();
   ctx.strokeStyle = C.gold; ctx.lineWidth = 2 * s; rrect(ctx, fx, fy, fs, fs, 6 * s); ctx.stroke();
   const bx = fx + fs + 7 * s, bw = px + pw - bx - 7 * s;
-  text(ctx, 'นักล่าพลอย', bx, py + 14 * s, 12 * s, C.cream, 'left', '600');
-  text(ctx, 'Lv.' + p.level, bx + bw, py + 14 * s, 12 * s, C.goldHi, 'right', '600');
+  bar(ctx, bx, py + 8 * s, bw, 13 * s, p.hp / st.maxHp, '#d8443a');
+  text(ctx, `${Math.ceil(p.hp)}/${st.maxHp}`, bx + bw / 2, py + 15 * s, 10 * s, '#fff', 'center', '600');
+  bar(ctx, bx, py + 25 * s, bw, 13 * s, p.mp / st.maxMp, '#3f78e0');
+  text(ctx, `${Math.floor(p.mp)}/${st.maxMp}`, bx + bw / 2, py + 32 * s, 10 * s, '#fff', 'center', '600');
   const need = xpNeeded(game.data.balance, p.level);
-  ctx.fillStyle = 'rgba(0,0,0,0.5)'; rrect(ctx, bx, py + 28 * s, bw, 14 * s, 7 * s); ctx.fill();
-  if (isFinite(need)) { ctx.fillStyle = 'rgba(224,180,58,0.45)'; rrect(ctx, bx, py + 28 * s, Math.max(4, bw * p.xp / need), 14 * s, 7 * s); ctx.fill(); }
-  text(ctx, isFinite(need) ? `XP ${Math.floor(p.xp)}/${need}` : 'เลเวลสูงสุด', bx + bw / 2, py + 35 * s, 9.5 * s, C.goldHi, 'center', '600');
+  ctx.fillStyle = 'rgba(0,0,0,0.5)'; rrect(ctx, bx, py + 42 * s, bw, 14 * s, 7 * s); ctx.fill();
+  if (isFinite(need)) { ctx.fillStyle = 'rgba(224,180,58,0.35)'; rrect(ctx, bx, py + 42 * s, Math.max(4, bw * p.xp / need), 14 * s, 7 * s); ctx.fill(); }
+  text(ctx, `★ Lv.${p.level}  ${isFinite(need) ? Math.floor(p.xp) + '/' + need : 'สูงสุด'}`, bx + bw / 2, py + 49 * s, 10 * s, C.goldHi, 'center', '600');
   // เบี้ย
   const cy = py + ph + 14 * s;
   ctx.fillStyle = 'rgba(14,12,18,0.72)'; rrect(ctx, px, cy - 11 * s, 64 * s, 22 * s, 11 * s); ctx.fill();
@@ -217,7 +222,7 @@ export function drawHud(ctx, game, L, w, h) {
     if (j) circle(ctx, jx + j.dx * L.joyR, jy + j.dy * L.joyR, L.joyR * 0.42, 'rgba(255,255,255,0.35)', 'rgba(255,255,255,0.7)', 2);
     else text(ctx, 'ลากเพื่อเดิน', jx, jy, 11 * s, 'rgba(255,255,255,0.7)', 'center', 'normal');
   }
-  // แถบล่างแบบ PoE: ลูกแก้วเลือด/มานา ขวดยา แถบสกิล
+  // แถบล่าง: ขวดยาซ้าย · แถบสกิลขวา (คีย์บอร์ด)
   drawBottomBar(ctx, game, L, st);
   // ปุ่มขวาล่าง
   for (const b of L.buttons) {

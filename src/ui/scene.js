@@ -4,10 +4,12 @@ import { createSpriteCache } from '../art/sprites.js';
 import { drawHuman } from '../art/characters.js';
 import { heroLook, heroGear } from './herolook.js';
 import { currencyIcon } from './gemtab.js';
+import { itemSprite } from '../art/items.js';
+import { gemSprite } from '../art/gems.js';
 import { itemName } from '../systems/items.js';
 import { drawMonster } from '../art/monsters.js';
 import { C, shadow, circle, poly, rrect } from '../art/draw.js';
-import { gemInfo, gemType } from '../systems/gems.js';
+import { gemInfo } from '../systems/gems.js';
 import { SHOT_COLORS } from '../systems/combat.js';
 import { tutorialTarget } from '../systems/tutorial.js';
 
@@ -34,34 +36,47 @@ export function createScene(game) {
       currencyIcon(ctx, d.cur, d.x, y, 7);
       return;
     }
-    if (d.kind === 'item') {                                       // ของสวมใส่บนพื้น: ห่อผ้าเรืองแสงตามระดับ
-      const col = game.data.items.rarity[d.item.rarity].color, y = d.y - d.z, bob = Math.sin(d.t * 3) * 1.5;
-      if (d.item.rarity !== 'normal') { const gl = ctx.createRadialGradient(d.x, y - 8, 1, d.x, y - 8, 22); gl.addColorStop(0, col + '88'); gl.addColorStop(1, col + '00'); ctx.fillStyle = gl; ctx.fillRect(d.x - 22, y - 30, 44, 44); }
-      shadow(ctx, d.x, d.y, 8, 3);
-      ctx.fillStyle = game.data.items.bases[d.item.base].color; ctx.fillRect(d.x - 6, y - 12 + bob, 12, 9);
-      ctx.fillStyle = col; ctx.fillRect(d.x - 7, y - 13 + bob, 14, 2); ctx.fillRect(d.x - 1, y - 15 + bob, 2, 4);
-      return;
-    }
-    const y = d.y - d.z;
     if (d.kind === 'coin') {
+      const y = d.y - d.z, w = Math.abs(Math.cos(d.t * 5)) * 5 + 1;
       shadow(ctx, d.x, d.y, 5, 2);
-      const w = Math.abs(Math.cos(d.t * 5)) * 5 + 1;
       ctx.fillStyle = C.ink; ctx.beginPath(); ctx.ellipse(d.x, y - 6, w + 1.2, 6.2, 0, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = C.gold; ctx.beginPath(); ctx.ellipse(d.x, y - 6, w, 5, 0, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = C.goldHi; ctx.fillRect(d.x - 0.8, y - 9, 1.6, 4);
-    } else {
-      const G = gemInfo(game.data.gems, d.gem), bob = Math.sin(d.t * 3) * 2.5, gy = y - 14 + bob;
-      const glow = ctx.createRadialGradient(d.x, gy, 1, d.x, gy, 30);
-      glow.addColorStop(0, G.color + 'aa'); glow.addColorStop(1, G.color + '00');
-      ctx.fillStyle = glow; ctx.fillRect(d.x - 30, gy - 30, 60, 60);
-      shadow(ctx, d.x, d.y, 7, 2.5);
-      if (gemType(game.data.gems, d.gem) === 'main') {
-        poly(ctx, [d.x, gy - 9, d.x + 7, gy - 3, d.x + 4, gy + 7, d.x - 4, gy + 7, d.x - 7, gy - 3], G.color, C.ink, 1.4);
-        poly(ctx, [d.x, gy - 9, d.x + 3, gy - 3, d.x - 3, gy - 3], G.hi, null);
-      } else { circle(ctx, d.x, gy, 6, G.color, C.ink, 1.4); circle(ctx, d.x - 2, gy - 2, 2, 'rgba(255,255,255,0.8)', null); }
-      ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fillRect(d.x - 0.5, gy - 22 - bob, 1, 10);   // ลำแสงชี้ว่ามีพลอย
-      if (Math.sin(d.t * 6) > 0.6) { ctx.fillStyle = '#fff'; ctx.fillRect(d.x + 4, gy - 10, 2, 2); }
+    } else if (d.kind === 'item') drawItemDrop(ctx, d);
+    else drawGemDrop(ctx, d);
+  }
+
+  // แสงตามระดับ: ดี (เขียว) เรืองจาง · หายาก (ม่วง) ลำแสงสั้น · ตำนาน (แดง) ลำแสงสูงกะพริบ — แบบ PoE
+  function lightBeam(ctx, x, y, col, h, t, w) {
+    const g = ctx.createLinearGradient(0, y - h, 0, y);
+    g.addColorStop(0, col + '00'); g.addColorStop(0.6, col + '55'); g.addColorStop(1, col + 'cc');
+    ctx.fillStyle = g; ctx.fillRect(x - w / 2, y - h, w, h);
+    ctx.fillStyle = '#ffffff' + (Math.sin(t * 4) > 0 ? '66' : '33'); ctx.fillRect(x - 1, y - h * 0.8, 2, h * 0.8);
+  }
+  function drawItemDrop(ctx, d) {
+    const I = game.data.items, r = d.item.rarity, col = I.rarity[r].color, y = d.y - d.z, t = d.t;
+    if (r !== 'normal') {
+      const gl = ctx.createRadialGradient(d.x, y - 6, 1, d.x, y - 6, r === 'green' ? 18 : 26);
+      gl.addColorStop(0, col + (r === 'green' ? '66' : '99')); gl.addColorStop(1, col + '00');
+      ctx.fillStyle = gl; ctx.fillRect(d.x - 28, y - 34, 56, 56);
     }
+    if (r === 'purple') lightBeam(ctx, d.x, y - 4, col, 70, t, 8);
+    if (r === 'red') lightBeam(ctx, d.x, y - 4, col, 130 + Math.sin(t * 3) * 10, t, 12);
+    shadow(ctx, d.x, d.y, 11, 3.5);
+    const sz = 26, sp = itemSprite(I, d.item.base, sz * 2.5);
+    ctx.save(); ctx.translate(d.x, y - 9 + Math.sin(t * 3) * 1.2);
+    if (r !== 'normal') { ctx.shadowColor = col; ctx.shadowBlur = 6; }
+    ctx.drawImage(sp, -sz / 2, -sz / 2, sz, sz);
+    ctx.restore();
+  }
+  function drawGemDrop(ctx, d) {
+    const G = gemInfo(game.data.gems, d.gem), y = d.y - d.z, bob = Math.sin(d.t * 3) * 2.5, gy = y - 14 + bob;
+    const glow = ctx.createRadialGradient(d.x, gy, 1, d.x, gy, 30);
+    glow.addColorStop(0, G.color + 'aa'); glow.addColorStop(1, G.color + '00');
+    ctx.fillStyle = glow; ctx.fillRect(d.x - 30, gy - 30, 60, 60);
+    lightBeam(ctx, d.x, y - 6, G.color, 60, d.t, 6);
+    shadow(ctx, d.x, d.y, 7, 2.5);
+    ctx.drawImage(gemSprite(game.data.gems, d.gem, 48), d.x - 10, gy - 10, 20, 20);
   }
 
   function drawShot(ctx, s) {

@@ -1,36 +1,8 @@
-// แถบล่างจอแบบ PoE: ลูกแก้วเลือด (ซ้าย) · ขวดยา 1–5 · แถบสกิล · ลูกแก้วมานา (ขวา)
-import { C, rrect, circle, poly } from '../art/draw.js';
+// แถบล่างจอแบบ PoE: ขวดยา 1–5 (ซ้ายล่าง) · แถบสกิล (ขวาล่าง เฉพาะคีย์บอร์ด/เมาส์)
+import { rrect } from '../art/draw.js';
 import { uiText as text, icon, SKILL_BTN } from './hud.js';
 import { skillOf } from '../systems/skills.js';
 
-const PHI = Math.PI * 2;
-
-// ลูกแก้ว: ของเหลวสูงตามสัดส่วน มีคลื่นผิวน้ำ ประกายกระจก กรอบทองลายกนก
-function orb(ctx, o, k, deep, bright, t, label, s) {
-  const { x, y, r } = o;
-  ctx.save();
-  ctx.beginPath(); ctx.arc(x, y, r, 0, PHI); ctx.clip();
-  ctx.fillStyle = '#0c0808'; ctx.fillRect(x - r, y - r, r * 2, r * 2);
-  const top = y + r - 2 * r * Math.max(0, Math.min(1, k));
-  const g = ctx.createRadialGradient(x - r * 0.3, y - r * 0.2, r * 0.1, x, y, r * 1.1);
-  g.addColorStop(0, bright); g.addColorStop(1, deep);
-  ctx.fillStyle = g;
-  ctx.beginPath(); ctx.moveTo(x - r, y + r);
-  for (let i = 0; i <= 16; i++) { const px = x - r + (i / 16) * 2 * r; ctx.lineTo(px, top + Math.sin(i * 0.9 + t * 2.4) * r * 0.035); }
-  ctx.lineTo(x + r, y + r); ctx.closePath(); ctx.fill();
-  ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(x - r, top - 1, r * 2, 2);
-  ctx.restore();
-  ctx.fillStyle = 'rgba(255,255,255,0.22)'; ctx.beginPath(); ctx.ellipse(x - r * 0.32, y - r * 0.45, r * 0.32, r * 0.18, -0.5, 0, PHI); ctx.fill();
-  circle(ctx, x, y, r + 2 * s, null, '#2a1a10', 5 * s);                   // ขอบเข้ม + ขอบทอง
-  circle(ctx, x, y, r + 1 * s, null, C.gold, 2.2 * s);
-  for (let i = 0; i < 4; i++) {                                           // กนกเปลวทองรอบลูกแก้ว
-    const a = -Math.PI / 2 + i * Math.PI / 2 + Math.PI / 4, cx = x + Math.cos(a) * (r + 3 * s), cy = y + Math.sin(a) * (r + 3 * s);
-    ctx.save(); ctx.translate(cx, cy); ctx.rotate(a + Math.PI / 2);
-    poly(ctx, [-4 * s, 0, 0, -8 * s, 4 * s, 0, 0, 3 * s], C.goldHi, '#6a4a10', 1);
-    ctx.restore();
-  }
-  text(ctx, label, x, y + r * 0.08, Math.max(9, r * 0.26), '#fff', 'center', '600');
-}
 
 // ขวดยา: ขวดแก้วคอแคบ ของเหลวสูงตามจำนวนที่เหลือ
 export function flaskIcon(ctx, x, y, w, h, k, col, dim) {
@@ -50,9 +22,7 @@ export function flaskIcon(ctx, x, y, w, h, k, col, dim) {
 }
 
 export function drawBottomBar(ctx, game, L, st) {
-  const p = game.player, s = L.s, t = game.time, D = game.data.shop;
-  orb(ctx, L.life, p.hp / st.maxHp, '#4a0808', '#e0302a', t, `${Math.ceil(p.hp)}/${st.maxHp}`, s);
-  orb(ctx, L.mana, p.mp / st.maxMp, '#081848', '#3a78ff', t + 1, `${Math.floor(p.mp)}/${st.maxMp}`, s);
+  const p = game.player, s = L.s, D = game.data.shop;
   // ขวดยา
   const fl = L.flasks, x0 = fl[0].x - 4 * s, x1 = fl[fl.length - 1].x + fl[0].w + 4 * s;
   ctx.fillStyle = 'rgba(14,10,8,0.78)'; rrect(ctx, x0, fl[0].y - 14 * s, x1 - x0, fl[0].h + 18 * s, 6 * s); ctx.fill();

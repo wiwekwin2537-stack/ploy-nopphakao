@@ -2,6 +2,7 @@
 // แตะพลอยในกระเป๋า → แตะช่อง = ฝังลงช่องนั้น (หรือแตะพลอยซ้ำ = ฝังช่องว่างแรก) · แตะช่องที่มีพลอย = ถอด
 // ศิลาเจาะ / ด้ายสายสิญจน์: แตะเลือก แล้วแตะซ้ำ = ใช้กับของแถวที่เลือก
 import { C, rrect, circle, poly } from '../art/draw.js';
+import { gemSprite } from '../art/gems.js';
 import { uiText as text } from './hud.js';
 import { gemInfo, gemType, socketGem, unsocketGem, skillsOf, SOCKET_SLOTS } from '../systems/gems.js';
 import { useCurrency, socketMax, itemName } from '../systems/items.js';
@@ -22,16 +23,8 @@ export function gemLayout(B) {
 }
 
 export function gemIcon(ctx, G, id, x, y, r, dim) {
-  const info = gemInfo(G, id);
-  if (!info) return;
   ctx.globalAlpha = dim ? 0.4 : 1;
-  if (gemType(G, id) === 'main') {
-    poly(ctx, [x, y - r, x + r * 0.85, y - r * 0.3, x + r * 0.55, y + r * 0.9, x - r * 0.55, y + r * 0.9, x - r * 0.85, y - r * 0.3], info.color, C.ink, 1.5);
-    poly(ctx, [x, y - r, x + r * 0.35, y - r * 0.3, x - r * 0.35, y - r * 0.3], info.hi, null);
-  } else {
-    circle(ctx, x, y, r * 0.75, info.color, C.ink, 1.5);           // พลอยเสริมเป็นเม็ดกลมเจียระไนหลังเบี้ย
-    circle(ctx, x - r * 0.25, y - r * 0.25, r * 0.25, 'rgba(255,255,255,0.7)', null);
-  }
+  ctx.drawImage(gemSprite(G, id, r * 2.4 * (ctx.getTransform().a || 1)), x - r * 1.2, y - r * 1.2, r * 2.4, r * 2.4);
   ctx.globalAlpha = 1;
 }
 
