@@ -2,7 +2,7 @@
 
 เกมแอ็กชัน RPG มุมมองจากด้านบน สไตล์ไทย ระบบแบบ Path of Exile (พลอยฝังช่องอาวุธ ช่องเชื่อม พาสซีฟ ของยูนีค ถ้ำลายแทง) หน้าตาแบบเอโดเรีย — ภาพทุกอย่างวาดด้วยโค้ด ไม่มีไฟล์รูป
 
-- **เล่นเกม:** https://wiwekwin2537-stack.github.io/ploy-nopphakao/
+- **เล่นเกม:** https://ploy-nopphakao.onrender.com (Render เสิร์ฟโฟลเดอร์ docs/ อัปเดตเองทุกครั้งที่ push ขึ้น main)
 - **ใบงาน/สถานะงาน:** [HANDOFF.md](HANDOFF.md) — AI ที่มาทำต่อให้อ่านไฟล์นี้ก่อน
 - **การออกแบบ:** [GAME_DESIGN.md](GAME_DESIGN.md) · **กติกาหน้าตา:** [STYLE.md](STYLE.md)
 
@@ -11,7 +11,7 @@
 ```
 npm install
 npm test        # ตรวจโครงสร้าง + เทสต์ระบบ + build + เทสต์เล่นจริงในเบราว์เซอร์
-node tools/build.js   # สร้าง dist/index.html และ docs/index.html (หน้าเล่นบน GitHub Pages)
+node tools/build.js   # สร้าง dist/index.html และ docs/index.html (หน้าเล่นบน Render)
 ```
 
 กติกา: แก้ทีละเรื่อง มีเทสต์ทุกระบบ `npm test` ต้องผ่านก่อน commit ทุกครั้ง · ตัวเลขเกมอยู่ใน `data/*.json` ที่เดียว

@@ -42,6 +42,7 @@ AI ทุกตัวต้องใช้สกิล `clean-game-dev` · อ�
 - ชุดบนตัวละคร = ภาพเดียวกับไอคอน: หมวก (wornHat ใน characters.js วางภาพไอคอนจริงตามกรอบพิกเซล HAT_FIT) ปลอกแขน (foreArt) · ดูเทียบทุกชิ้น: node tools/preview-gear.js head|body|legs|arms ไฟล์.png
 - ร้านค้าแบบตาราง (แบบ PoE/เอโดเรีย): ซ้ายช่องของขาย (ราคาใต้ไอคอน) ขวากระเป๋าผู้เล่น · แตะ 1 = กล่องรายละเอียด+เทียบ · แตะซ้ำ = ซื้อ/ขาย · shopLayout export
 - ของยูนีคสีส้ม: items.json "uniques" (ฐาน ค่าตายตัว grants/trigger ตำนาน from/world) · systems/uniques.js · สกิลจากของต่อท้ายปุ่มสกิล (กรอบส้ม) ออร่าจากของรวมใน aurasOf · trigger hit/hurt คูลดาวน์ 0.4 วิ ไม่ใช้มานา · releaseSkill แยกจาก castSkill · เล่นแร่แปรธาตุไม่ได้
+- GitHub: wiwekwin2537-stack/ploy-nopphakao (main) · เล่นจริง: https://ploy-nopphakao.onrender.com (Render static site srv-dbloo4uk1f9s73encsog เสิร์ฟ docs/ · auto-deploy ทุก push) · ทุกงานที่เสร็จ: npm test → commit → push
 - check.js ตรวจด้วยว่าทุก import มี export จริง (เคยมีไฟล์ถูกเขียนว่างแล้วตัวตรวจไม่จับ)
 - ท่าเดิน: ระยะก้าว STRIDE ใน player.js (ยิ่งมากยิ่งก้าวยาว)
 - ยังไม่มี repo บน GitHub ที่ Claude เขียนได้ → ตอนนี้ส่งเกมเป็นหน้าเว็บ artifact
