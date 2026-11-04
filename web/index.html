@@ -8,10 +8,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600&display=swap" rel="stylesheet">
 <style>
-  :root { --bg: #140c08; }
+  /* เกมเต็มจอโทนเดียว: พื้นน้ำตาลไม้สักเข้ม ตัวอักษรครีม */
+  :root { --bg: #140c08; --panel: #2a1d14; --cream: #f4e6c8; color-scheme: dark; }
   html, body { margin: 0; height: 100%; background: var(--bg); overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; }
-  canvas { display: block; width: 100vw; height: 100vh; touch-action: none; }
-  #rotate { display: none; position: fixed; inset: 0; background: #2a1d14; color: #f4e6c8; font: 600 18px Kanit, sans-serif; align-items: center; justify-content: center; text-align: center; padding: 24px; }
+  canvas { display: block; position: fixed; left: 0; right: 0; top: env(safe-area-inset-top, 0px); bottom: env(safe-area-inset-bottom, 0px); width: 100%; height: calc(100% - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); touch-action: none; }
+  #rotate { display: none; position: fixed; inset: 0; background: var(--panel); color: var(--cream); font: 600 18px Kanit, sans-serif; align-items: center; justify-content: center; text-align: center; padding: 24px; }
   @media (orientation: portrait) and (max-width: 700px) { #rotate { display: flex; } }
 </style>
 </head>

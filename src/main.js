@@ -28,7 +28,7 @@ import { drawHud, drawDialog, drawDeath, drawTitle, titleButtons } from './ui/hu
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 const params = new URLSearchParams(location.search);
-let layout = computeLayout(innerWidth, innerHeight);
+let layout = computeLayout(canvas.clientWidth || innerWidth, canvas.clientHeight || innerHeight);
 
 const game = {
   data: { balance, monsters, zones, dialogue },
@@ -131,10 +131,11 @@ function render() {
 
 function resize() {
   const dpr = Math.min(2, devicePixelRatio || 1);
-  canvas.width = Math.round(innerWidth * dpr); canvas.height = Math.round(innerHeight * dpr);
-  canvas.style.width = innerWidth + 'px'; canvas.style.height = innerHeight + 'px';
-  game.camera.resize(innerWidth, innerHeight);
-  layout = computeLayout(innerWidth, innerHeight);
+  const r = canvas.getBoundingClientRect();
+  const w = Math.max(1, Math.round(r.width || innerWidth)), h = Math.max(1, Math.round(r.height || innerHeight));
+  canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+  game.camera.resize(w, h);
+  layout = computeLayout(w, h);
 }
 addEventListener('resize', resize);
 resize();

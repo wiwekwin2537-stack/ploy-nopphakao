@@ -45,7 +45,7 @@ export function hintText(game) {
     case 'skill': return 'ยิงลูกไฟทับทิมด้วย ' + k(game, 'skill');
     case 'go': return z === 'road' ? 'ท่อนไม้ขวางทางหายไปแล้ว เดินไปทางตะวันออก สู่เวียงด่านหิน' : '';
     case 'chan': return z === 'town' ? 'ไปพบพ่อเฒ่าจันทร์ที่ศาลาฝั่งตะวันออก (' + k(game, 'interact') + ')' : 'กลับไปเวียงด่านหิน';
-    case 'done': return game.hintT < 9 ? 'ออกประตูทิศเหนือ ไปฝึกฝีมือที่ทุ่งนาร้าง' : '';
+    case 'done': return z === 'town' && game.hintT < 9 ? 'ออกประตูทิศเหนือ ไปฝึกฝีมือที่ทุ่งนาร้าง' : '';
     default: return '';
   }
 }
