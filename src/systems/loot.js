@@ -6,9 +6,9 @@ let nextDropId = 1;
 
 export function setupLoot(game) {
   game.events.on('mobKilled', ({ mob }) => {
-    const def = mob.def, rng = game.rng, G = game.data.gems;
-    if (rng.chance(def.coinChance)) {
-      const amount = rng.int(def.coins[0], def.coins[1]) * mob.level;
+    const def = mob.def, rng = game.rng, G = game.data.gems, T = mob.elite ? game.data.balance.elites.tiers[mob.elite] : null;
+    if (T || rng.chance(def.coinChance)) {                         // มอนพิเศษได้เบี้ยแน่นอน คูณตามระดับ
+      const amount = rng.int(def.coins[0], def.coins[1]) * mob.level * (T ? T.coins : 1);
       spawnDrop(game, { kind: 'coin', amount, x: mob.x, y: mob.y });
     }
     if (def.bossLoot) bossLoot(game, mob);
@@ -19,7 +19,12 @@ export function setupLoot(game) {
       const g = rollGemDrop(G, rng, mob.level);
       if (g) spawnDrop(game, { kind: 'gem', gem: g, x: mob.x, y: mob.y });
       const I = game.data.items;
-      for (const [k, c] of Object.entries(I.currency)) if (mob.level >= c.minLevel && rng.chance(c.dropChance)) spawnDrop(game, { kind: 'currency', cur: k, x: mob.x, y: mob.y });
+      for (const [k, c] of Object.entries(I.currency)) if (mob.level >= c.minLevel && rng.chance(c.dropChance * (T ? T.currencyMult : 1))) spawnDrop(game, { kind: 'currency', cur: k, x: mob.x, y: mob.y });
+      for (let i = 0; T && i < T.items; i++) {                     // มอนพิเศษ: ของแน่นอน (หายาก = อย่างน้อยสีเขียว)
+        let it = rollItem(I, rng, mob.level);
+        if (it && T.itemRarity && it.rarity === 'normal') it = rollItem(I, rng, mob.level, { rarity: T.itemRarity });
+        if (it) spawnDrop(game, { kind: 'item', item: it, x: mob.x + (i - 0.5) * 24, y: mob.y + 6 });
+      }
       if (rng.chance(I.dropChance * (1 + (game.world.zone.def.itemQty || 0)))) {
         const it = rollItem(I, rng, mob.level);
         if (it) spawnDrop(game, { kind: 'item', item: it, x: mob.x, y: mob.y });

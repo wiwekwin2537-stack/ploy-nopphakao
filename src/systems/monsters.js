@@ -48,8 +48,32 @@ function spawnOne(game, s, gi, ax, ay, minD) {
   const m = makeMob(game, s.type, lv, spot.x, spot.y, gi);
   const M = game.world.zone.def.mobMods;                        // ค่าปรับของถ้ำลายแทง (เลือดหนา/ตีแรง/เร็ว)
   if (M) { m.hp = m.maxHp = Math.round(m.maxHp * (M.hp || 1)); m.damage = Math.round(m.damage * (M.damage || 1)); m.speed = m.baseSpeed = m.baseSpeed * (M.speed || 1); }
+  if (game.flags.tutorialDone && !m.def.boss) rollElite(game, m);
   game.mobs.push(m);
   return m;
+}
+
+// มอนพิเศษแบบ PoE (เวท = ฟ้า, หายาก = เหลือง): สุ่มจาก balance.json "elites" · ค่าคูณทั้งหมดอยู่ในข้อมูล
+export function rollElite(game, m, force) {
+  const E = game.data.balance.elites, rng = game.rng;
+  let tier = force || null;
+  if (!tier) for (const k of ['rare', 'magic']) { const T = E.tiers[k]; if (m.level >= T.minLevel && rng.chance(T.chance)) { tier = k; break; } }
+  if (!tier) return m;
+  const T = E.tiers[tier], ids = Object.keys(E.mods), mods = [];
+  while (mods.length < Math.min(T.mods, ids.length)) { const id = rng.pick(ids); if (!mods.includes(id)) mods.push(id); }
+  let hp = T.hp, dmg = T.damage, spd = 1;
+  for (const id of mods) { const x = E.mods[id]; hp *= x.hp || 1; dmg *= x.damage || 1; spd *= x.speed || 1; if (x.regen) m.regen = (m.regen || 0) + x.regen; }
+  m.elite = tier; m.eliteMods = mods;
+  m.hp = m.maxHp = Math.round(m.maxHp * hp); m.damage = Math.round(m.damage * dmg); m.xp = Math.round(m.xp * T.xp);
+  m.speed = m.baseSpeed = m.baseSpeed * spd;
+  return m;
+}
+
+// ชื่อบนหัว: มอนพิเศษมีชื่อค่าพิเศษนำหน้า (แบบ PoE)
+export function mobName(game, m) {
+  if (!m.elite) return m.def.name;
+  const E = game.data.balance.elites;
+  return m.eliteMods.map((id) => E.mods[id].name).join(' ') + ' ' + m.def.name;
 }
 
 // หาทางเดินแบบตาราง (BFS) เมื่อเดินตรงไปแล้วติดสิ่งกีดขวาง — คืนรายการจุดเดิน
@@ -200,6 +224,7 @@ export function updateMonsters(game, dt) {
       }
       continue;
     }
+    if (m.regen && m.hp < m.maxHp) m.hp = Math.min(m.maxHp, m.hp + m.maxHp * m.regen * dt);   // ค่าพิเศษ "ฟื้นตัวไว"
     // สถานะผิดปกติจากพลอย: ช้า (ไพลิน) และพิษ (มรกต)
     if (m.slowT > 0) { m.slowT -= dt; m.speed = m.baseSpeed * m.slowK; if (Math.random() < 0.15) game.fx.trail(m.x, m.y - m.height * 0.6, '#cfe8ff', 2.5, 0.4); } else m.speed = m.baseSpeed;
     if (m.poisonT > 0) {

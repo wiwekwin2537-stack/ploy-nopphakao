@@ -10,6 +10,7 @@ import { itemName } from '../systems/items.js';
 import { drawMonster } from '../art/monsters.js';
 import { C, shadow, circle, poly, rrect } from '../art/draw.js';
 import { gemInfo, aurasOf } from '../systems/gems.js';
+import { mobName } from '../systems/monsters.js';
 import { SHOT_COLORS } from '../systems/combat.js';
 import { tutorialTarget } from '../systems/tutorial.js';
 
@@ -185,11 +186,12 @@ export function createScene(game) {
       const big = m.def.boss || m.type === 'bigboar', y = m.y - m.height - 8;
       const lvCol = m.level >= game.player.level + 3 ? '#ff7a6a' : m.level <= game.player.level - 3 ? '#a8a8a8' : '#ffd24a';   // สีเลเวลบอกความยาก
       if (big) plate(ctx, m.def.name, m.x, y - 10, 12, '#ffd24a', m.def.boss ? 'rgba(255,90,60,0.95)' : 'rgba(255,138,42,0.9)', 'Lv.' + m.level);
+      else if (m.elite) { const ec = game.data.balance.elites.tiers[m.elite].color; plate(ctx, mobName(game, m), m.x, y - 9, 10.5, ec, ec, 'Lv.' + m.level, lvCol); }   // มอนพิเศษ: ชื่อสีฟ้า/เหลือง
       else plate(ctx, m.def.name, m.x, y - 8, 9.5, '#f4e6c8', 'rgba(160,120,90,0.55)', 'Lv.' + m.level, lvCol);
       if (!m.def.boss && (m.hp < m.maxHp || m.aggroed || big)) {
         const w = Math.max(28, m.radius * 2.6), x = m.x - w / 2;
         ctx.fillStyle = 'rgba(20,12,8,0.85)'; rrect(ctx, x - 1, y - 1, w + 2, 6, 3); ctx.fill();
-        ctx.fillStyle = big ? '#ff8a2a' : '#e0443a'; rrect(ctx, x, y, Math.max(2, w * (m.hp / m.maxHp)), 4, 2); ctx.fill();
+        ctx.fillStyle = big ? '#ff8a2a' : m.elite ? game.data.balance.elites.tiers[m.elite].color : '#e0443a'; rrect(ctx, x, y, Math.max(2, w * (m.hp / m.maxHp)), 4, 2); ctx.fill();
       }
     }
     for (const n of z.npcs) {
@@ -251,6 +253,12 @@ export function createScene(game) {
         if (it.o) sprites.draw(ctx, it.o);
         else if (it.mob) {
           const mo = it.mob;
+          if (mo.elite && !mo.dead) {                               // มอนพิเศษ: วงแสงสีใต้เท้า
+            const ec = game.data.balance.elites.tiers[mo.elite].color;
+            ctx.save(); ctx.translate(mo.x, mo.y); ctx.scale(1, 0.4); ctx.globalAlpha = 0.35 + 0.15 * Math.sin(t * 4 + mo.id);
+            const gr = ctx.createRadialGradient(0, 0, 2, 0, 0, mo.radius * 1.8); gr.addColorStop(0, ec); gr.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(0, 0, mo.radius * 1.8, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+          }
           drawMonster(ctx, mo.type, mo.x, mo.y, { t: mo.t, walk: mo.walk, moving: mo.moving, face: mo.face, charging: mo.state === 'charge', windup: mo.state === 'windup' || mo.state === 'slam' || mo.state === 'stomp' ? 1 : 0, enraged: mo.enraged, flash: mo.flash, dying: mo.dying, recoil: mo.recoil || 0, kbx: mo.kbx || 0, kby: mo.kby || 0, stun: mo.state === 'stun' });
         } else if (it.npc) {
           const n = it.npc;

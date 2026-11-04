@@ -169,7 +169,7 @@ export function drawHud(ctx, game, L, w, h) {
   const ms = (M.r * 2) / (mm.S * 640);                 // แสดงรัศมีราว 10 ช่องรอบตัว
   const k = mm.S * ms;
   ctx.drawImage(mm.c, M.x - p.x * k, M.y - p.y * k, mm.c.width * ms, mm.c.height * ms);
-  for (const m of game.mobs) if (!m.dead) circle(ctx, M.x + (m.x - p.x) * k, M.y + (m.y - p.y) * k, 1.8 * s, '#ff4a3a', null);
+  for (const m of game.mobs) if (!m.dead) circle(ctx, M.x + (m.x - p.x) * k, M.y + (m.y - p.y) * k, (m.elite ? 2.6 : 1.8) * s, m.elite ? game.data.balance.elites.tiers[m.elite].color : '#ff4a3a', null);
   for (const n of z.npcs) circle(ctx, M.x + (n.x - p.x) * k, M.y + (n.y - p.y) * k, 2.2 * s, '#ffd24a', null);
   for (const e of z.exits) circle(ctx, M.x + (e.x + e.w / 2 - p.x) * k, M.y + (e.y + e.h / 2 - p.y) * k, 3 * s, '#7dff8a', '#1a1410', 1);
   ctx.restore();

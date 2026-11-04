@@ -124,5 +124,55 @@
    2,
    3
   ]
+ },
+ "elites": {
+  "_doc": "มอนพิเศษแบบ PoE: เวท (ฟ้า) ได้ค่าพิเศษ 1 อย่าง · หายาก (เหลือง) 2 อย่าง — เลือด/ตี/XP/ของคูณตามนี้ · ไม่เกิดกับบอสและระหว่างบทนำ",
+  "tiers": {
+   "magic": {
+    "name": "เวท",
+    "chance": 0.07,
+    "minLevel": 3,
+    "hp": 2.0,
+    "damage": 1.2,
+    "xp": 2.5,
+    "coins": 2,
+    "items": 1,
+    "currencyMult": 2,
+    "mods": 1,
+    "color": "#7aa8ff"
+   },
+   "rare": {
+    "name": "หายาก",
+    "chance": 0.02,
+    "minLevel": 6,
+    "hp": 3.5,
+    "damage": 1.4,
+    "xp": 5,
+    "coins": 4,
+    "items": 2,
+    "itemRarity": "green",
+    "currencyMult": 4,
+    "mods": 2,
+    "color": "#ffd24a"
+   }
+  },
+  "mods": {
+   "swift": {
+    "name": "ว่องไว",
+    "speed": 1.35
+   },
+   "stout": {
+    "name": "หนังหนา",
+    "hp": 1.5
+   },
+   "brutal": {
+    "name": "ดุร้าย",
+    "damage": 1.3
+   },
+   "regen": {
+    "name": "ฟื้นตัวไว",
+    "regen": 0.03
+   }
+  }
  }
 }

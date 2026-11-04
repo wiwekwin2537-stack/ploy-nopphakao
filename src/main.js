@@ -18,9 +18,9 @@ import { createAudio } from './core/audio.js';
 import { createRng } from './core/rng.js';
 import { createWorld } from './systems/world.js';
 import { createPlayer, updatePlayer, giveStarterGear } from './systems/player.js';
-import { updateMonsters, makeMob } from './systems/monsters.js';
+import { updateMonsters, makeMob, rollElite } from './systems/monsters.js';
 import { updateHazards } from './systems/boss.js';
-import { updateShots } from './systems/combat.js';
+import { updateShots, damageMob } from './systems/combat.js';
 import { setupLoot, updateLoot } from './systems/loot.js';
 import { setupProgress } from './systems/progress.js';
 import { updateSkillTimers } from './systems/skills.js';
@@ -209,4 +209,4 @@ game.loopStats = loop.stats;
 loop.start();
 
 // test-hook: เปิดเฉพาะเมื่อมี ?test ใน URL ใช้ในเทสต์อัตโนมัติเท่านั้น
-if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, skills: () => skillsOf(game.data.gems, game.player), stats: () => playerStats(game.player, game.data), layout: () => layout, bagLayout: () => bagLayout(game.camera.viewW, game.camera.viewH, layout.s), gemLayout: () => gemLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s), game.player) }; // test-hook
+if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, rollElite, damage: damageMob, skills: () => skillsOf(game.data.gems, game.player), stats: () => playerStats(game.player, game.data), layout: () => layout, bagLayout: () => bagLayout(game.camera.viewW, game.camera.viewH, layout.s), gemLayout: () => gemLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s), game.player) }; // test-hook

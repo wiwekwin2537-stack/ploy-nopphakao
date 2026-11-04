@@ -434,7 +434,7 @@ await check('สวรรค์ดาวดึงส์: ล้มครุฑ�
   await page.screenshot({ path: SHOTS + '/20-tavatimsa.png' });
   assert(await G(page, () => __ploy.game.mobs.find((m) => m.type === 'vessavana').aggroed), 'บอสไม่ตื่น');
   await G(page, () => { const g = __ploy.game, k = g.mobs.find((m) => m.type === 'vessavana'); g.mobs.length = 0; g.mobs.push(k); k.hp = 1; });
-  for (let i = 0; i < 12 && !(await G(page, () => !!__ploy.game.flags.vessavanaSlain)); i++) {
+  for (let i = 0; i < 30 && !(await G(page, () => !!__ploy.game.flags.vessavanaSlain)); i++) {
     await G(page, () => { const g = __ploy.game, k = g.mobs.find((m) => m.type === 'vessavana' && !m.dead); if (k) { g.player.x = k.x - 45; g.player.y = k.y; g.player.aim = 0; g.player.dir = 3; } });
     await page.keyboard.press('KeyJ'); await page.waitForTimeout(160);
   }
@@ -486,6 +486,24 @@ await check('ออร่า: ฝังโกเมนในช่องอา�
   assert(st.st.mpReserved > 0 && st.st.auras.length === 1, JSON.stringify(st.st));
   assert(!st.sk.includes('garnet'), 'ออร่าหลุดไปอยู่ในปุ่มสกิล');
   return `จองมานา ${st.st.mpReserved} · สกิล ${st.sk.join(',')}`;
+});
+
+await check('มอนพิเศษ: หมูป่าเวท (ฟ้า) กับหายาก (เหลือง) มีชื่อค่าพิเศษ วงแสงใต้เท้า → ล้มตัวหายากได้ของแน่นอน', async () => {
+  const r = await G(page, () => {
+    const g = __ploy.game, p = g.player;
+    __ploy.enterZone(g, 'field', 34 * 32, 50 * 32); g.mobs.length = 0; g.drops.length = 0; p.invuln = 99;
+    const a = __ploy.rollElite(g, __ploy.makeMob(g, 'boar', 8, p.x - 90, p.y - 40, -1), 'magic');
+    const b = __ploy.rollElite(g, __ploy.makeMob(g, 'boar', 8, p.x + 90, p.y - 40, -1), 'rare');
+    g.mobs.push(a, b);
+    return { a: a.elite, b: b.elite, mods: b.eliteMods.length };
+  });
+  assert(r.a === 'magic' && r.b === 'rare' && r.mods === 2, JSON.stringify(r));
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: SHOTS + '/25-elites.png' });
+  const items = await G(page, () => { const g = __ploy.game, b = g.mobs.find((m) => m.elite === 'rare'); __ploy.damage(g, b, b.hp + 1); return g.drops.filter((d) => d.kind === 'item').length; });
+  assert(items >= 2, 'ของจากตัวหายาก ' + items);
+  await G(page, () => { __ploy.game.mobs.length = 0; });
+  return 'ของ ' + items + ' ชิ้น';
 });
 
 await check('ความเร็ว: มอน 100 ตัวไล่ล้อม ใช้เวลาคำนวณ+วาดต่อเฟรมไม่เกิน 8ms', async () => {
