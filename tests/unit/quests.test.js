@@ -74,3 +74,17 @@ test('แม่ค้าในเมืองบทใหม่เปิดร�
     for (const e of z.exits) assert.ok(g.data.zones[e.to].exits.some((b) => b.to === id), `${id} ↔ ${e.to}`);
   }
 });
+
+test('เครื่องหมาย ! บนหัว NPC: ทอง = เรื่องใหม่ของบทนี้ (คุยแล้วหาย) · เขียว = มีรางวัลรอ · เข้าเมืองบทใหม่ครั้งแรกขึ้นป้ายชื่อบท', async () => {
+  const { npcMark } = await import('../../src/systems/quests.js');
+  const g = makeGame(); g.flags.tutorialDone = true;
+  g.flags.yakSlain = true; g.flags.q_q1_main = true;
+  assert.equal(npcMark(g, 'phran'), 'new');
+  enterZone(g, 'camp_hunter');
+  assert.ok(g.actCard && g.actCard.text.includes('บทที่ 2'));
+  g.actCard = null; enterZone(g, 'himmapan'); enterZone(g, 'camp_hunter'); assert.equal(g.actCard, null, 'ป้ายขึ้นครั้งเดียว');
+  talkTo(g, g.world.zone.npcs.find((n) => n.id === 'phran')); g.dialog = null; g.mode = 'play';
+  assert.equal(npcMark(g, 'phran'), null);
+  g.flags.khotchasi_kingSlain = true;
+  assert.equal(npcMark(g, 'phran'), 'reward');
+});

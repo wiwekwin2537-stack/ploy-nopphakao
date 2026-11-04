@@ -31,6 +31,26 @@ export function questTracker(game) {
   return out.slice(0, 3).map((x) => ({ ...x, act: act.name }));
 }
 
+// เครื่องหมายบนหัว NPC (แบบ PoE): 'reward' = มีรางวัลรอ (เขียว) · 'new' = มีเรื่องเล่า/เควสของบทนี้ที่ยังไม่ได้คุย (ทอง)
+export function npcMark(game, npcId) {
+  if (!game.flags.tutorialDone) return npcId === 'chan' && !game.flags.metChan ? 'new' : null;
+  if (readyQuestFor(game, npcId)) return 'reward';
+  const act = currentAct(game);
+  const q = game.data.quests.list.find((x) => x.giver === npcId && x.act === act.n && questState(game, x) === 'open');
+  return q && !game.flags['met_' + npcId] ? 'new' : null;
+}
+
+// เข้าเมืองของบทครั้งแรก = ป้ายชื่อบทใหญ่กลางจอ (แบบ PoE)
+export function setupActs(game) {
+  game.events.on('zoneChanged', ({ zone }) => {
+    if (!game.flags.tutorialDone) return;
+    const a = game.data.quests.acts.find((x) => x.town === zone && x.n > 1 && x.n <= 4);
+    if (!a || game.flags['act_' + a.n]) return;
+    game.flags['act_' + a.n] = true;
+    game.actCard = { text: a.name, t: 4.5 };
+  });
+}
+
 // เควสที่ NPC คนนี้พร้อมให้รางวัล
 export function readyQuestFor(game, npcId) {
   return game.data.quests.list.find((q) => q.giver === npcId && questState(game, q) === 'ready') || null;

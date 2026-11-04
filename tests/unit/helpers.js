@@ -18,6 +18,7 @@ import { setupUniques } from '../../src/systems/uniques.js';
 import { setupProgress } from '../../src/systems/progress.js';
 import { setupTutorial } from '../../src/systems/tutorial.js';
 import { setupDeath } from '../../src/systems/travel.js';
+import { setupActs } from '../../src/systems/quests.js';
 
 export function makeGame() {
   const noop = () => {};
@@ -32,7 +33,7 @@ export function makeGame() {
   };
   game.world = createWorld(zones, (f) => !!game.flags[f], (t) => game.mobs.some((m) => m.type === t && !m.dead));
   game.player = createPlayer(game.data);
-  setupLoot(game); setupFlasks(game); setupUniques(game); setupProgress(game); setupTutorial(game); setupDeath(game);
+  setupLoot(game); setupFlasks(game); setupUniques(game); setupActs(game); setupProgress(game); setupTutorial(game); setupDeath(game);
   return game;
 }
 

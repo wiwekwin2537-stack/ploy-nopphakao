@@ -13,6 +13,7 @@ import { gemInfo, aurasOf } from '../systems/gems.js';
 import { mobName } from '../systems/monsters.js';
 import { SHOT_COLORS } from '../systems/combat.js';
 import { tutorialTarget } from '../systems/tutorial.js';
+import { npcMark } from '../systems/quests.js';
 
 export function createScene(game) {
   let ground = null, sprites = null, scale = 0;
@@ -197,10 +198,11 @@ export function createScene(game) {
     for (const n of z.npcs) {
       if (!vis(n.x, n.y)) continue;
       plate(ctx, n.name, n.x, n.y - 64, 11, '#a8e0ff', 'rgba(120,190,255,0.7)');
-      if (n.id === 'chan' && !game.flags.metChan) {
+      const mk = npcMark(game, n.id);                               // ! ทอง = มีเรื่อง/เควสใหม่ · ! เขียว = มีรางวัลรอ
+      if (mk) {
         const bb = Math.sin(t * 5) * 2;
         ctx.font = '700 20px Kanit, sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 4; ctx.strokeStyle = C.ink;
-        ctx.strokeText('!', n.x, n.y - 80 + bb); ctx.fillStyle = C.gold; ctx.fillText('!', n.x, n.y - 80 + bb);
+        ctx.strokeText('!', n.x, n.y - 80 + bb); ctx.fillStyle = mk === 'reward' ? '#7dff8a' : C.gold; ctx.fillText('!', n.x, n.y - 80 + bb);
       }
     }
     for (const d of game.drops) {                                   // ป้ายชื่อของบนพื้นแบบ PoE

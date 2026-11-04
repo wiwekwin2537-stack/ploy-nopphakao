@@ -51,6 +51,7 @@ import { updateStashSpot } from './systems/stash.js';
 import { updateExplore } from './systems/explore.js';
 import { updatePotion, setupFlasks } from './systems/shop.js';
 import { setupUniques, makeUnique } from './systems/uniques.js';
+import { setupActs } from './systems/quests.js';
 
 // สองชั้น: โลกวาดความละเอียดต่ำแล้วขยายแบบพิกเซล (สไตล์เอโดเรีย) · หน้าจอซ้อน/ตัวหนังสือวาดคมเต็มความละเอียด
 const PIXEL = 0.62;
@@ -72,7 +73,7 @@ game.world = createWorld(zones, (f) => !!game.flags[f], (type) => game.mobs.some
 game.input = createInput(canvas, () => layout);
 game.player = createPlayer(game.data);
 game.hasSave = !!readSave(game.data);
-setupLoot(game); setupFlasks(game); setupUniques(game); setupProgress(game); setupAutosave(game); setupTutorial(game); setupDeath(game);
+setupLoot(game); setupFlasks(game); setupUniques(game); setupActs(game); setupProgress(game); setupAutosave(game); setupTutorial(game); setupDeath(game);
 game.world.load('road');
 const scene = createScene(game);
 
@@ -110,6 +111,7 @@ function update(dt) {
   input.setUiMode(game.mode !== 'play');                   // หน้าต่าง/บทพูด/หน้าแรก: แตะ = กดปุ่ม ไม่ใช่จอยเดิน
   game.audio.update();
   if (game.toast) game.toast.t -= dt;
+  if (game.actCard) game.actCard.t -= dt;
   if (game.notice) game.notice.t -= dt;
   // ปุ่มเสียงกดได้ทุกหน้า
   for (const t of input.taps) if (!t.consumed && hitCircle(t, layout.mute)) { t.consumed = true; game.audio.unlock(); game.audio.toggleMute(); }

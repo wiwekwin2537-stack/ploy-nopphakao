@@ -164,6 +164,12 @@ export function drawHud(ctx, game, L, w, h) {
     text(ctx, '— ' + game.toast.text + ' —', w / 2, h * 0.3, 24 * s, C.goldHi, 'center');
     ctx.globalAlpha = 1;
   }
+  if (game.actCard && game.actCard.t > 0) {                      // ป้ายชื่อบท (แบบ PoE) ตอนเข้าเมืองของบทครั้งแรก
+    ctx.globalAlpha = Math.min(1, game.actCard.t, (4.5 - game.actCard.t) * 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(0, h * 0.36, w, 64 * s);
+    text(ctx, game.actCard.text, w / 2, h * 0.36 + 32 * s, 26 * s, C.goldHi, 'center', '600');
+    ctx.globalAlpha = 1;
+  }
   // แผนที่เล็กวงกลมขอบทอง + เวลา
   const M = L.minimap, z = game.world.zone, mm = miniMap(z);
   ctx.save(); ctx.beginPath(); ctx.arc(M.x, M.y, M.r, 0, PHI); ctx.clip();

@@ -33,6 +33,7 @@ function lineFor(game, npc) {
 
 export function talkTo(game, npc) {
   const p = game.player;
+  game.flags['met_' + npc.id] = true;
   p.moveTarget = null; p.targetMob = null; game.pendingTalk = null;
   npc.face = p.x < npc.x ? -1 : 1;
   if (npc.shop && !readyQuestFor(game, npc.id)) {                                      // แม่ค้า: ทักทายแล้วเปิดร้าน
