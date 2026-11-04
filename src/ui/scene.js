@@ -4,7 +4,8 @@ import { createSpriteCache } from '../art/sprites.js';
 import { drawHuman } from '../art/characters.js';
 import { drawMonster } from '../art/monsters.js';
 import { C, shadow, circle, poly, rrect } from '../art/draw.js';
-import { GEM_INFO } from '../systems/loot.js';
+import { gemInfo, gemType } from '../systems/gems.js';
+import { SHOT_COLORS } from '../systems/combat.js';
 import { tutorialTarget } from '../systems/tutorial.js';
 
 export function createScene(game) {
@@ -32,19 +33,27 @@ export function createScene(game) {
       ctx.fillStyle = C.gold; ctx.beginPath(); ctx.ellipse(d.x, y - 6, w, 5, 0, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = C.goldHi; ctx.fillRect(d.x - 0.8, y - 9, 1.6, 4);
     } else {
-      const G = GEM_INFO[d.gem], bob = Math.sin(d.t * 3) * 2.5, gy = y - 14 + bob;
-      const glow = ctx.createRadialGradient(d.x, gy, 1, d.x, gy, 26);
-      glow.addColorStop(0, 'rgba(255,90,110,0.6)'); glow.addColorStop(1, 'rgba(255,90,110,0)');
-      ctx.fillStyle = glow; ctx.fillRect(d.x - 26, gy - 26, 52, 52);
+      const G = gemInfo(game.data.gems, d.gem), bob = Math.sin(d.t * 3) * 2.5, gy = y - 14 + bob;
+      const glow = ctx.createRadialGradient(d.x, gy, 1, d.x, gy, 30);
+      glow.addColorStop(0, G.color + 'aa'); glow.addColorStop(1, G.color + '00');
+      ctx.fillStyle = glow; ctx.fillRect(d.x - 30, gy - 30, 60, 60);
       shadow(ctx, d.x, d.y, 7, 2.5);
-      poly(ctx, [d.x, gy - 9, d.x + 7, gy - 3, d.x + 4, gy + 7, d.x - 4, gy + 7, d.x - 7, gy - 3], G.color, C.ink, 1.4);
-      poly(ctx, [d.x, gy - 9, d.x + 3, gy - 3, d.x - 3, gy - 3], G.hi, null);
+      if (gemType(game.data.gems, d.gem) === 'main') {
+        poly(ctx, [d.x, gy - 9, d.x + 7, gy - 3, d.x + 4, gy + 7, d.x - 4, gy + 7, d.x - 7, gy - 3], G.color, C.ink, 1.4);
+        poly(ctx, [d.x, gy - 9, d.x + 3, gy - 3, d.x - 3, gy - 3], G.hi, null);
+      } else { circle(ctx, d.x, gy, 6, G.color, C.ink, 1.4); circle(ctx, d.x - 2, gy - 2, 2, 'rgba(255,255,255,0.8)', null); }
+      ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fillRect(d.x - 0.5, gy - 22 - bob, 1, 10);   // ลำแสงชี้ว่ามีพลอย
       if (Math.sin(d.t * 6) > 0.6) { ctx.fillStyle = '#fff'; ctx.fillRect(d.x + 4, gy - 10, 2, 2); }
     }
   }
 
   function drawShot(ctx, s) {
-    const col = s.kind === 'fireball' ? ['rgba(255,140,40,0.55)', '#ffd24a', '#fff2c0'] : ['rgba(120,255,140,0.5)', '#7dff8a', '#e8ffe8'];
+    const sc = SHOT_COLORS[s.kind] || SHOT_COLORS.ghost, col = [sc[2] + '99', sc[0], sc[1]];
+    if (s.kind === 'ice') {                                          // หอกน้ำแข็ง: แท่งแหลมตามทิศ
+      ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(Math.atan2(s.vy, s.vx));
+      poly(ctx, [12, 0, -6, -4, -10, 0, -6, 4], '#cfe8ff', '#3a6ab8', 1.2); ctx.fillStyle = '#ffffff'; ctx.fillRect(-4, -1, 12, 1.5);
+      ctx.restore(); return;
+    }
     const g = ctx.createRadialGradient(s.x, s.y, 1, s.x, s.y, s.radius * 2.6);
     g.addColorStop(0, col[0]); g.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(s.x, s.y, s.radius * 2.6, 0, Math.PI * 2); ctx.fill();

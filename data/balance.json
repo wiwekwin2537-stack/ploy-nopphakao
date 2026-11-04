@@ -12,9 +12,6 @@
     "mpRegen": 3, "hpRegen": 1, "townHpRegen": 15,
     "hurtInvuln": 0.35
   },
-  "skills": {
-    "fireball": { "mp": 8, "cooldown": 0.45, "damageMult": 1.7, "speed": 380, "life": 1.1, "radius": 42 }
-  },
   "monsterScale": { "hpPerLevel": 0.28, "damagePerLevel": 0.16, "xpPerLevel": 0.22 },
   "deathCoinLoss": 0.1,
   "autosaveSeconds": 10

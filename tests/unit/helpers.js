@@ -3,6 +3,7 @@ import balance from '../../data/balance.json' with { type: 'json' };
 import monsters from '../../data/monsters.json' with { type: 'json' };
 import zones from '../../data/zones.json' with { type: 'json' };
 import dialogue from '../../data/dialogue.json' with { type: 'json' };
+import gems from '../../data/gems.json' with { type: 'json' };
 import { createEvents } from '../../src/core/events.js';
 import { createRng } from '../../src/core/rng.js';
 import { createWorld } from '../../src/systems/world.js';
@@ -15,7 +16,7 @@ import { setupDeath } from '../../src/systems/travel.js';
 export function makeGame() {
   const noop = () => {};
   const game = {
-    data: { balance, monsters, zones, dialogue },
+    data: { balance, monsters, zones, dialogue, gems },
     events: createEvents(), rng: createRng(42),
     fx: { text: noop, burst: noop, trail: noop, ring: noop, slash: noop, clear: noop, update: noop },
     audio: { play: noop, music: noop, update: noop, muted: true },
@@ -24,7 +25,7 @@ export function makeGame() {
     flags: {}, mobs: [], shots: [], drops: [], later: [], spawnTimers: [], mode: 'play', time: 0,
   };
   game.world = createWorld(zones, (f) => !!game.flags[f]);
-  game.player = createPlayer(balance);
+  game.player = createPlayer(balance, gems);
   setupLoot(game); setupProgress(game); setupTutorial(game); setupDeath(game);
   return game;
 }

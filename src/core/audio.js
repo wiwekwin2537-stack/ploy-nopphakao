@@ -135,6 +135,8 @@ export function createAudio() {
     level(t) { inst.khong(thaiFreq(0, -1), t, 1, sfxBus); [0, 2, 4, 7, 9, 12].forEach((d, i) => inst.ranat(thaiFreq(d, 1), t + 0.1 + i * 0.08, 0.9, sfxBus)); },
     cast(t) { noise(t, 0.25, 0.2, sfxBus, 'bandpass', 400, 1800); osc('sawtooth', 160, t, 0.2, 0.06, sfxBus); },
     boom(t) { const o = osc('sine', 120, t, 0.35, 0.5, sfxBus); o.frequency.exponentialRampToValueAtTime(40, t + 0.3); noise(t, 0.3, 0.3, sfxBus, 'lowpass', 1200, 200); },
+    ice(t) { noise(t, 0.18, 0.18, sfxBus, 'highpass', 3000, 6000); [9, 12].forEach((d, i) => inst.ranat(thaiFreq(d, 1), t + i * 0.04, 0.5, sfxBus)); },
+    poison(t) { const o = osc('sine', 260, t, 0.25, 0.18, sfxBus); o.frequency.exponentialRampToValueAtTime(130, t + 0.25); noise(t, 0.2, 0.12, sfxBus, 'lowpass', 800); },
     die(t) { inst.khong(thaiFreq(-3, -1), t, 1, sfxBus); inst.khong(thaiFreq(-5, -1), t + 0.4, 1, sfxBus); },
     mobdie(t) { const o = osc('triangle', 300, t, 0.2, 0.15, sfxBus); o.frequency.exponentialRampToValueAtTime(90, t + 0.2); },
     talk(t) { inst.ranat(thaiFreq(4, 1), t, 0.4, sfxBus); },

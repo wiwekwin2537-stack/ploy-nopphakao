@@ -1,6 +1,7 @@
 // ผู้เล่น: ค่าสถานะ การเดิน (ปุ่ม/จอย/คลิก) การฟัน การหลบ การใช้สกิล
 import { meleeArc } from './combat.js';
-import { castFireball } from './skills.js';
+import { castSkill } from './skills.js';
+import { emptySockets } from './gems.js';
 
 export function playerStats(p, balance) {
   const B = balance.player, lv = p.level - 1;
@@ -12,11 +13,11 @@ export function playerStats(p, balance) {
   };
 }
 
-export function createPlayer(balance) {
+export function createPlayer(balance, gemsData) {
   const p = {
     x: 0, y: 0, radius: 10, level: 1, xp: 0, coins: 0, hp: 1, mp: 1,
-    gems: [], dir: 0, aim: 0, walk: 0, moving: false,
-    attackCd: 0, swing: -1, combo: 0, comboT: 0, pendingHit: null, dashCd: 0, dashT: 0, dashVx: 0, dashVy: 0, skillCd: 0, castT: 0,
+    bag: [], sockets: emptySockets(gemsData), dir: 0, aim: 0, walk: 0, moving: false,
+    attackCd: 0, swing: -1, combo: 0, comboT: 0, pendingHit: null, dashCd: 0, dashT: 0, dashVx: 0, dashVy: 0, skillCd: Array(gemsData.groups).fill(0), castT: 0,
     invuln: 0, hurt: 0, dead: false, combatTimer: 0, moveTarget: null, targetMob: null, movedDist: 0,
   };
   const s = playerStats(p, balance);
@@ -97,7 +98,6 @@ export function updatePlayer(game, dt) {
   const st = playerStats(p, game.data.balance);
   p.attackCd = Math.max(0, p.attackCd - dt);
   p.dashCd = Math.max(0, p.dashCd - dt);
-  p.skillCd = Math.max(0, p.skillCd - dt);
   p.invuln = Math.max(0, p.invuln - dt);
   p.hurt = Math.max(0, p.hurt - dt);
   p.castT = Math.max(0, p.castT - dt);
@@ -138,7 +138,8 @@ export function updatePlayer(game, dt) {
 
   if (input.pressed.attack) doAttack(game);
   if (input.pressed.dash) doDash(game);
-  if (input.held.skill || input.pressed.skill) castFireball(game);
+  if (input.held.skill || input.pressed.skill) castSkill(game, 0);
+  if (input.held.skill2 || input.pressed.skill2) castSkill(game, 1);
 
   const ox = p.x, oy = p.y;
   if (p.dashT > 0) {

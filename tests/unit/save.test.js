@@ -6,18 +6,18 @@ import { respawn } from '../../src/systems/travel.js';
 
 test('เซฟแล้วอ่านกลับได้ค่าเดิม', () => {
   const g = makeGame(); g.world.load('field');
-  Object.assign(g.player, { level: 4, xp: 12, coins: 321, x: 400, y: 500, gems: ['ruby'] });
+  Object.assign(g.player, { level: 4, xp: 12, coins: 321, x: 400, y: 500, bag: ['multi'], sockets: [['ruby', 'pierce', null], [null, null, null]] });
   g.flags.tutorialDone = true;
-  const s = validate(JSON.parse(JSON.stringify(serialize(g))), g.data.zones);
+  const s = validate(JSON.parse(JSON.stringify(serialize(g))), g.data.zones, g.data.gems);
   assert.equal(s.v, SAVE_VERSION);
-  assert.deepEqual([s.level, s.xp, s.coins, s.zone, s.gems[0], s.flags.tutorialDone], [4, 12, 321, 'field', 'ruby', true]);
+  assert.deepEqual([s.level, s.xp, s.coins, s.zone, s.sockets[0][0], s.sockets[0][1], s.bag[0], s.flags.tutorialDone], [4, 12, 321, 'field', 'ruby', 'pierce', 'multi', true]);
 });
 
 test('เซฟเสีย/โกง ถูกปฏิเสธ', () => {
   const g = makeGame(); g.world.load('town');
   const good = serialize(g);
-  for (const badS of [null, 'x', { ...good, v: 99 }, { ...good, zone: 'nope' }, { ...good, level: -1 }, { ...good, coins: 'lots' }, { ...good, gems: 'ruby' }]) {
-    assert.equal(validate(badS, g.data.zones), null);
+  for (const badS of [null, 'x', { ...good, v: 99 }, { ...good, zone: 'nope' }, { ...good, level: -1 }, { ...good, coins: 'lots' }, { ...good, bag: 'ruby' }, { ...good, bag: ['fakegem'] }, { ...good, sockets: [['multi', null, null], [null, null, null]] }]) {
+    assert.equal(validate(badS, g.data.zones, g.data.gems), null);
   }
 });
 
@@ -30,4 +30,14 @@ test('ตายแล้วเสียเบี้ย 10% ครั้งเด
   assert.equal(g.player.coins, 900);
   assert.equal(g.world.zone.id, 'town');
   assert.ok(g.player.hp > 0 && !g.player.dead);
+});
+
+test('เซฟรุ่นเก่า (v1) แปลงเป็นรุ่นใหม่ได้ ทับทิมย้ายไปช่องฝัง', () => {
+  const g = makeGame(); g.world.load('town');
+  const old = { v: 1, zone: 'town', x: 300, y: 300, level: 3, xp: 5, coins: 50, hp: 90, mp: 40, gems: ['ruby'], flags: { tutorialDone: true } };
+  const s = validate(old, g.data.zones, g.data.gems);
+  assert.ok(s, 'ต้องแปลงได้');
+  assert.equal(s.v, SAVE_VERSION);
+  assert.equal(s.sockets[0][0], 'ruby');
+  assert.deepEqual(s.bag, []);
 });

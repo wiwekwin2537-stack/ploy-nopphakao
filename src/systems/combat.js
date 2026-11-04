@@ -13,14 +13,15 @@ export function damageMob(game, mob, amount, crit = false, element = 'phys') {
   mob.aggroed = true;
   // สะดุ้งถอยจากผู้เล่นเล็กน้อย (ท่าโดนตี)
   const p = game.player, dx = mob.x - p.x, dy = mob.y - p.y, d = Math.hypot(dx, dy) || 1;
-  mob.recoil = 0.14; mob.kbx = dx / d; mob.kby = dy / d;
-  if (mob.state !== 'charge' && mob.type !== 'bigboar') {
+  if (element !== 'poison') { mob.recoil = 0.14; mob.kbx = dx / d; mob.kby = dy / d; }
+  if (element !== 'poison' && mob.state !== 'charge' && mob.type !== 'bigboar') {
     const r = mob.def.flying ? { x: mob.x + dx / d * 5, y: mob.y + dy / d * 5 } : game.world.moveCircle(mob.x, mob.y, mob.radius, dx / d * 5, dy / d * 5);
     mob.x = r.x; mob.y = r.y;
   }
-  game.fx.text(mob.x, mob.y - mob.height, String(amount), crit ? '#ffd24a' : element === 'fire' ? '#ffae5a' : '#ffffff', crit);
-  game.fx.burst(mob.x, mob.y - mob.height * 0.5, element === 'fire' ? '#ff8a2a' : '#f4e6c8', 5, 80, 0.35, 2.5);
-  game.audio.play('hit');
+  const tc = { fire: '#ffae5a', ice: '#a8d8ff', poison: '#9af0b0' }[element] || '#ffffff';
+  game.fx.text(mob.x, mob.y - mob.height, String(amount), crit ? '#ffd24a' : tc, crit);
+  game.fx.burst(mob.x, mob.y - mob.height * 0.5, (SHOT_COLORS[element] || ['#f4e6c8'])[0], element === 'poison' ? 3 : 5, 80, 0.35, 2.5);
+  if (element !== 'poison') game.audio.play('hit');
   if (mob.hp <= 0) {
     mob.hp = 0;
     mob.dead = true;
@@ -71,16 +72,28 @@ export function meleeArc(game, x, y, ang, range, arc, base) {
 // shot: { x, y, vx, vy, life, radius, from:'player'|'mob', damage, kind, splash }
 export function spawnShot(game, shot) { game.shots.push({ hitIds: new Set(), ...shot }); }
 
+export const SHOT_COLORS = {
+  fire: ['#ff7a2a', '#ffe08a', '#ffb84a'], ice: ['#7ac0ff', '#e8f4ff', '#a8d8ff'], poison: ['#3ad06a', '#c8ffb0', '#7dff8a'], ghost: ['#8cff9a', '#e8ffe8', '#8cff9a'],
+};
+
+// ผลพิเศษของกระสุนพลอย: ทำให้ช้า / ติดพิษ
+function applyEffects(s, m) {
+  if (s.slow) { m.slowT = s.slowTime; m.slowK = s.slow; }
+  if (s.poison) { m.poisonT = s.poisonTime; m.poisonDps = s.poison / s.poisonTime; m.poisonTick = m.poisonTick || 0.5; }
+}
+
 function explode(game, s) {
-  game.fx.ring(s.x, s.y, s.splash, '#ffb84a');
-  game.fx.burst(s.x, s.y, '#ff7a2a', 14, 140, 0.45, 3);
-  game.fx.burst(s.x, s.y, '#ffe08a', 8, 90, 0.35, 2);
+  const col = SHOT_COLORS[s.kind] || SHOT_COLORS.fire;
+  game.fx.ring(s.x, s.y, s.splash, col[2]);
+  game.fx.burst(s.x, s.y, col[0], 14, 140, 0.45, 3);
+  game.fx.burst(s.x, s.y, col[1], 8, 90, 0.35, 2);
   game.audio.play('boom');
   for (const m of game.mobs) {
     if (m.dead || s.hitIds.has(m.id)) continue;
     if (Math.hypot(m.x - s.x, m.y - 8 - s.y) <= s.splash + m.radius) {
       const r = rollDamage(s.damage * 0.6, game.rng);
-      damageMob(game, m, r.amount, r.crit, 'fire');
+      damageMob(game, m, r.amount, r.crit, s.kind);
+      applyEffects(s, m);
     }
   }
 }
@@ -91,8 +104,8 @@ export function updateShots(game, dt) {
     const s = game.shots[i];
     s.life -= dt;
     s.x += s.vx * dt; s.y += s.vy * dt;
-    if (s.kind === 'fireball') game.fx.trail(s.x, s.y, Math.random() > 0.5 ? '#ff8a2a' : '#ffd24a', 3.5, 0.28);
-    else game.fx.trail(s.x, s.y, '#8cff9a', 3, 0.25);
+    const col = SHOT_COLORS[s.kind] || SHOT_COLORS.ghost;
+    game.fx.trail(s.x, s.y, Math.random() > 0.5 ? col[0] : col[1], 3.5, 0.28);
     let done = s.life <= 0 || (!s.flying && game.world.blocked(s.x, s.y + 8, 3));
     if (!done && s.from === 'player') {
       for (const m of game.mobs) {
@@ -100,7 +113,9 @@ export function updateShots(game, dt) {
         if (Math.hypot(m.x - s.x, m.y - m.height * 0.4 - s.y) <= m.radius + s.radius) {
           s.hitIds.add(m.id);
           const r = rollDamage(s.damage, game.rng);
-          damageMob(game, m, r.amount, r.crit, 'fire');
+          damageMob(game, m, r.amount, r.crit, s.kind);
+          applyEffects(s, m);
+          if (s.pierce > 0) { s.pierce--; if (s.splash) explode(game, s); continue; }   // ทะลุไปตัวถัดไป
           done = true; break;
         }
       }

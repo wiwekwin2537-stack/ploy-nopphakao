@@ -3,6 +3,7 @@ import balance from '../data/balance.json' with { type: 'json' };
 import monsters from '../data/monsters.json' with { type: 'json' };
 import zones from '../data/zones.json' with { type: 'json' };
 import dialogue from '../data/dialogue.json' with { type: 'json' };
+import gems from '../data/gems.json' with { type: 'json' };
 import { createEvents } from './core/events.js';
 import { createLoop } from './core/loop.js';
 import { createInput } from './core/input.js';
@@ -24,6 +25,7 @@ import { createFx } from './art/fx.js';
 import { computeLayout } from './ui/layout.js';
 import { createScene } from './ui/scene.js';
 import { drawHud, drawDialog, drawDeath, drawTitle, titleButtons } from './ui/hud.js';
+import { drawBag, updateBag, bagButtonHit } from './ui/bag.js';
 
 // สองชั้น: โลกวาดความละเอียดต่ำแล้วขยายแบบพิกเซล (สไตล์เอโดเรีย) · หน้าจอซ้อน/ตัวหนังสือวาดคมเต็มความละเอียด
 const PIXEL = 0.62;
@@ -35,15 +37,15 @@ const params = new URLSearchParams(location.search);
 let layout = computeLayout(canvas.clientWidth || innerWidth, canvas.clientHeight || innerHeight);
 
 const game = {
-  data: { balance, monsters, zones, dialogue },
+  data: { balance, monsters, zones, dialogue, gems },
   events: createEvents(), camera: createCamera(), audio: createAudio(), fx: createFx(), rng: createRng(Date.now() & 0xffff),
   flags: {}, mobs: [], shots: [], drops: [], later: [], spawnTimers: [],
   mode: 'title', dialog: null, time: 0, hitStop: 0, toast: null, debug: params.has('debug'),
 };
 game.world = createWorld(zones, (f) => !!game.flags[f]);
 game.input = createInput(canvas, () => layout);
-game.player = createPlayer(balance);
-game.hasSave = !!readSave(zones);
+game.player = createPlayer(balance, gems);
+game.hasSave = !!readSave(zones, gems);
 setupLoot(game); setupProgress(game); setupAutosave(game); setupTutorial(game); setupDeath(game);
 game.world.load('road');
 const scene = createScene(game);
@@ -51,16 +53,16 @@ const scene = createScene(game);
 function startNew(skip) {
   clearSave();
   game.flags = {};
-  game.player = createPlayer(balance);
+  game.player = createPlayer(balance, gems);
   if (skip) { skipTutorial(game); enterZone(game, 'town', 20.5 * 32, 17.5 * 32); } else enterZone(game, 'road');
   game.mode = game.dialog ? 'dialog' : 'play';
   writeSave(game);
 }
 function continueGame() {
-  const s = readSave(zones);
+  const s = readSave(zones, gems);
   if (!s) return startNew(false);
-  const p = game.player = createPlayer(balance);
-  Object.assign(p, { level: s.level, xp: s.xp, coins: s.coins, gems: s.gems.slice(), hp: s.hp, mp: s.mp });
+  const p = game.player = createPlayer(balance, gems);
+  Object.assign(p, { level: s.level, xp: s.xp, coins: s.coins, bag: s.bag.slice(), sockets: s.sockets.map((r) => r.slice()), hp: s.hp, mp: s.mp });
   game.flags = { ...s.flags };
   game.mode = 'play';
   enterZone(game, s.zone, s.x, s.y);
@@ -76,6 +78,7 @@ function update(dt) {
   input.beginFrame();
   game.audio.update();
   if (game.toast) game.toast.t -= dt;
+  if (game.notice) game.notice.t -= dt;
   // ปุ่มเสียงกดได้ทุกหน้า
   for (const t of input.taps) if (!t.consumed && hitCircle(t, layout.mute)) { t.consumed = true; game.audio.unlock(); game.audio.toggleMute(); }
 
@@ -97,6 +100,11 @@ function update(dt) {
   } else if (game.mode === 'dead') {
     game.deadT += dt;
     if (game.deadT > 1.2 && (input.taps.length || input.pressed.attack || input.pressed.interact || input.pressed.dash)) { respawn(game); writeSave(game); }
+  } else if (game.mode === 'bag') {
+    if (updateBag(game, layout, game.camera.viewW, game.camera.viewH)) { game.mode = 'play'; game.bagSel = null; writeSave(game); }
+  } else if (game.mode === 'play' && (input.pressed.bag || input.taps.some((t) => !t.consumed && bagButtonHit(layout, t)))) {
+    input.taps.forEach((t) => { if (bagButtonHit(layout, t)) t.consumed = true; });
+    game.mode = 'bag'; game.bagGroup = game.bagGroup || 0; game.audio.play('click');
   } else if (game.mode === 'play' && game.hitStop > 0) {
     game.hitStop -= dt;                     // หยุดภาพแวบหนึ่งตอนดาบโดน ให้รู้สึกถึงแรงกระแทก
   } else if (game.mode === 'play') {
@@ -135,6 +143,7 @@ function render() {
     drawHud(ctx, game, layout, w, h);
     if (game.mode === 'dialog') drawDialog(ctx, game, layout, w, h);
     if (game.mode === 'dead') drawDeath(ctx, game, layout, w, h);
+    if (game.mode === 'bag') drawBag(ctx, game, layout, w, h);
   }
 }
 

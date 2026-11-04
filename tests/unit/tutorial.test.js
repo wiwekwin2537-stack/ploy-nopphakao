@@ -6,7 +6,8 @@ import { updateTutorial } from '../../src/systems/tutorial.js';
 import { updateDialog, talkTo } from '../../src/systems/npc.js';
 import { damageMob } from '../../src/systems/combat.js';
 import { updateLoot } from '../../src/systems/loot.js';
-import { castFireball } from '../../src/systems/skills.js';
+import { castSkill } from '../../src/systems/skills.js';
+import { ownsGem } from '../../src/systems/gems.js';
 
 function closeDialog(g) {
   for (let i = 0; i < 30 && g.dialog; i++) { g.input.pressed.interact = true; updateDialog(g, 1); g.input.pressed.interact = false; }
@@ -32,11 +33,12 @@ test('บทนำเล่นได้ครบทุกขั้นตั้�
   assert.ok(gem, 'ต้องดรอปทับทิม');
   g.player.x = gem.x; g.player.y = gem.y; gem.t = 1;
   updateLoot(g, 0.1);
-  assert.ok(g.player.gems.includes('ruby'));
+  assert.ok(ownsGem(g.player, 'ruby'));
+  assert.equal(g.player.sockets[0][0], 'ruby', 'ทับทิมต้องฝังชุดแรกให้เลย');
   assert.equal(g.world.blocked(42.5 * 32, 10 * 32, 10), false, 'ท่อนไม้ต้องหาย');
   closeDialog(g);
   assert.equal(g.flags.tutStep, 'skill');
-  g.player.mp = 100; assert.ok(castFireball(g));
+  g.player.mp = 100; assert.ok(castSkill(g, 0));
   assert.equal(g.flags.tutStep, 'go');
   enterZone(g, 'town', 20.5 * 32, 31.8 * 32);
   assert.equal(g.flags.tutStep, 'chan');

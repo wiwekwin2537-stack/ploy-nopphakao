@@ -1,5 +1,5 @@
 // มอนสเตอร์: เกิด เกิดใหม่ และ AI (ประชิด / พุ่งชน / ร่ายระยะไกล)
-import { hurtPlayer, spawnShot } from './combat.js';
+import { hurtPlayer, spawnShot, damageMob } from './combat.js';
 import { monsterHeight } from '../art/monsters.js';
 
 let nextId = 1;
@@ -11,7 +11,7 @@ export function makeMob(game, type, level, x, y, group = -1) {
   return {
     id: nextId++, type, def, level, group, x, y, homeX: x, homeY: y,
     hp, maxHp: hp, damage: Math.round(def.damage * (1 + S.damagePerLevel * l)), xp: Math.round(def.xp * (1 + S.xpPerLevel * l)),
-    radius: def.radius, height: monsterHeight(type), speed: def.speed,
+    radius: def.radius, height: monsterHeight(type), speed: def.speed, baseSpeed: def.speed, slowT: 0, slowK: 1, poisonT: 0,
     state: 'idle', t: Math.random() * 10, face: 1, flash: 0, dying: 0, dead: false, aggroed: false,
     attackCd: 0.5, chargeCd: 1.5, stateT: 0, dirX: 0, dirY: 0, windup: 0, wanderT: Math.random() * 2, tx: x, ty: y,
     hitThisCharge: false, dodged: false, moving: false,
@@ -121,7 +121,7 @@ function updateAI(game, m, dt) {
       if (def.ai === 'charger' && m.chargeNext) { m.state = 'charge'; m.stateT = def.chargeTime; m.hitThisCharge = false; m.dodged = false; m.chargeNext = false; }
       else if (def.ai === 'caster') {
         const a = Math.atan2(p.y - 14 - (m.y - 24), p.x - m.x);
-        spawnShot(game, { x: m.x, y: m.y - 24, vx: Math.cos(a) * def.shotSpeed, vy: Math.sin(a) * def.shotSpeed, life: 2.2, radius: 6, from: 'mob', damage: m.damage, kind: 'ghostfire', flying: true });
+        spawnShot(game, { x: m.x, y: m.y - 24, vx: Math.cos(a) * def.shotSpeed, vy: Math.sin(a) * def.shotSpeed, life: 2.2, radius: 6, from: 'mob', damage: m.damage, kind: 'ghost', flying: true });
         m.state = 'chase'; m.attackCd = def.attackCooldown;
       } else {
         if (d < def.attackRange + p.radius + 12) hurtPlayer(game, m.damage, m.x, m.y);
@@ -131,7 +131,8 @@ function updateAI(game, m, dt) {
     return;
   }
   if (m.state === 'charge') {
-    const moved = step(game, m, m.dirX * def.chargeSpeed, m.dirY * def.chargeSpeed, dt);
+    const cs = def.chargeSpeed * (m.slowT > 0 ? m.slowK : 1);
+    const moved = step(game, m, m.dirX * cs, m.dirY * cs, dt);
     if (Math.random() < 0.7) game.fx.trail(m.x, m.y - 4, 'rgba(200,170,120,0.8)', 4, 0.35);
     const nd = Math.hypot(p.x - m.x, p.y - m.y);
     if (!m.hitThisCharge && nd < m.radius + p.radius + 4) {
@@ -139,7 +140,7 @@ function updateAI(game, m, dt) {
       else if (hurtPlayer(game, Math.round(m.damage * 1.5), m.x, m.y)) m.hitThisCharge = true;
     }
     if (!m.hitThisCharge && !m.dodged && p.dashT > 0 && nd < m.radius + p.radius + 26) { m.dodged = true; game.events.emit('chargeDodged', { mob: m }); }
-    if (m.stateT <= 0 || moved < def.chargeSpeed * dt * 0.3) { m.state = 'stun'; m.stateT = 0.7; m.chargeCd = def.chargeCooldown; game.camera.shake = Math.max(game.camera.shake, 1.5); }
+    if (m.stateT <= 0 || moved < cs * dt * 0.3) { m.state = 'stun'; m.stateT = 0.7; m.chargeCd = def.chargeCooldown; game.camera.shake = Math.max(game.camera.shake, 1.5); }
     return;
   }
   if (m.state === 'stun') { m.moving = false; if (m.stateT <= 0) m.state = 'chase'; return; }
@@ -192,6 +193,13 @@ export function updateMonsters(game, dt) {
         if (m.group >= 0 && z.spawns[m.group]) game.spawnTimers[m.group].push(z.spawns[m.group].respawn);
       }
       continue;
+    }
+    // สถานะผิดปกติจากพลอย: ช้า (ไพลิน) และพิษ (มรกต)
+    if (m.slowT > 0) { m.slowT -= dt; m.speed = m.baseSpeed * m.slowK; if (Math.random() < 0.15) game.fx.trail(m.x, m.y - m.height * 0.6, '#cfe8ff', 2.5, 0.4); } else m.speed = m.baseSpeed;
+    if (m.poisonT > 0) {
+      m.poisonT -= dt; m.poisonTick -= dt;
+      if (Math.random() < 0.2) game.fx.trail(m.x, m.y - m.height * 0.5, '#5ae07a', 3, 0.5);
+      if (m.poisonTick <= 0) { m.poisonTick = 0.5; damageMob(game, m, Math.max(1, Math.round(m.poisonDps * 0.5)), false, 'poison'); if (m.dead) continue; }
     }
     updateAI(game, m, dt);
   }

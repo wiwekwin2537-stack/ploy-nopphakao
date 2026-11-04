@@ -12,7 +12,7 @@ async function check(name, fn) {
   catch (e) { results.push({ ok: false, name, note: e.message, ms: Date.now() - t0 }); }
 }
 const assert = (c, msg) => { if (!c) throw new Error(msg); };
-const state = (page) => G(page, () => { const g = __ploy.game, p = g.player; return { mode: g.mode, step: g.flags.tutStep, zone: g.world.zone.id, x: p.x, y: p.y, hp: p.hp, lv: p.level, xp: p.xp, coins: p.coins, gems: p.gems.slice(), mobs: g.mobs.length, done: !!g.flags.tutorialDone }; });
+const state = (page) => G(page, () => { const g = __ploy.game, p = g.player; return { mode: g.mode, step: g.flags.tutStep, zone: g.world.zone.id, x: p.x, y: p.y, hp: p.hp, lv: p.level, xp: p.xp, coins: p.coins, gems: p.sockets.flat().filter(Boolean), mobs: g.mobs.length, done: !!g.flags.tutorialDone }; });
 const wait = (page, fn, arg, ms = 8000) => page.waitForFunction(fn, arg, { timeout: ms });
 async function closeDialogs(page) {
   for (let i = 0; i < 20; i++) {
@@ -85,10 +85,10 @@ await check('บทนำ 3: พญาหมูป่าพุ่งชน → �
 
 await check('บทนำ 4: ฆ่าพญาหมูป่า → ทับทิมตก → เดินไปเก็บ → ได้สกิล', async () => {
   await killTutorialMob(page, 'bigboar');
-  await wait(page, () => __ploy.game.drops.some((d) => d.gem === 'ruby') || __ploy.game.player.gems.includes('ruby'));
+  await wait(page, () => __ploy.game.drops.some((d) => d.gem === 'ruby') || __ploy.game.player.sockets[0][0] === 'ruby');
   await page.screenshot({ path: SHOTS + '/04-ruby.png' });
   await G(page, () => { const g = __ploy.game, d = g.drops.find((q) => q.gem === 'ruby'); if (d) { g.player.x = d.x - 30; g.player.y = d.y; } });
-  await wait(page, () => __ploy.game.player.gems.includes('ruby'), null, 3000);
+  await wait(page, () => __ploy.game.player.sockets[0][0] === 'ruby', null, 3000);
   await closeDialogs(page);
   const s = await state(page);
   assert(s.step === 'skill', 'ขั้น = ' + s.step);
@@ -150,6 +150,28 @@ await check('ฟาร์มจริง 25 วินาที: ฟันมอ�
   return `ฆ่า ${r.kills} ตัว เลเวล ${s.lv} เบี้ย ${s.coins}`;
 });
 
+await check('พลอยเสริม: เก็บจากพื้น → คลิกปุ่มกระเป๋า → แตะสองครั้งฝังลงชุด 1 → ลูกไฟออก 3 ลูก', async () => {
+  await G(page, () => { const g = __ploy.game, p = g.player; g.mobs.length = 0; g.drops.push({ id: 9001, kind: 'gem', gem: 'multi', x: p.x + 20, y: p.y, t: 1, z: 0, vz: 0, vx: 0, vy: 0 }); });
+  await wait(page, () => __ploy.game.player.bag.includes('multi'), null, 3000);
+  const L = await G(page, () => __ploy.layout());
+  await page.mouse.click(L.bag.x, L.bag.y);
+  await wait(page, () => __ploy.game.mode === 'bag', null, 2000);
+  const cell = await G(page, () => { const g = __ploy.game, L = __ploy.layout(), w = g.camera.viewW, h = g.camera.viewH, s = L.s, G2 = g.data.gems;
+    const pw = Math.min(w - 20, 720 * s), ph = Math.min(h - 16, 360 * s), x = w / 2 - pw / 2, y = h / 2 - ph / 2, c = Math.min(46 * s, (pw * 0.5 - 24 * s) / 6);
+    return { x: x + pw * 0.5 + 6 * s + c / 2, y: y + 52 * s + c / 2 }; });
+  await page.mouse.click(cell.x, cell.y); await page.waitForTimeout(120);
+  await page.mouse.click(cell.x, cell.y); await page.waitForTimeout(120);
+  await page.screenshot({ path: SHOTS + '/10b-bag.png' });
+  const sock = await G(page, () => __ploy.game.player.sockets[0].slice());
+  assert(sock[0] === 'ruby' && sock.includes('multi'), 'ฝังไม่ได้ ' + JSON.stringify(sock));
+  await page.keyboard.press('KeyB'); await page.waitForTimeout(150);
+  assert((await state(page)).mode === 'play', 'ปิดกระเป๋าไม่ได้');
+  await G(page, () => { __ploy.game.player.mp = 999; __ploy.game.player.skillCd[0] = 0; __ploy.game.shots.length = 0; });
+  await page.keyboard.press('KeyK'); await page.waitForTimeout(60);
+  const n = await G(page, () => __ploy.game.shots.filter((q) => q.from === 'player').length);
+  assert(n === 3, 'ลูกไฟ ' + n + ' ลูก');
+});
+
 await check('เซฟแล้วรีเฟรชหน้า → กด "เล่นต่อ" ได้ของเดิมครบ', async () => {
   await G(page, () => __ploy.writeSave(__ploy.game));
   const before = await state(page);
@@ -160,7 +182,7 @@ await check('เซฟแล้วรีเฟรชหน้า → กด "เ
   const after = await state(page);
   assert(after.mode === 'play', 'โหมด ' + after.mode);
   for (const k of ['zone', 'lv', 'xp', 'coins', 'done']) assert(before[k] === after[k], `${k}: ${before[k]} → ${after[k]}`);
-  assert(after.gems.includes('ruby'), 'ทับทิมหาย');
+  assert(after.gems.includes('ruby') && after.gems.includes('multi'), 'พลอยที่ฝังหายหลังโหลด');
 });
 
 await check('ความเร็ว: มอน 100 ตัวไล่ล้อม ใช้เวลาคำนวณ+วาดต่อเฟรมไม่เกิน 8ms', async () => {

@@ -2,6 +2,7 @@
 import { makeMob } from './monsters.js';
 import { openDialog } from './npc.js';
 import { spawnDrop } from './loot.js';
+import { ownsGem } from './gems.js';
 
 const KEYS = {
   keyboard: { move: 'WASD / ลูกศร หรือคลิกพื้น', attack: 'J หรือคลิกที่มอน', dash: 'Space', skill: 'K หรือคลิกขวา', interact: 'E' },
@@ -98,7 +99,7 @@ export function updateTutorial(game, dt) {
 
 export function skipTutorial(game) {
   const p = game.player;
-  if (!p.gems.includes('ruby')) p.gems.push('ruby');
+  if (!ownsGem(p, 'ruby')) p.sockets[0][0] = 'ruby';
   Object.assign(game.flags, { gotRuby: true, metChan: true, tutorialDone: true, tutStep: 'done' });
   game.hintT = 0;
 }

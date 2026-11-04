@@ -2,14 +2,15 @@
 import { C, kanokFrame, rrect, circle, poly } from '../art/draw.js';
 import { playerStats } from '../systems/player.js';
 import { xpNeeded } from '../systems/progress.js';
-import { hasSkill } from '../systems/skills.js';
+import { skillOf } from '../systems/skills.js';
 import { hintText, tutorialTarget } from '../systems/tutorial.js';
 
 const FONT = 'Kanit, sans-serif';
+const text = (...a) => uiText(...a);
 const PHI = Math.PI * 2;
 const GEM_COLORS = ['#d8283a', '#2a5fd8', '#2aa85a', '#f2c230', '#f0f0ff', '#a0302a', '#e0e0c8', '#c88a3a', '#7ad0c0'];
 
-function text(ctx, str, x, y, size, color = C.cream, align = 'left', weight = 'bold') {
+export function uiText(ctx, str, x, y, size, color = C.cream, align = 'left', weight = 'bold') {
   ctx.font = `${weight} ${size}px ${FONT}`; ctx.textAlign = align; ctx.textBaseline = 'middle';
   ctx.lineJoin = 'round'; ctx.lineWidth = Math.max(2, size / 5); ctx.strokeStyle = C.ink; ctx.strokeText(str, x, y);
   ctx.fillStyle = color; ctx.fillText(str, x, y);
@@ -39,10 +40,11 @@ function icon(ctx, id, x, y, r, game) {
     ctx.strokeStyle = C.cream; ctx.lineWidth = r * 0.14; ctx.lineCap = 'round';
     for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo(-r * 0.5, (i - 1) * r * 0.28); ctx.lineTo(r * 0.15 - i * r * 0.12, (i - 1) * r * 0.28); ctx.stroke(); }
     poly(ctx, [r * 0.15, -r * 0.4, r * 0.55, 0, r * 0.15, r * 0.4], C.cream, null);
-  } else if (id === 'skill') {
-    const ok = hasSkill(game.player, 'fireball');
-    poly(ctx, [0, -r * 0.55, r * 0.5, -r * 0.18, r * 0.3, r * 0.5, -r * 0.3, r * 0.5, -r * 0.5, -r * 0.18], ok ? '#d8283a' : '#555', C.ink, 1.5);
-    poly(ctx, [0, -r * 0.55, r * 0.2, -r * 0.18, -r * 0.2, -r * 0.18], ok ? '#ff8a9a' : '#777', null);
+  } else if (id === 'skill' || id === 'skill2') {
+    const sk = skillOf(game, id === 'skill' ? 0 : 1);
+    poly(ctx, [0, -r * 0.55, r * 0.5, -r * 0.18, r * 0.3, r * 0.5, -r * 0.3, r * 0.5, -r * 0.5, -r * 0.18], sk ? sk.color : '#555', C.ink, 1.5);
+    poly(ctx, [0, -r * 0.55, r * 0.2, -r * 0.18, -r * 0.2, -r * 0.18], sk ? sk.hi : '#777', null);
+    if (sk && sk.supports.length) sk.supports.forEach((sid, i) => circle(ctx, -r * 0.45 + i * r * 0.9, r * 0.62, r * 0.17, game.data.gems.support[sid].color, C.ink, 1));
   } else if (id === 'interact') {
     ctx.fillStyle = C.cream; rrect(ctx, -r * 0.5, -r * 0.4, r, r * 0.65, r * 0.2); ctx.fill();
     poly(ctx, [-r * 0.15, r * 0.24, -r * 0.3, r * 0.5, r * 0.1, r * 0.24], C.cream, null);
@@ -53,7 +55,7 @@ function icon(ctx, id, x, y, r, game) {
 
 function roundButton(ctx, b, id, game, cdK = 0, dim = false) {
   ctx.globalAlpha = dim ? 0.45 : 0.95;
-  const pal = id === 'attack' ? ['#d8503a', '#7a1a14', '#f3d27a'] : id === 'dash' ? ['#cfe8ff', '#5a8ac8', '#ffffff'] : id === 'skill' ? ['#5a2030', '#2a0c14', '#f3d27a'] : ['#4a3a2a', '#2a1a10', '#f3d27a'];
+  const pal = id === 'attack' ? ['#d8503a', '#7a1a14', '#f3d27a'] : id === 'dash' ? ['#cfe8ff', '#5a8ac8', '#ffffff'] : (id === 'skill' || id === 'skill2') ? ['#5a2030', '#2a0c14', '#f3d27a'] : ['#4a3a2a', '#2a1a10', '#f3d27a'];
   const g = ctx.createRadialGradient(b.x - b.r * 0.35, b.y - b.r * 0.35, 2, b.x, b.y, b.r);
   g.addColorStop(0, pal[0]); g.addColorStop(1, pal[1]);
   circle(ctx, b.x, b.y, b.r, g, 'rgba(0,0,0,0.5)', 2);
@@ -154,6 +156,23 @@ export function drawHud(ctx, game, L, w, h) {
   ctx.fillStyle = 'rgba(14,12,18,0.78)'; rrect(ctx, M.x - 30 * s, M.y + M.r + 4 * s, 60 * s, 18 * s, 9 * s); ctx.fill();
   text(ctx, '☀ ' + clock, M.x, M.y + M.r + 13.5 * s, 11 * s, '#f4e6c8', 'center', '600');
   speaker(ctx, L.mute.x, L.mute.y, L.mute.r, game.audio.muted);
+  // ปุ่มกระเป๋าพลอย (ใต้เบี้ย) มีจุดแดงเมื่อมีพลอยยังไม่ได้ฝัง
+  const BG = L.bag;
+  circle(ctx, BG.x, BG.y, BG.r, 'rgba(14,12,18,0.78)', C.gold, 1.5);
+  ctx.fillStyle = '#a8803a'; rrect(ctx, BG.x - BG.r * 0.5, BG.y - BG.r * 0.25, BG.r, BG.r * 0.75, 3 * s); ctx.fill();
+  ctx.strokeStyle = '#d8b060'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(BG.x, BG.y - BG.r * 0.25, BG.r * 0.3, Math.PI, 0); ctx.stroke();
+  poly(ctx, [BG.x, BG.y - BG.r * 0.1, BG.x + BG.r * 0.2, BG.y + BG.r * 0.12, BG.x, BG.y + BG.r * 0.35, BG.x - BG.r * 0.2, BG.y + BG.r * 0.12], '#d8283a', null);
+  if (p.bag.length) { circle(ctx, BG.x + BG.r * 0.7, BG.y - BG.r * 0.7, 6 * s, '#e0443a', '#fff', 1); text(ctx, String(p.bag.length), BG.x + BG.r * 0.7, BG.y - BG.r * 0.7 + 0.5, 8 * s, '#fff', 'center', '600'); }
+  if (game.input.mode === 'keyboard') text(ctx, 'B', BG.x + BG.r + 6 * s, BG.y + BG.r * 0.6, 9 * s, '#f4e6c8', 'center', '600');
+  if (game.notice && game.notice.t > 0 && game.mode === 'play') {
+    ctx.globalAlpha = Math.min(1, game.notice.t);
+    ctx.font = `600 ${12 * s}px ${FONT}`;
+    const nw = ctx.measureText(game.notice.text).width + 28 * s;
+    ctx.fillStyle = 'rgba(20,50,30,0.88)'; rrect(ctx, w / 2 - nw / 2, h * 0.22, nw, 24 * s, 12 * s); ctx.fill();
+    ctx.strokeStyle = 'rgba(140,255,160,0.6)'; ctx.lineWidth = 1; ctx.stroke();
+    text(ctx, game.notice.text, w / 2, h * 0.22 + 12 * s, 12 * s, '#d8ffe0', 'center', '600');
+    ctx.globalAlpha = 1;
+  }
   // คำแนะนำบทนำ
   const hint = game.mode === 'play' ? hintText(game) : '';
   if (hint) {
@@ -186,23 +205,25 @@ export function drawHud(ctx, game, L, w, h) {
   if (j) circle(ctx, jx + j.dx * L.joyR, jy + j.dy * L.joyR, L.joyR * 0.42, 'rgba(255,255,255,0.35)', 'rgba(255,255,255,0.7)', 2);
   else text(ctx, 'ลากเพื่อเดิน', jx, jy, 11 * s, 'rgba(255,255,255,0.7)', 'center', 'normal');
   // ช่องสกิลกลางล่าง 1–4
-  const SL = L.slots, SK = game.data.balance.skills.fireball;
+  const SL = L.slots;
   for (let i = 0; i < 4; i++) {
     const sx = SL.x + (i - 1.5) * SL.gap, sy = SL.y;
     ctx.fillStyle = 'rgba(14,12,18,0.7)'; rrect(ctx, sx - SL.r - 3 * s, sy - SL.r - 3 * s, (SL.r + 3 * s) * 2, (SL.r + 3 * s) * 2, 8 * s); ctx.fill();
     circle(ctx, sx, sy, SL.r, 'rgba(0,0,0,0.35)', 'rgba(217,166,48,0.6)', 1.5);
-    if (i === 0 && hasSkill(p, 'fireball')) { icon(ctx, 'skill', sx, sy, SL.r * 0.9, game); if (p.skillCd > 0) { ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.arc(sx, sy, SL.r, -Math.PI / 2, -Math.PI / 2 + PHI * p.skillCd / SK.cooldown); ctx.fill(); } }
+    const ssk = i < 2 ? skillOf(game, i) : null;
+    if (ssk) { icon(ctx, i ? 'skill2' : 'skill', sx, sy, SL.r * 0.9, game); if (p.skillCd[i] > 0) { ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.arc(sx, sy, SL.r, -Math.PI / 2, -Math.PI / 2 + PHI * p.skillCd[i] / ssk.cooldown); ctx.fill(); } }
     text(ctx, String(i + 1), sx - SL.r - 1 * s, sy - SL.r + 3 * s, 9 * s, '#f4e6c8', 'center', '600');
   }
   // ปุ่มขวาล่าง
   for (const b of L.buttons) {
     if (b.onlyNear && !game.nearNpc) continue;
     if (b.locked) { lockButton(ctx, b, s); continue; }
-    const cd = b.id === 'skill' ? p.skillCd / SK.cooldown : b.id === 'dash' ? p.dashCd / game.data.balance.player.dashCooldown : 0;
-    if (b.id === 'skill' && !hasSkill(p, 'fireball')) { lockButton(ctx, b, s); continue; }
+    const gi = b.id === 'skill' ? 0 : b.id === 'skill2' ? 1 : -1, bsk = gi >= 0 ? skillOf(game, gi) : null;
+    if (gi >= 0 && !bsk) { lockButton(ctx, b, s); continue; }
+    const cd = gi >= 0 ? p.skillCd[gi] / bsk.cooldown : b.id === 'dash' ? p.dashCd / game.data.balance.player.dashCooldown : 0;
     roundButton(ctx, b, b.id, game, cd, false);
     if (game.input.mode !== 'touch') {
-      const key = game.input.mode === 'pad' ? { attack: 'A', dash: 'B', skill: 'X', interact: 'Y' }[b.id] : { attack: 'J', dash: 'Space', skill: 'K', interact: 'E' }[b.id];
+      const key = game.input.mode === 'pad' ? { attack: 'A', dash: 'B', skill: 'X', skill2: 'LT', interact: 'Y' }[b.id] : { attack: 'J', dash: 'Space', skill: 'K', skill2: 'L', interact: 'E' }[b.id];
       if (key) text(ctx, key, b.x + b.r * 0.72, b.y + b.r * 0.78, 9 * s, '#f4e6c8', 'center', '600');
     }
   }
