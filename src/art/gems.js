@@ -17,9 +17,8 @@ const SHAPES = {
 const LOOK = {
   ruby: { shape: 'round', sym: 'flame' }, sapphire: { shape: 'octagon', sym: 'snow' }, emerald: { shape: 'pear', sym: 'drop' },
   multi: { shape: 'trillion', sym: 'three' }, pierce: { shape: 'marquise', sym: 'arrow' }, area: { shape: 'hexagon', sym: 'ring' }, haste: { shape: 'kite', sym: 'bolt' },
-  topaz: { shape: 'cushion', sym: 'zap' }, power: { shape: 'shield', sym: 'plus' },
+  topaz: { shape: 'cushion', sym: 'zap' }, power: { shape: 'shield', sym: 'plus' }, purity: { shape: 'round', sym: 'ring' },
 };
-const SUPPORT_TINT = { multi: ['#fffbe8', '#e0d8b0', '#8a8060'], pierce: ['#ffffff', '#b8c8d8', '#5a6a80'], area: ['#ffe0a0', '#f09030', '#7a3a08'], haste: ['#f0d8ff', '#b070e8', '#4a1a7a'], power: ['#ffc0b0', '#d8302a', '#5a0a0a'] };
 
 function hexToRgb(h) { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
 function mix(a, b, k) { const A = hexToRgb(a), B = hexToRgb(b); return `rgb(${A.map((v, i) => Math.round(v + (B[i] - v) * k)).join(',')})`; }
@@ -54,7 +53,7 @@ function paintSkillGem(g, info) {
 function paintGem(g, G, id) {
   const main = !!G.main[id], info = G.main[id] || G.support[id], look = LOOK[id] || { shape: 'round', sym: null };
   if (main) { paintSkillGem(g, info); return; }
-  const [hi, mid, lo] = main ? [info.hi || mix(info.color, '#ffffff', 0.5), info.color, mix(info.color, '#000000', 0.55)] : (SUPPORT_TINT[id] || ['#ffffff', info.color, '#555555']);
+  const [hi, mid, lo] = [mix(info.color, '#ffffff', 0.55), info.color, mix(info.color, '#000000', 0.55)];   // สีตามสีช่อง (แดง/เขียว/น้ำเงิน/ขาว) แบบ PoE
   if (!main) {                                                  // พลอยเสริม: กรอบทองรองรับ
     g.fillStyle = '#6a4a10'; g.beginPath(); g.arc(32, 32, 29, 0, 7); g.fill();
     g.strokeStyle = '#f3d27a'; g.lineWidth = 2; g.beginPath(); g.arc(32, 32, 28, 0, 7); g.stroke();

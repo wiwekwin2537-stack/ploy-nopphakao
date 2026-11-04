@@ -149,3 +149,16 @@ test('ช่องสุ่มมีสีครบทุกช่อง อา�
   for (let i = 0; i < 500; i++) { const it = rollItem(I, rng, 10, { slot: 'weapon' }); assert.equal(it.colors.length, it.sockets); red += it.colors.filter((c) => c === 'r').length; all += it.sockets; }
   assert.ok(red / all > 0.35);
 });
+
+test('พลอยขาว (เพชร/เพชรน้ำหนึ่ง) ลงได้ทุกสีช่อง และทุกพลอยมีสี แดง/เขียว/น้ำเงิน/ขาว ครบทั้งพลอยสกิลและเสริม', () => {
+  const g = makeGame(), G = g.data.gems, p = g.player;
+  p.equip.weapon = { uid: ++p.nextUid, base: 'iron_sword', rarity: 'normal', ilvl: 3, mods: [], rareName: null, sockets: 3, links: [true, true], gems: [null, null, null], colors: ['r', 'g', 'b'] };
+  p.bag = ['diamond', 'purity'];
+  assert.ok(socketGem(G, p, 0, 'weapon', 2)); assert.ok(socketGem(G, p, 0, 'weapon', 0));
+  for (const c of ['r', 'g', 'b', 'w']) {
+    assert.ok(Object.values(G.main).some((x) => x.socket === c), 'ไม่มีพลอยสกิลสี ' + c);
+    assert.ok(Object.values(G.support).some((x) => x.socket === c), 'ไม่มีพลอยเสริมสี ' + c);
+  }
+  const sk = skillsOf(G, p)[0];
+  assert.equal(sk.gem, 'diamond'); assert.deepEqual(sk.supports, ['purity']);
+});

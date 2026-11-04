@@ -1106,6 +1106,31 @@
    "dropChance": 0.02,
    "minLevel": 2,
    "bossGift": true
+  },
+  "gild": {
+   "name": "ทองคำเปลว",
+   "desc": "ปิดทองของสีขาว (ทั่วไป) ให้กลายเป็นสีเขียว ได้ค่าสุ่ม 1–2 ค่า",
+   "color": "#f2c230",
+   "dropChance": 0.025,
+   "minLevel": 1,
+   "bossGift": true,
+   "craft": true
+  },
+  "alch": {
+   "name": "ปรอทเล่นแร่",
+   "desc": "เปลี่ยนของสีขาว (ทั่วไป) ให้กลายเป็นสีม่วง (หายาก) ได้ค่าสุ่ม 3 ค่า",
+   "color": "#c8d0e0",
+   "dropChance": 0.008,
+   "minLevel": 4,
+   "craft": true
+  },
+  "kali": {
+   "name": "เถ้ากาลี",
+   "desc": "สุ่มค่าของสีม่วงหรือแดงใหม่ทั้งหมด (ระดับสียังเหมือนเดิม)",
+   "color": "#7a3a9a",
+   "dropChance": 0.006,
+   "minLevel": 6,
+   "craft": true
   }
  }
 }

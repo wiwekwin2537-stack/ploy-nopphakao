@@ -272,8 +272,22 @@ await check('ของสวมใส่: เก็บดาบหายาก�
   const after = await G(page, () => ({ w: __ploy.game.player.equip.weapon.base, back: __ploy.game.player.items.some((q) => q.base === 'bamboo_sword') }));
   assert(after.w === 'silver_kris', 'สวมไม่ได้ ' + JSON.stringify(after));
   assert(before !== 'bamboo_sword' || after.back, 'ดาบเก่าต้องกลับเข้ากระเป๋า');
+  // เล่นแร่แปรธาตุ: เลือกดาบไม้ไผ่ (ขาว) → แตะทองคำเปลวสองครั้ง → กลายเป็นสีเขียว
+  await G(page, () => { __ploy.game.player.currency.gild = 1; });
+  const cr = await G(page, () => { const g = __ploy.game, L = __ploy.layout(), w = g.camera.viewW, h = g.camera.viewH, s = L.s;
+    const pw = Math.min(w - 20, 720 * s), ph = Math.min(h - 16, 360 * s), x = w / 2 - pw / 2, y = h / 2 - ph / 2;
+    const gx = x + 175 * s, gy = y + 52 * s, cell = Math.min(44 * s, (x + pw - gx - 14 * s) / 6), i = g.player.items.findIndex((q) => q.base === 'bamboo_sword' && q.rarity === 'normal');
+    const info = { x: x + 14 * s, y: y + ph - 78 * s, h: 66 * s };
+    return { i, item: { x: gx + (i % 6) * cell + cell / 2, y: gy + Math.floor(i / 6) * cell + cell / 2 }, btn: { x: info.x + 10 * s + 49 * s, y: info.y + info.h - 16 * s } }; });
+  if (cr.i >= 0) {
+    await page.mouse.click(cr.item.x, cr.item.y); await page.waitForTimeout(80);
+    await page.mouse.click(cr.btn.x, cr.btn.y); await page.waitForTimeout(80);
+    await page.mouse.click(cr.btn.x, cr.btn.y); await page.waitForTimeout(120);
+    const rr = await G(page, () => ({ r: __ploy.game.player.items.filter((q) => q.base === 'bamboo_sword').map((q) => q.rarity).join(), n: __ploy.game.player.currency.gild }));
+    assert(rr.n === 0 && rr.r.includes('green'), 'ทองคำเปลวไม่ทำงาน ' + JSON.stringify(rr));
+  }
   await page.keyboard.press('KeyB'); await page.waitForTimeout(100);
-  return 'เดิม ' + before + ' → ' + after.w + ' ' + d0;
+  return 'เดิม ' + before + ' → ' + after.w + ' ' + d0 + (cr.i >= 0 ? ' · ปิดทองแล้ว' : '');
 });
 
 await check('เซฟแล้วรีเฟรชหน้า → กด "เล่นต่อ" ได้ของเดิมครบ', async () => {

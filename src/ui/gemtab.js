@@ -51,6 +51,18 @@ export function currencyIcon(ctx, kind, x, y, r) {
     ctx.strokeStyle = '#a3262a'; ctx.beginPath(); ctx.moveTo(x - r * 0.4, y - r * 0.2); ctx.lineTo(x, y + r * 0.2); ctx.lineTo(x + r * 0.4, y - r * 0.1); ctx.stroke();
     return;
   }
+  if (kind === 'gild') {                                       // ทองคำเปลว: แผ่นทองบาง
+    poly(ctx, [x - r * 0.8, y - r * 0.5, x + r * 0.6, y - r * 0.8, x + r * 0.8, y + r * 0.5, x - r * 0.6, y + r * 0.8], '#f2c230', C.ink, 1);
+    ctx.fillStyle = 'rgba(255,250,200,0.8)'; ctx.fillRect(x - r * 0.4, y - r * 0.3, r * 0.5, r * 0.15); return;
+  }
+  if (kind === 'alch') {                                       // ปรอท: หยดเงินวาว
+    ctx.fillStyle = '#c8d0e0'; ctx.beginPath(); ctx.moveTo(x, y - r); ctx.quadraticCurveTo(x + r * 0.9, y + r * 0.2, x, y + r * 0.8); ctx.quadraticCurveTo(x - r * 0.9, y + r * 0.2, x, y - r); ctx.fill();
+    ctx.strokeStyle = C.ink; ctx.lineWidth = 1; ctx.stroke(); circle(ctx, x - r * 0.25, y, r * 0.18, '#ffffff', null); return;
+  }
+  if (kind === 'kali') {                                       // เถ้ากาลี: กองเถ้าม่วงมีประกายไฟ
+    poly(ctx, [x - r, y + r * 0.6, x - r * 0.3, y - r * 0.4, x + r * 0.2, y - r * 0.1, x + r, y + r * 0.6], '#5a2a7a', C.ink, 1);
+    circle(ctx, x, y - r * 0.5, r * 0.2, '#ff7a3a', null); return;
+  }
   if (kind === 'jeweller') {
     poly(ctx, [x - r * 0.8, y + r * 0.5, x - r * 0.6, y - r * 0.5, x + r * 0.2, y - r * 0.8, x + r * 0.8, y - r * 0.2, x + r * 0.6, y + r * 0.6], '#b8b0a0', C.ink, 1.2);
     circle(ctx, x, y, r * 0.22, '#3a3430', null);

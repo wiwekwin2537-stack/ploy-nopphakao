@@ -4,9 +4,12 @@ import { itemSprite } from '../art/items.js';
 import { drawItemTip } from './tooltip.js';
 import { socketSpots, SOCKET_COL } from './gemtab.js';
 import { uiText as text } from './hud.js';
-import { EQUIP_SLOTS, itemName, equipFromBag, unequip, discard } from '../systems/items.js';
+import { EQUIP_SLOTS, itemName, equipFromBag, unequip, discard, craftItem } from '../systems/items.js';
+import { currencyIcon } from './gemtab.js';
+import { drawCurrencyTip } from './tooltip.js';
 
 const COLS = 6;
+const CRAFT = ['gild', 'alch', 'kali'];
 
 export function equipLayout(B, I) {
   const s = B.s, slots = {};
@@ -17,7 +20,8 @@ export function equipLayout(B, I) {
   const gx = B.x + 175 * s, gy = B.y + 52 * s, cell = Math.min(44 * s, (B.x + B.w - gx - 14 * s) / COLS);
   const info = { x: B.x + 14 * s, y: B.y + B.h - 78 * s, w: B.w - 28 * s, h: 66 * s };
   const del = { x: info.x + info.w - 70 * s, y: info.y + info.h - 26 * s, w: 60 * s, h: 20 * s };
-  return { slots, grid: { x: gx, y: gy, cell, rows: Math.max(1, Math.floor((info.y - gy - 4 * s) / cell)) }, info, del };
+  const craft = CRAFT.map((kind, i) => ({ kind, x: info.x + 10 * s + i * 104 * s, y: info.y + info.h - 26 * s, w: 98 * s, h: 20 * s }));   // ปุ่มเล่นแร่แปรธาตุ
+  return { slots, grid: { x: gx, y: gy, cell, rows: Math.max(1, Math.floor((info.y - gy - 4 * s) / cell)) }, info, del, craft };
 }
 
 // ภาพไอเท็มเดียวกับที่ตกพื้นและในร้าน (art/items.js)
@@ -56,10 +60,18 @@ export function drawEquip(ctx, game, B) {
   // รายละเอียด + เทียบกับของที่สวมอยู่
   const N = E.info;
   ctx.fillStyle = 'rgba(0,0,0,0.4)'; rrect(ctx, N.x, N.y, N.w, N.h, 8 * s); ctx.fill();
+  for (const c of E.craft) {                                   // ทองคำเปลว / ปรอทเล่นแร่ / เถ้ากาลี (แตะเลือก แล้วแตะซ้ำใช้กับของที่เลือก)
+    const info = I.currency[c.kind], have = (p.currency && p.currency[c.kind]) || 0, on = game.craftSel === c.kind;
+    ctx.fillStyle = on ? 'rgba(217,166,48,0.35)' : 'rgba(0,0,0,0.45)'; rrect(ctx, c.x, c.y, c.w, c.h, 6 * s); ctx.fill();
+    ctx.strokeStyle = on ? C.goldHi : 'rgba(184,154,88,0.5)'; ctx.lineWidth = 1; ctx.stroke();
+    currencyIcon(ctx, c.kind, c.x + 10 * s, c.y + c.h / 2, 7 * s);
+    text(ctx, `${info.name} ×${have}`, c.x + 20 * s, c.y + c.h / 2 + 0.5, 8.5 * s, have ? C.cream : 'rgba(244,230,200,0.4)', 'left', '600');
+  }
+  if (game.craftSel) { const c = E.craft.find((q) => q.kind === game.craftSel); game.tipLater = () => drawCurrencyTip(ctx, game, game.craftSel, c.x + c.w / 2, c.y, { s, W: B.W, H: B.H, hint: 'เลือกของก่อน แล้วแตะปุ่มนี้อีกครั้งเพื่อใช้' }); }
+  if (game.craftMsg && game.craftMsg.t > game.time) text(ctx, game.craftMsg.text, N.x + N.w - 10 * s, N.y + 30 * s, 10 * s, game.craftMsg.col, 'right', '600');
   const it = sel ? (sel.uid ? p.items.find((x) => x.uid === sel.uid) : p.equip[sel.slot]) : null;
   if (!it) {
     text(ctx, 'แตะของเพื่อดูค่า แตะซ้ำเพื่อสวม · ขาว ทั่วไป · เขียว ดี · ม่วง หายาก · แดง ตำนาน', N.x + 10 * s, N.y + 20 * s, 10 * s, C.cream, 'left', 'normal');
-    text(ctx, 'ของดรอปจากมอนในทุ่ง ค่าสุ่มทุกชิ้น ยิ่งมอนเลเวลสูง ค่ายิ่งแรง', N.x + 10 * s, N.y + 42 * s, 10 * s, 'rgba(244,230,200,0.7)', 'left', 'normal');
     return;
   }
   const b = I.bases[it.base], col = I.rarity[it.rarity].color;
@@ -74,13 +86,28 @@ export function drawEquip(ctx, game, B) {
     text(ctx, game.confirmDiscard === it.uid ? 'ยืนยันทิ้ง' : 'ทิ้ง', E.del.x + E.del.w / 2, E.del.y + E.del.h / 2 + 0.5, 9.5 * s, '#fff', 'center');
   } else { hint = 'แตะอีกครั้งเพื่อถอดเข้ากระเป๋า'; const sl = E.slots[sel.slot]; ax = sl.x + sl.w; ay = sl.y + sl.h / 2; }
   // กล่องรายละเอียดแบบ PoE ข้างของที่เลือก (ค่าทุกบรรทัด ช่องพลอย เทียบกับที่สวม)
-  game.tipLater = () => drawItemTip(ctx, game, it, ax, ay, { s, W: B.W, H: B.H, compare: sel.uid ? p.equip[b.slot] : null, hint });
+  if (!game.craftSel) game.tipLater = () => drawItemTip(ctx, game, it, ax, ay, { s, W: B.W, H: B.H, compare: sel.uid ? p.equip[b.slot] : null, hint });
   text(ctx, hint, N.x + N.w - 80 * s, N.y + 13 * s, 10 * s, '#9af0b0', 'right', '600');
 }
 
 export function updateEquip(game, B, t) {
   const I = game.data.items, p = game.player, s = B.s, E = equipLayout(B, I), sel = game.gearSel;
   const inR = (r) => t.sx >= r.x && t.sx <= r.x + r.w && t.sy >= r.y && t.sy <= r.y + r.h;
+  const cb = E.craft.find(inR);
+  if (cb) {
+    game.confirmDiscard = null;
+    if (game.craftSel !== cb.kind) { game.craftSel = cb.kind; game.audio.play('click'); return; }
+    const it = sel ? (sel.uid ? p.items.find((x) => x.uid === sel.uid) : p.equip[sel.slot]) : null, nm = I.currency[cb.kind].name;
+    const say = (text, col = '#ff8a7a') => { game.craftMsg = { text, col, t: game.time + 2.5 }; };
+    if (!it) { say('เลือกของที่จะใช้ก่อน (แตะของ 1 ครั้ง)'); return; }
+    if (!(p.currency[cb.kind] > 0)) { say(`ไม่มี${nm}`); return; }
+    const r = craftItem(I, game.rng, p, cb.kind, it);
+    if (!r) { say(cb.kind === 'kali' ? 'เถ้ากาลีใช้ได้กับของสีม่วงหรือแดงเท่านั้น' : `${nm}ใช้ได้กับของสีขาว (ทั่วไป) เท่านั้น`); return; }
+    game.audio.play('level'); say('ได้: ' + r, I.rarity[it.rarity].color); game.craftSel = null;
+    game.events.emit('gearChanged', {}); game.events.emit('currencyUsed', { kind: cb.kind });
+    return;
+  }
+  game.craftSel = null;
   if (sel && sel.uid && inR(E.del)) {
     if (game.confirmDiscard === sel.uid) { discard(p, sel.uid); game.gearSel = null; game.confirmDiscard = null; game.audio.play('click'); game.events.emit('gearChanged', {}); }
     else game.confirmDiscard = sel.uid;

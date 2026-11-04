@@ -1,5 +1,5 @@
 // รูปสกิล (ไอคอนสี่เหลี่ยมแบบแถบสกิล PoE): ลูกไฟ หอกน้ำแข็ง หมอกพิษ สายฟ้า — ใช้บนปุ่มสกิลและสลักในพลอยสกิล
-const BG = { fire: ['#5a1008', '#1a0402'], ice: ['#0e2a5a', '#040a1a'], poison: ['#0e3a14', '#031006'], bolt: ['#3a2a06', '#100a02'] };
+const BG = { fire: ['#5a1008', '#1a0402'], ice: ['#0e2a5a', '#040a1a'], poison: ['#0e3a14', '#031006'], bolt: ['#3a2a06', '#100a02'], holy: ['#4a4a5a', '#101018'] };
 
 function paintSkill(g, kind, plate) {
   if (plate) {                                                   // พื้นหลังไอคอน
@@ -27,6 +27,12 @@ function paintSkill(g, kind, plate) {
     g.fillStyle = '#c8ffb0'; g.strokeStyle = '#1a5a20'; g.lineWidth = 1.6;
     g.beginPath(); g.moveTo(32, 18); g.quadraticCurveTo(42, 32, 32, 40); g.quadraticCurveTo(22, 32, 32, 18); g.fill(); g.stroke();
     g.fillStyle = 'rgba(255,255,255,0.8)'; g.beginPath(); g.arc(29, 31, 2.5, 0, Math.PI * 2); g.fill();
+  } else if (kind === 'holy') {                                  // รัศมีเพชร: แสงขาววาบเป็นแฉก
+    const gl = g.createRadialGradient(32, 32, 2, 32, 32, 26); gl.addColorStop(0, '#ffffff'); gl.addColorStop(0.5, 'rgba(230,230,255,0.6)'); gl.addColorStop(1, 'rgba(200,200,255,0)');
+    g.fillStyle = gl; g.beginPath(); g.arc(32, 32, 26, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#ffffff';
+    for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, L = i % 2 ? 14 : 26; g.beginPath(); g.moveTo(32 + Math.cos(a - 0.12) * 6, 32 + Math.sin(a - 0.12) * 6); g.lineTo(32 + Math.cos(a) * L, 32 + Math.sin(a) * L); g.lineTo(32 + Math.cos(a + 0.12) * 6, 32 + Math.sin(a + 0.12) * 6); g.closePath(); g.fill(); }
+    g.fillStyle = '#c8e8ff'; g.beginPath(); g.moveTo(32, 24); g.lineTo(38, 32); g.lineTo(32, 40); g.lineTo(26, 32); g.closePath(); g.fill();
   } else {                                                       // สายฟ้า: สองสายหยักแตกกิ่ง
     g.strokeStyle = 'rgba(255,220,80,0.45)'; g.lineWidth = 9; zig(g); g.stroke();
     g.strokeStyle = '#fff6b0'; g.lineWidth = 3.5; zig(g); g.stroke();

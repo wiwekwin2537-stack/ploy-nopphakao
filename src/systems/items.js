@@ -19,12 +19,19 @@ function pickTier(aff, ilvl) {
 export function rollItem(I, rng, ilvl, opts = {}) {
   const bases = Object.entries(I.bases).filter(([, b]) => b.req <= Math.max(1, ilvl) && (!opts.slot || b.slot === opts.slot));
   if (!bases.length) return null;
-  const [baseId, base] = rng.pick(bases);
+  const [baseId] = rng.pick(bases);
   let rarity = opts.rarity;
   if (!rarity) {                                              // ลองจากหายากสุดลงมา: แดง → ม่วง → เขียว → ทั่วไป
     rarity = 'normal';
     for (const r of ['red', 'purple', 'green']) if (rng.chance(I.rarity[r].chance)) { rarity = r; break; }
   }
+  const { mods, rareName } = rollMods(I, rng, baseId, ilvl, rarity);
+  return rollSockets(I, rng, { uid: 0, base: baseId, rarity, ilvl, mods, rareName });
+}
+
+// สุ่มค่า (prefix ≤2, suffix ≤2) ตามระดับความหายาก — ใช้ทั้งตอนดรอปและตอนเล่นแร่แปรธาตุ
+function rollMods(I, rng, baseId, ilvl, rarity) {
+  const base = I.bases[baseId];
   const [lo, hi] = I.rarity[rarity].affixes;
   const want = rng.int(lo, hi);
   const mods = [];
@@ -40,7 +47,24 @@ export function rollItem(I, rng, ilvl, opts = {}) {
   }
   let rareName = null;
   if (rarity === 'purple' || rarity === 'red') rareName = rng.pick(I.rareNames.first) + rng.pick(I.rareNames.second);
-  return rollSockets(I, rng, { uid: 0, base: baseId, rarity, ilvl, mods, rareName });
+  return { mods, rareName };
+}
+
+// เล่นแร่แปรธาตุแบบ PoE (ของในกระเป๋าหรือที่สวม): gild ทองคำเปลว = ทั่วไป→เขียว · alch ปรอท = ทั่วไป→ม่วง
+// · kali เถ้ากาลี = สุ่มค่าของม่วง/แดงใหม่ทั้งหมด · uid ช่องพลอยไม่เปลี่ยน · ใช้ไม่ได้ = null (ไม่เสียของ)
+export function craftItem(I, rng, p, kind, it) {
+  if (!it || !I.currency[kind] || !(p.currency && p.currency[kind] > 0)) return null;
+  const need = { gild: ['normal'], alch: ['normal'], kali: ['purple', 'red'] }[kind];
+  if (!need || !need.includes(it.rarity)) return null;
+  const rarity = kind === 'gild' ? 'green' : kind === 'alch' ? 'purple' : it.rarity;
+  let r;
+  for (let tries = 0; tries < 10; tries++) {
+    r = rollMods(I, rng, it.base, it.ilvl, rarity);
+    if (r.mods.length >= I.rarity[rarity].affixes[0] && JSON.stringify(r.mods) !== JSON.stringify(it.mods)) break;
+  }
+  Object.assign(it, { rarity, mods: r.mods, rareName: r.rareName });
+  p.currency[kind]--;
+  return itemName(I, it);
 }
 
 // ช่องพลอยสูงสุดของชิ้นนี้: ตามชนิด (อาวุธ/เสื้อ 6) และเลเวลของ (ของเลเวลต่ำมีช่องน้อย)

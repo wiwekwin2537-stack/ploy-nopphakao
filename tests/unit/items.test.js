@@ -97,3 +97,21 @@ test('เซฟรุ่น 4 (แหวน 2 วง สีเดิม) แป�
   assert.equal(s.items.find((x) => x.uid === 1).rarity, 'green');
   assert.ok('legs' in s.equip && 'arms' in s.equip);
 });
+
+test('เล่นแร่แปรธาตุ: ทองคำเปลว ขาว→เขียว · ปรอท ขาว→ม่วง · เถ้ากาลีสุ่มค่าม่วงใหม่ · ใช้ผิดชนิดไม่เสียของ · ค่ายังถูกต้อง', async () => {
+  const { craftItem, validItems } = await import('../../src/systems/items.js');
+  const { createRng } = await import('../../src/core/rng.js');
+  const g = makeGame(), I = g.data.items, p = g.player, rng = createRng(3);
+  p.level = 10; p.currency = { gild: 1, alch: 1, kali: 2 };
+  const mk = () => ({ uid: ++p.nextUid, base: 'iron_sword', rarity: 'normal', ilvl: 8, mods: [], rareName: null });
+  const a = mk(), b = mk(); p.items.push(a, b);
+  assert.equal(craftItem(I, rng, p, 'kali', a), null, 'เถ้ากาลีใช้กับของขาวไม่ได้');
+  assert.equal(p.currency.kali, 2);
+  assert.ok(craftItem(I, rng, p, 'gild', a)); assert.equal(a.rarity, 'green'); assert.ok(a.mods.length >= 1 && a.mods.length <= 2);
+  assert.equal(craftItem(I, rng, p, 'gild', a), null, 'หมด/ไม่ใช่ของขาว');
+  assert.ok(craftItem(I, rng, p, 'alch', b)); assert.equal(b.rarity, 'purple'); assert.equal(b.mods.length, 3); assert.ok(b.rareName);
+  const before = JSON.stringify(b.mods), uid = b.uid;
+  assert.ok(craftItem(I, rng, p, 'kali', b)); assert.notEqual(JSON.stringify(b.mods), before); assert.equal(b.uid, uid); assert.equal(b.rarity, 'purple');
+  assert.deepEqual(p.currency, { gild: 0, alch: 0, kali: 1 });
+  assert.ok(validItems(I, p.items, p.equip, p.nextUid, g.data.gems));
+});
