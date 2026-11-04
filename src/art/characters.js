@@ -70,7 +70,8 @@ function limb(ctx, x, y, a1, l1, a2, l2, w, col, col2, endCol, endLen, foot) {
   ctx.save(); ctx.translate(x, y); ctx.rotate(a1);
   ctx.fillStyle = col; ctx.fillRect(-w / 2, -1, w, l1 + 2);
   ctx.translate(0, l1); ctx.rotate(a2 - a1);
-  ctx.fillStyle = col2; ctx.fillRect(-w / 2, -1, w, l2 + 1);
+  if (col2 && col2.getContext) { const b = artBox(col2); ctx.drawImage(col2, b.x, b.y, b.w * 0.45, b.h, -w / 2, -1, w, l2 + 1); }   // ปลอกแขน: ภาพครึ่งซ้ายของไอคอน
+  else { ctx.fillStyle = col2; ctx.fillRect(-w / 2, -1, w, l2 + 1); }
   if (endCol) { ctx.fillStyle = endCol; ctx.fillRect(-w / 2 + (foot ? Math.min(0, foot) : 0), l2 - 1, w + Math.abs(foot || 0), endLen); }
   ctx.restore();
 }
@@ -80,12 +81,13 @@ function head(ctx, L, d, f, x, y, t, side) {
   R(L.skin, x - 6, y - 12, 12, 12);
   R('rgba(0,0,0,0.1)', x - 6, y - 2, 12, 2);
   const hair = L.hair;
-  if (L.hat !== 'helmet') {
+  if (L.hat !== 'helmet' && !(L.hatArt && L.hat === 'helm')) {
     if (d === 1) R(hair, x - 7, y - 15, 14, 15);
     else if (side) { R(hair, x - 7, y - 15, 14, 6); R(hair, x - 7 + (f < 0 ? 6 : 0), y - 15, 8, 11); }
     else R(hair, x - 7, y - 15, 14, 6);
   }
-  if (L.hat === 'ngob') {                                  // งอบใบลาน: หมวกกรวยกว้าง
+  if (L.hatArt && HAT_FIT[L.hat]) { wornHat(ctx, L, x, y, d); }   // หมวกที่สวม = ภาพเดียวกับไอคอนในกระเป๋า
+  else if (L.hat === 'ngob') {                                  // งอบใบลาน: หมวกกรวยกว้าง
     R('#9e7b3c', x - 12, y - 14, 24, 3); R(L.hatColor || '#c9a35a', x - 10, y - 17, 20, 4); R(L.hatColor || '#c9a35a', x - 6, y - 21, 12, 4); R('#e0c078', x - 3, y - 24, 6, 3);
     R('rgba(0,0,0,0.25)', x - 10, y - 14, 20, 1);
   } else if (L.hat === 'crown') {                          // ชฎาเงิน
@@ -94,7 +96,8 @@ function head(ctx, L, d, f, x, y, t, side) {
     R(C.gold, x - 7, y - 15, 14, 1.5);
   } else if (L.hat === 'band') {
     R(hair, x - 7, y - 19, 4, 5); R(hair, x - 2, y - 20, 4, 6); R(hair, x + 3, y - 19, 4, 5);
-    R('#c8302a', x - 7, y - 14, 14, 3);
+    R(L.hatColor || '#c8302a', x - 7, y - 14, 14, 3);
+    if (d !== 1) for (let i = 0; i < 4; i++) R('#f3d27a', x - 5 + i * 3.4, y - 13, 1.2, 1);   // ลายจุดทองเหมือนไอคอน
     if (d !== 0) { const w = Math.sin(t * 9) * 1.5; R('#c8302a', x + (side ? -f * 9 : 5), y - 13 + w * 0.4, 5, 2); R('#a8201a', x + (side ? -f * 12 : 8), y - 12 + w, 4, 2); }
   } else if (L.hat === 'elder') {
     if (d !== 1) { R(hair, x - 5, y - 3, 10, 4); R(hair, x - 3, y, 6, 4); }
@@ -108,6 +111,33 @@ function head(ctx, L, d, f, x, y, t, side) {
   const eh = blink ? 1 : 3;
   if (d === 0) { R('#111', x - 3, y - 8 + (blink ? 2 : 0), 2, eh); R('#111', x + 1, y - 8 + (blink ? 2 : 0), 2, eh); }
   else if (side) R('#111', x + 3 * f - 1, y - 8 + (blink ? 2 : 0), 2, eh);
+}
+
+// หมวกบนหัว: วางภาพไอคอนจริงตามกรอบรูป (หากรอบจากพิกเซลจริงครั้งเดียว) · w = กว้างบนหัว · bottom = ขอบล่างหมวกเทียบหัว (y = คาง)
+const HAT_FIT = { ngob: { w: 30, bottom: -11 }, crown: { w: 15, bottom: -12 }, helm: { w: 19, bottom: 1 } };
+const bboxCache = new WeakMap();
+function artBox(art) {
+  let b = bboxCache.get(art);
+  if (b) return b;
+  const n = art.width, px = art.getContext('2d').getImageData(0, 0, n, n).data;
+  let x0 = n, y0 = n, x1 = 0, y1 = 0;
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if (px[(y * n + x) * 4 + 3] > 40) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  b = x1 >= x0 ? { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 } : { x: 0, y: 0, w: n, h: n };
+  bboxCache.set(art, b);
+  return b;
+}
+const backCache = new WeakMap();
+function backView(art) {                                         // ด้านหลัง: ภาพเดิมแต่มืดลง (ไม่เห็นหน้ากาก)
+  let c = backCache.get(art);
+  if (c) return c;
+  c = document.createElement('canvas'); c.width = art.width; c.height = art.height;
+  const g = c.getContext('2d'); g.drawImage(art, 0, 0); g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(20,14,10,0.35)'; g.fillRect(0, 0, c.width, c.height);
+  backCache.set(art, c);
+  return c;
+}
+function wornHat(ctx, L, x, y, d) {
+  const F = HAT_FIT[L.hat], art = d === 1 ? backView(L.hatArt) : L.hatArt, b = artBox(L.hatArt), k = F.w / b.w, h = b.h * k;
+  ctx.drawImage(art, b.x, b.y, b.w, b.h, Math.round(x - F.w / 2), Math.round(y + F.bottom - h), F.w, h);
 }
 
 // ทาภาพไอเท็ม (ส่วน sx,sy,sw,sh ของช่อง 64) ลงบนชิ้นตัว (dx,dy,dw,dh) — ชุดบนตัวหน้าตาเดียวกับไอคอน · dark = เงาด้านหลัง
@@ -167,7 +197,7 @@ export function drawHuman(ctx, look, X, Y, o) {
     const farArm = () => {
       if (swinging) return;
       const a1 = f * Math.sin(armUp) * 0.65 * k + (o.dash ? f * 1.1 : 0), a2 = a1 - f * (0.35 + Math.max(0, Math.sin(armUp)) * 0.5 * k);
-      limb(ctx, 0, -13, a1, 6, a2, 6, 5, darker(L.top), darker(L.fore || L.top), L.skin, 3);
+      limb(ctx, 0, -13, a1, 6, a2, 6, 5, darker(L.top), (L.foreArt || darker(L.fore || L.top)), L.skin, 3);
     };
     if (L.weapon === 'sword' && !swinging) sword(ctx, -f * 3, -15, f > 0 ? 2.25 : Math.PI - 2.25, 17); // ดาบสะพายหลัง
     farArm();
@@ -190,11 +220,11 @@ export function drawHuman(ctx, look, X, Y, o) {
       sword(ctx, hx, hy, pose.ang, 19 + pose.ext * 0.4);
       ctx.restore();
     } else if (o.cast) {
-      limb(ctx, 0, -13, -f * 1.45, 6, -f * 1.6, 6, 5, L.top, L.fore || L.top, L.skin, 3);
+      limb(ctx, 0, -13, -f * 1.45, 6, -f * 1.6, 6, 5, L.top, L.foreArt || L.fore || L.top, L.skin, 3);
       ctx.fillStyle = 'rgba(255,90,90,0.7)'; ctx.beginPath(); ctx.arc(f * 13, -15, 3.5, 0, 7); ctx.fill();
     } else {
       const a1 = -f * Math.sin(armUp) * 0.65 * k + (o.dash ? f * 1.2 : 0), a2 = a1 - f * (0.35 + Math.max(0, -Math.sin(armUp)) * 0.5 * k);
-      limb(ctx, 0, -13, a1, 6, a2, 6, 5, L.top, L.fore || L.top, L.skin, 3);
+      limb(ctx, 0, -13, a1, 6, a2, 6, 5, L.top, L.foreArt || L.fore || L.top, L.skin, 3);
     }
     ctx.restore();
   } else {
@@ -228,13 +258,13 @@ export function drawHuman(ctx, look, X, Y, o) {
     if (L.hat === 'elder' || L.hat === 'bun') { R(L.sash, x - 8, by - 27, 5, 3); R(L.sash, x - 4, by - 24, 4, 9); }
     // แขนซ้าย (ฝั่งที่ไม่ถือดาบ) แกว่งสวนขา
     const swingA = k ? Math.sin(ph) * 0.45 : Math.sin(t * 2.4) * 0.04;
-    const armL = () => { const sh = swingA * 5 * (back ? -1 : 1); limb(ctx, x - 9 + sway, by - 26 + Math.max(0, sh) * 0.4, 0.1, 6 - Math.max(0, sh) * 0.3, 0.06, 6 - Math.max(0, sh) * 0.5, 4, L.top, L.fore || L.top, L.skin, 4); };
+    const armL = () => { const sh = swingA * 5 * (back ? -1 : 1); limb(ctx, x - 9 + sway, by - 26 + Math.max(0, sh) * 0.4, 0.1, 6 - Math.max(0, sh) * 0.3, 0.06, 6 - Math.max(0, sh) * 0.5, 4, L.top, L.foreArt || L.fore || L.top, L.skin, 4); };
     armL();
     if (!swinging) {
       if (o.cast) { R(L.top, x + 7, by - 32, 4, 10); R(L.skin, x + 7, by - 35, 4, 4); ctx.fillStyle = 'rgba(255,90,90,0.7)'; ctx.beginPath(); ctx.arc(x + 9, by - 37, 4, 0, 7); ctx.fill(); }
       else {
         const sh = -swingA * 5 * (back ? -1 : 1);
-        limb(ctx, x + 9 + sway, by - 26 + Math.max(0, sh) * 0.4, -0.1, 6 - Math.max(0, sh) * 0.3, -0.06, 6 - Math.max(0, sh) * 0.5, 4, L.top, L.fore || L.top, L.skin, 4);
+        limb(ctx, x + 9 + sway, by - 26 + Math.max(0, sh) * 0.4, -0.1, 6 - Math.max(0, sh) * 0.3, -0.06, 6 - Math.max(0, sh) * 0.5, 4, L.top, L.foreArt || L.fore || L.top, L.skin, 4);
       }
     }
     head(ctx, L, d, f, x + sway * 0.5, by - 28 - breathe, t, false);

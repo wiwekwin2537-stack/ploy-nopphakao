@@ -41,6 +41,9 @@ import { updateWaypoints } from './systems/waypoint.js';
 import { updateAltar } from './systems/maps.js';
 import { drawMapMenu, updateMapMenu } from './ui/mapmenu.js';
 import { drawStash, updateStash, stashLayout } from './ui/stash.js';
+import { drawHuman } from './art/characters.js';
+import { heroLook, heroGear } from './ui/herolook.js';
+import { itemSprite } from './art/items.js';
 import { updateStashSpot } from './systems/stash.js';
 import { updatePotion, setupFlasks } from './systems/shop.js';
 
@@ -215,4 +218,4 @@ game.loopStats = loop.stats;
 loop.start();
 
 // test-hook: เปิดเฉพาะเมื่อมี ?test ใน URL ใช้ในเทสต์อัตโนมัติเท่านั้น
-if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, rollElite, damage: damageMob, stashLayout: () => stashLayout(game.camera.viewW, game.camera.viewH, layout.s), skills: () => skillsOf(game.data.gems, game.player), stats: () => playerStats(game.player, game.data), layout: () => layout, bagLayout: () => bagLayout(game.camera.viewW, game.camera.viewH, layout.s), gemLayout: () => gemLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s), game.player) }; // test-hook
+if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, rollElite, art: { drawHuman, heroLook, heroGear, itemSprite }, damage: damageMob, stashLayout: () => stashLayout(game.camera.viewW, game.camera.viewH, layout.s), skills: () => skillsOf(game.data.gems, game.player), stats: () => playerStats(game.player, game.data), layout: () => layout, bagLayout: () => bagLayout(game.camera.viewW, game.camera.viewH, layout.s), gemLayout: () => gemLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s), game.player) }; // test-hook

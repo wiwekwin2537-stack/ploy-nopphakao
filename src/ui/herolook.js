@@ -13,9 +13,9 @@ export function heroLook(game) {
     const b = lk('body'), h = lk('head'), lg = lk('legs'), ar = lk('arms'), nk = lk('amulet');
     // ชุดบนตัวใช้ภาพเดียวกับไอคอนเป็นลายเสื้อ/กางเกง (แบบเอโดเรีย) + สีวัสดุเดียวกัน
     if (b) { L.top = matColor(b); L.collar = (b.look && b.look.trim) || shade(L.top, 0.08); L.plates = null; L.straps = null; L.bodyArt = itemSprite(I, e.body.base, 64); }
-    if (h) { L.hat = (h.look && h.look.hat) || 'band'; L.hatColor = matColor(h); }
+    if (h) { L.hat = (h.look && h.look.hat) || 'band'; L.hatColor = matColor(h); L.hatArt = itemSprite(I, e.head.base, 64); }
     if (lg) { L.leg = matColor(lg); L.leg2 = shade(L.leg, 0.06); L.guard = lg.look && lg.look.guard; L.legArt = itemSprite(I, e.legs.base, 64); }
-    if (ar) L.fore = matColor(ar);
+    if (ar) { L.fore = matColor(ar); L.foreArt = itemSprite(I, e.arms.base, 64); }
     if (nk) L.neck = nk.color;
     lookCache.key = key; lookCache.look = L;
   }
