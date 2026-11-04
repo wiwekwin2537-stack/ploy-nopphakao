@@ -19,6 +19,10 @@ export function talkTo(game, npc) {
   const p = game.player;
   p.moveTarget = null; p.targetMob = null; game.pendingTalk = null;
   npc.face = p.x < npc.x ? -1 : 1;
+  if (npc.shop) {                                      // แม่ค้า: ทักทายแล้วเปิดร้าน
+    openDialog(game, npc.name, game.data.dialogue[npc.id], () => { game.mode = 'shop'; game.shopSel = null; });
+    return;
+  }
   const { lines, done } = lineFor(game, npc);
   openDialog(game, npc.name, lines, done);
 }

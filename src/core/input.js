@@ -1,11 +1,11 @@
 // อินพุตทุกแบบรวมที่เดียว: คีย์บอร์ด เมาส์ จอสัมผัส และจอยเกม
 // getLayout() มาจาก ui/layout.js บอกตำแหน่งจอยสัมผัสและปุ่มบนจอ
-const ACTIONS = ['attack', 'dash', 'skill', 'skill2', 'interact', 'pause', 'bag', 'tree'];
+const ACTIONS = ['attack', 'dash', 'skill', 'skill2', 'interact', 'pause', 'bag', 'tree', 'potion'];
 
 const KEYMAP = {
   KeyW: 'up', ArrowUp: 'up', KeyS: 'down', ArrowDown: 'down',
   KeyA: 'left', ArrowLeft: 'left', KeyD: 'right', ArrowRight: 'right',
-  KeyJ: 'attack', Space: 'dash', ShiftLeft: 'dash', KeyK: 'skill', KeyQ: 'skill', Digit1: 'skill', KeyL: 'skill2', Digit2: 'skill2', KeyB: 'bag', KeyI: 'bag', Tab: 'bag', KeyP: 'tree', KeyT: 'tree',
+  KeyJ: 'attack', Space: 'dash', ShiftLeft: 'dash', KeyK: 'skill', KeyQ: 'skill', Digit1: 'skill', KeyL: 'skill2', Digit2: 'skill2', KeyB: 'bag', KeyI: 'bag', Tab: 'bag', KeyP: 'tree', KeyT: 'tree', Digit3: 'potion', KeyR: 'potion', KeyH: 'potion',
   KeyE: 'interact', Enter: 'interact', Escape: 'pause',
 };
 

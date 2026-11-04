@@ -1,0 +1,48 @@
+{
+ "potion": {
+  "name": "ยาหม้อสมุนไพร",
+  "desc": "ฟื้นเลือด 40% ทันที (กดปุ่ม 3 หรือแตะช่อง 3)",
+  "price": 20,
+  "heal": 0.4,
+  "max": 5,
+  "cooldown": 2,
+  "starter": 2
+ },
+ "stock": [
+  {
+   "base": "iron_sword",
+   "price": 120
+  },
+  {
+   "base": "buffalo_vest",
+   "price": 110
+  },
+  {
+   "base": "ngob_hat",
+   "price": 60
+  },
+  {
+   "base": "leather_greaves",
+   "price": 90
+  },
+  {
+   "base": "leather_bracers",
+   "price": 90
+  },
+  {
+   "base": "brass_ring",
+   "price": 50
+  },
+  {
+   "base": "takrut",
+   "price": 50
+  }
+ ],
+ "sell": {
+  "normal": 4,
+  "green": 12,
+  "purple": 35,
+  "red": 90,
+  "perLevel": 0.25
+ }
+}

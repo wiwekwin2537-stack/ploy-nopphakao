@@ -231,6 +231,7 @@ export function drawHud(ctx, game, L, w, h) {
     circle(ctx, sx, sy, SL.r, 'rgba(0,0,0,0.35)', 'rgba(217,166,48,0.6)', 1.5);
     const ssk = i < 2 ? skillOf(game, i) : null;
     if (ssk) { icon(ctx, i ? 'skill2' : 'skill', sx, sy, SL.r * 0.9, game); if (p.skillCd[i] > 0) { ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.arc(sx, sy, SL.r, -Math.PI / 2, -Math.PI / 2 + PHI * p.skillCd[i] / ssk.cooldown); ctx.fill(); } }
+    if (i === 2) potionIcon(ctx, sx, sy, SL.r, p, game.data.shop.potion, s);
     text(ctx, String(i + 1), sx - SL.r - 1 * s, sy - SL.r + 3 * s, 9 * s, '#f4e6c8', 'center', '600');
   }
   // ปุ่มขวาล่าง
@@ -248,6 +249,17 @@ export function drawHud(ctx, game, L, w, h) {
   }
   if (game.nearNpc && game.mode === 'play' && game.input.mode !== 'touch') text(ctx, `กด ${game.input.mode === 'pad' ? 'Y' : 'E'} เพื่อคุยกับ ${game.nearNpc.name}`, w / 2, h - 58 * s, 13 * s, C.goldHi, 'center');
   if (game.debug) text(ctx, `FPS ${game.loopStats.fps} · ${game.loopStats.frameMs}ms · มอน ${game.mobs.length} · ฟอง ${game.fx.count}`, 10, h - 12, 11, '#9f9', 'left', 'normal');
+}
+
+// ยาหม้อ: หม้อดินเผาน้ำสีเขียว + จำนวนขวด
+export function potionIcon(ctx, x, y, r, p, P, s) {
+  ctx.globalAlpha = p.potions > 0 ? 1 : 0.35;
+  circle(ctx, x, y + r * 0.15, r * 0.55, '#8a4e2c', C.ink, 1.2);
+  ctx.fillStyle = '#5a2e18'; ctx.fillRect(x - r * 0.28, y - r * 0.6, r * 0.56, r * 0.3);
+  circle(ctx, x, y + r * 0.1, r * 0.3, '#5ad86a', null);
+  ctx.globalAlpha = 1;
+  if (p.potionCd > 0) { ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.beginPath(); ctx.moveTo(x, y); ctx.arc(x, y, r, -Math.PI / 2, -Math.PI / 2 + PHI * p.potionCd / P.cooldown); ctx.fill(); }
+  text(ctx, String(p.potions), x + r * 0.75, y + r * 0.7, 9 * s, p.potions ? '#fff' : '#ff8a7a', 'center', '600');
 }
 
 function lockButton(ctx, b, s) {

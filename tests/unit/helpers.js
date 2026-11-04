@@ -6,6 +6,7 @@ import dialogue from '../../data/dialogue.json' with { type: 'json' };
 import gems from '../../data/gems.json' with { type: 'json' };
 import passives from '../../data/passives.json' with { type: 'json' };
 import items from '../../data/items.json' with { type: 'json' };
+import shop from '../../data/shop.json' with { type: 'json' };
 import { createEvents } from '../../src/core/events.js';
 import { createRng } from '../../src/core/rng.js';
 import { createWorld } from '../../src/systems/world.js';
@@ -18,7 +19,7 @@ import { setupDeath } from '../../src/systems/travel.js';
 export function makeGame() {
   const noop = () => {};
   const game = {
-    data: { balance, monsters, zones, dialogue, gems, passives, items },
+    data: { balance, monsters, zones, dialogue, gems, passives, items, shop },
     events: createEvents(), rng: createRng(42),
     fx: { text: noop, burst: noop, trail: noop, ring: noop, slash: noop, clear: noop, update: noop },
     audio: { play: noop, music: noop, update: noop, muted: true },

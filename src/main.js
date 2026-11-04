@@ -6,6 +6,7 @@ import dialogue from '../data/dialogue.json' with { type: 'json' };
 import gems from '../data/gems.json' with { type: 'json' };
 import passives from '../data/passives.json' with { type: 'json' };
 import items from '../data/items.json' with { type: 'json' };
+import shop from '../data/shop.json' with { type: 'json' };
 import { createEvents } from './core/events.js';
 import { createLoop } from './core/loop.js';
 import { createInput } from './core/input.js';
@@ -30,6 +31,8 @@ import { createScene } from './ui/scene.js';
 import { drawHud, drawDialog, drawDeath, drawTitle, titleButtons } from './ui/hud.js';
 import { drawBag, updateBag, bagButtonHit } from './ui/bag.js';
 import { drawTree, updateTree, treeButtonHit, openTree } from './ui/tree.js';
+import { drawShop, updateShop } from './ui/shop.js';
+import { updatePotion, drinkPotion } from './systems/shop.js';
 
 // สองชั้น: โลกวาดความละเอียดต่ำแล้วขยายแบบพิกเซล (สไตล์เอโดเรีย) · หน้าจอซ้อน/ตัวหนังสือวาดคมเต็มความละเอียด
 const PIXEL = 0.62;
@@ -41,7 +44,7 @@ const params = new URLSearchParams(location.search);
 let layout = computeLayout(canvas.clientWidth || innerWidth, canvas.clientHeight || innerHeight);
 
 const game = {
-  data: { balance, monsters, zones, dialogue, gems, passives, items },
+  data: { balance, monsters, zones, dialogue, gems, passives, items, shop },
   events: createEvents(), camera: createCamera(), audio: createAudio(), fx: createFx(), rng: createRng(Date.now() & 0xffff),
   flags: {}, mobs: [], shots: [], drops: [], hazards: [], later: [], spawnTimers: [],
   mode: 'title', dialog: null, time: 0, hitStop: 0, toast: null, debug: params.has('debug'),
@@ -69,6 +72,7 @@ function giveStarterGear(game) {
   for (const [base, slot] of [['bamboo_sword', 'weapon'], ['cloth_band', 'head']]) {
     p.equip[slot] = { uid: ++p.nextUid, base, rarity: 'normal', ilvl: 1, mods: [], rareName: null };
   }
+  p.potions = game.data.shop.potion.starter;
   return I;
 }
 
@@ -76,7 +80,7 @@ function continueGame() {
   const s = readSave(game.data);
   if (!s) return startNew(false);
   const p = game.player = createPlayer(game.data);
-  Object.assign(p, { level: s.level, xp: s.xp, coins: s.coins, bag: s.bag.slice(), sockets: s.sockets.map((r) => r.slice()), passives: s.passives.slice(), items: s.items, equip: { ...p.equip, ...s.equip }, nextUid: s.nextUid, hp: s.hp, mp: s.mp });
+  Object.assign(p, { level: s.level, xp: s.xp, coins: s.coins, bag: s.bag.slice(), sockets: s.sockets.map((r) => r.slice()), passives: s.passives.slice(), items: s.items, equip: { ...p.equip, ...s.equip }, nextUid: s.nextUid, potions: s.potions, hp: s.hp, mp: s.mp });
   game.flags = { ...s.flags };
   game.mode = 'play';
   enterZone(game, s.zone, s.x, s.y);
@@ -84,6 +88,7 @@ function continueGame() {
   if (game.dialog) game.mode = 'dialog';
 }
 
+function potionSlot(L) { return { x: L.slots.x + 0.5 * L.slots.gap, y: L.slots.y, r: L.slots.r }; }   // ช่อง 3 = ยาหม้อ
 function hitCircle(t, c) { return (t.sx - c.x) ** 2 + (t.sy - c.y) ** 2 <= (c.r * 1.3) ** 2; }
 
 function update(dt) {
@@ -119,6 +124,8 @@ function update(dt) {
   } else if (game.mode === 'play' && (input.pressed.tree || input.taps.some((t) => !t.consumed && treeButtonHit(layout, t)))) {
     input.taps.forEach((t) => { if (treeButtonHit(layout, t)) t.consumed = true; });
     game.mode = 'tree'; openTree(game); game.audio.play('click');
+  } else if (game.mode === 'shop') {
+    if (updateShop(game, layout, game.camera.viewW, game.camera.viewH)) { game.mode = 'play'; writeSave(game); }
   } else if (game.mode === 'bag') {
     if (updateBag(game, layout, game.camera.viewW, game.camera.viewH)) { game.mode = 'play'; game.bagSel = null; writeSave(game); }
   } else if (game.mode === 'play' && (input.pressed.bag || input.taps.some((t) => !t.consumed && bagButtonHit(layout, t)))) {
@@ -129,6 +136,8 @@ function update(dt) {
   } else if (game.mode === 'play') {
     updateNpcs(game);
     if (game.mode === 'play') {
+      for (const t of input.taps) if (!t.consumed && hitCircle(t, potionSlot(layout))) { t.consumed = true; drinkPotion(game); }
+      updatePotion(game, dt);
       updateSkillTimers(game, dt);
       updatePlayer(game, dt);
       updateMonsters(game, dt);
@@ -165,6 +174,7 @@ function render() {
     if (game.mode === 'dead') drawDeath(ctx, game, layout, w, h);
     if (game.mode === 'bag') drawBag(ctx, game, layout, w, h);
     if (game.mode === 'tree') drawTree(ctx, game, layout, w, h);
+    if (game.mode === 'shop') drawShop(ctx, game, layout, w, h);
   }
 }
 

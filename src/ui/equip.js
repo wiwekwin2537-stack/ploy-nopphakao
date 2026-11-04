@@ -17,7 +17,7 @@ export function equipLayout(B, I) {
   return { slots, grid: { x: gx, y: gy, cell, rows: Math.max(1, Math.floor((info.y - gy - 4 * s) / cell)) }, info, del };
 }
 
-function itemIcon(ctx, I, it, x, y, r) {
+export function itemIcon(ctx, I, it, x, y, r) {
   const b = I.bases[it.base], col = b.color;
   ctx.save(); ctx.translate(x, y);
   if (b.slot === 'weapon') { ctx.rotate(-0.8); ctx.fillStyle = col; ctx.fillRect(-r * 0.12, -r * 0.8, r * 0.24, r * 1.2); ctx.fillStyle = C.gold; ctx.fillRect(-r * 0.4, r * 0.35, r * 0.8, r * 0.14); ctx.fillStyle = '#5a2f1a'; ctx.fillRect(-r * 0.1, r * 0.48, r * 0.2, r * 0.35); }

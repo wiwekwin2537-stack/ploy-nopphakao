@@ -240,6 +240,33 @@ await check('เซฟแล้วรีเฟรชหน้า → กด "เ
   assert(after.gems.includes('ruby') && after.gems.includes('multi'), 'พลอยที่ฝังหายหลังโหลด');
 });
 
+await check('ร้านแม่ค้า: กด E คุย → เปิดร้าน → คลิกยาหม้อสองครั้งซื้อ → ขายของในกระเป๋า → กด 3 ดื่มยา', async () => {
+  await G(page, () => { const g = __ploy.game, n = g.data.zones.town.npcs.find((q) => q.shop); __ploy.enterZone(g, 'town', n.x * 32, n.y * 32 + 30); g.player.coins = 500; g.player.potions = 0; });
+  await page.waitForTimeout(400);
+  await page.keyboard.press('KeyE'); await page.waitForTimeout(200);
+  for (let i = 0; i < 4 && (await state(page)).mode === 'dialog'; i++) { await page.keyboard.press('KeyE'); await page.waitForTimeout(150); }
+  assert((await state(page)).mode === 'shop', 'ร้านไม่เปิด: ' + (await state(page)).mode);
+  const pos = await G(page, () => { const L = __ploy.layout(), s = L.s, w = __ploy.game.camera.viewW, h = __ploy.game.camera.viewH; const pw = Math.min(w - 20, 720 * s), ph = Math.min(h - 16, 360 * s), x = w / 2 - pw / 2, y = h / 2 - ph / 2; return { px: x + 60 * s, py: y + 52 * s, gx: x + pw * 0.5 + 6 * s + 20 * s, gy: y + 52 * s + 20 * s }; });
+  await page.mouse.click(pos.px, pos.py); await page.waitForTimeout(120);
+  await page.mouse.click(pos.px, pos.py); await page.waitForTimeout(120);
+  let v = await G(page, () => ({ pot: __ploy.game.player.potions, coins: __ploy.game.player.coins, items: __ploy.game.player.items.length }));
+  assert(v.pot === 1 && v.coins === 500 - 20, 'ซื้อยาไม่ได้ ' + JSON.stringify(v));
+  await page.screenshot({ path: SHOTS + '/15-shop.png' });
+  if (v.items > 0) {
+    await page.mouse.click(pos.gx, pos.gy); await page.waitForTimeout(120);
+    await page.mouse.click(pos.gx, pos.gy); await page.waitForTimeout(120);
+    const a = await G(page, () => ({ coins: __ploy.game.player.coins, items: __ploy.game.player.items.length }));
+    assert(a.items === v.items - 1 && a.coins > v.coins, 'ขายของไม่ได้ ' + JSON.stringify(a));
+  }
+  await page.keyboard.press('Escape'); await page.waitForTimeout(150);
+  assert((await state(page)).mode === 'play', 'ปิดร้านไม่ได้');
+  await G(page, () => { __ploy.game.player.hp = 20; });
+  await page.keyboard.press('Digit3'); await page.waitForTimeout(150);
+  const d = await G(page, () => ({ hp: __ploy.game.player.hp, pot: __ploy.game.player.potions }));
+  assert(d.pot === 0 && d.hp > 20, 'ดื่มยาไม่ได้ ' + JSON.stringify(d));
+  return 'ขายของ ' + (v.items > 0 ? 'ได้' : '(ไม่มีของให้ขาย)');
+});
+
 await check('วัดร้าง: เดินเข้าซุ้มประตูจากทุ่งนา → ลงถึงห้องยักษ์ → บอสมีวงเตือน → ล้มบอส → ประตูมิติพากลับ', async () => {
   await G(page, () => { const g = __ploy.game; __ploy.enterZone(g, 'field', 65.5 * 32, 7 * 32); g.player.invuln = 0; });
   await page.waitForTimeout(400);

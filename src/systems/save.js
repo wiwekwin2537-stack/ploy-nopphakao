@@ -2,7 +2,7 @@
 import { validTree } from './passives.js';
 import { validItems, emptyEquip } from './items.js';
 
-export const SAVE_VERSION = 5;
+export const SAVE_VERSION = 6;
 const KEY = 'ploy.save';
 
 // ตัวแปลงเซฟรุ่นเก่า → รุ่นใหม่ (เพิ่มที่นี่เมื่อเปลี่ยนรูปแบบเซฟ)
@@ -26,6 +26,8 @@ const MIGRATIONS = {
     const equip = { ...emptyEquip(), weapon: rmap(e.weapon), head: rmap(e.head), body: rmap(e.body), amulet: rmap(e.amulet), ring: rmap(e.ring1) };
     return { ...d, v: 5, items: items.slice(0, 30), equip };
   },
+  // v5 → v6: ยาหม้อจากร้านแม่ค้า (เซฟเก่าเริ่มที่ 0 ขวด)
+  5: (d) => ({ ...d, v: 6, potions: 0 }),
 };
 
 export function serialize(game) {
@@ -33,7 +35,7 @@ export function serialize(game) {
   return {
     v: SAVE_VERSION, savedAt: Date.now(),
     zone: at ? at.zone : z.id, x: Math.round(at ? at.x * 32 : p.x), y: Math.round(at ? at.y * 32 : p.y),
-    level: p.level, xp: p.xp, coins: p.coins, hp: Math.round(p.hp), mp: Math.round(p.mp),
+    level: p.level, xp: p.xp, coins: p.coins, potions: p.potions, hp: Math.round(p.hp), mp: Math.round(p.mp),
     items: JSON.parse(JSON.stringify(p.items)), equip: JSON.parse(JSON.stringify(p.equip)), nextUid: p.nextUid,
     passives: p.passives.slice(), bag: p.bag.slice(), sockets: p.sockets.map((r) => r.slice()), flags: { ...game.flags },
   };
@@ -46,6 +48,7 @@ export function validate(s, data) {
   while (d.v !== SAVE_VERSION) { const m = MIGRATIONS[d.v]; if (!m) return null; d = m(d); }
   const num = (v, lo, hi) => typeof v === 'number' && isFinite(v) && v >= lo && v <= hi;
   if (!zones[d.zone] || !num(d.level, 1, 999) || !num(d.xp, 0, 1e9) || !num(d.coins, 0, 1e12)) return null;
+  if (!Number.isInteger(d.potions) || !num(d.potions, 0, data.shop ? data.shop.potion.max : 99)) return null;
   if (!num(d.x, 0, 1e6) || !num(d.y, 0, 1e6) || !d.flags || typeof d.flags !== 'object') return null;
   const known = (g) => !gemsData || !!(gemsData.main[g] || gemsData.support[g]);
   if (!Array.isArray(d.bag) || !d.bag.every((g) => typeof g === 'string' && known(g)) || d.bag.length > 500) return null;
@@ -71,7 +74,7 @@ export function clearSave() { try { localStorage.removeItem(KEY); } catch { /* �
 
 export function setupAutosave(game) {
   const save = () => { if (game.mode !== 'title') writeSave(game); };
-  ['zoneChanged', 'levelUp', 'gemPicked', 'metChan', 'gemsChanged', 'passivesChanged', 'itemPicked', 'gearChanged', 'bossKilled'].forEach((e) => game.events.on(e, save));
+  ['zoneChanged', 'levelUp', 'gemPicked', 'metChan', 'gemsChanged', 'passivesChanged', 'itemPicked', 'gearChanged', 'bossKilled', 'shopChanged'].forEach((e) => game.events.on(e, save));
   game.autosaveT = 0;
 }
 
