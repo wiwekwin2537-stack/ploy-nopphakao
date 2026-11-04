@@ -320,5 +320,40 @@
    10
   ],
   "coinChance": 0.7
+ },
+ "garuda_king": {
+  "name": "พญาครุฑราช",
+  "hp": 2600,
+  "damage": 46,
+  "xp": 1500,
+  "speed": 84,
+  "radius": 36,
+  "ai": "boss",
+  "aggro": 360,
+  "attackRange": 70,
+  "attackCooldown": 1.0,
+  "chargeSpeed": 560,
+  "chargeWindup": 0.75,
+  "chargeTime": 0.8,
+  "coins": [
+   100,
+   150
+  ],
+  "coinChance": 1,
+  "boss": true,
+  "bossLoot": {
+   "items": 3,
+   "rarity": "purple",
+   "redChance": 0.5,
+   "gems": 3
+  },
+  "slamRadius": 95,
+  "slamWindup": 0.75,
+  "stompWindup": 0.95,
+  "waveSpeed": 260,
+  "waveMax": 320,
+  "waveThick": 26,
+  "summon": "garuda_chick",
+  "summonCount": 3
  }
 }

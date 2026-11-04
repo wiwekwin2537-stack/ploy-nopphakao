@@ -173,6 +173,9 @@ function paintItem(g, base, id, upright) {
   (ALL[id] || BODIES.cotton_shirt)(g, M);
 }
 
+// สีหลักของวัสดุ (ใช้ระบายหมวก/ชุดบนตัวละครให้ตรงกับไอคอน)
+export function matColor(base) { return base.mat === 'cloth' ? base.color : (MAT[base.mat] || MAT.iron).mid; }
+
 // ภาพไอเท็มขนาด px (แคชไว้) — ใช้ drawImage วาดได้ทุกที่
 const cache = new Map();
 export function itemSprite(I, baseId, px, upright = false) {

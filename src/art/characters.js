@@ -110,6 +110,14 @@ function head(ctx, L, d, f, x, y, t, side) {
   else if (side) R('#111', x + 3 * f - 1, y - 8 + (blink ? 2 : 0), 2, eh);
 }
 
+// ทาภาพไอเท็ม (ส่วน sx,sy,sw,sh ของช่อง 64) ลงบนชิ้นตัว (dx,dy,dw,dh) — ชุดบนตัวหน้าตาเดียวกับไอคอน · dark = เงาด้านหลัง
+function armorSkin(ctx, art, sx, sy, sw, sh, dx, dy, dw, dh, dark) {
+  if (dw <= 0 || dh <= 0) return;
+  const k = art.width / 64;
+  ctx.drawImage(art, sx * k, sy * k, sw * k, sh * k, dx, dy, dw, dh);
+  if (dark) { ctx.fillStyle = `rgba(0,0,0,${dark})`; ctx.fillRect(dx, dy, dw, dh); }
+}
+
 export function drawHuman(ctx, look, X, Y, o) {
   const L = typeof look === 'string' ? LOOKS[look] : look;
   BLADE = o.blade || '#d8e0e4'; WEAPON = o.weapon || 'sword'; WSPRITE = o.weaponArt || null;
@@ -165,6 +173,7 @@ export function drawHuman(ctx, look, X, Y, o) {
     farArm();
     if (L.weapon !== 'sword' && L.weapon) staff(f * 9, -6);
     R(L.top, -4.5, -14 - breathe, 9, 14 + breathe); R(L.collar, -5, -16 - breathe, 10, 4);
+    if (L.bodyArt) armorSkin(ctx, L.bodyArt, 20, 12, 24, 44, -4.5, -15 - breathe, 9, 15 + breathe, 0);
     if (L.plates) { R(L.plates, -4.5, -11 - breathe, 9, 2); R(L.plates, -4.5, -7, 9, 2); }
     if (L.straps) R(L.straps, -1, -14 - breathe, 2, 12);
     if (L.neck) R(L.neck, f * 2, -12 - breathe, 2, 3);
@@ -198,6 +207,7 @@ export function drawHuman(ctx, look, X, Y, o) {
     // ขา: ต้นขาเอียงออกเล็กน้อย หน้าแข้งยกเมื่อก้าว (เห็นเข่างอ)
     R(L.leg, x - 7, hipY - l0 * 0.4, 6, 7); R(L.guard || L.leg2, x - 7, hipY + 6 - l0, 6, 6 - l0 * 0.3); R('#1a1418', x - 7, hipY + 11 - l0 * 1.3, 6, 2);
     R(L.leg, x + 1, hipY - l1 * 0.4, 6, 7); R(L.guard || L.leg2, x + 1, hipY + 6 - l1, 6, 6 - l1 * 0.3); R('#1a1418', x + 1, hipY + 11 - l1 * 1.3, 6, 2);
+    if (L.legArt) { armorSkin(ctx, L.legArt, 12, 10, 20, 44, x - 7, hipY - l0 * 0.4, 6, 11 - l0, 0); armorSkin(ctx, L.legArt, 32, 10, 20, 44, x + 1, hipY - l1 * 0.4, 6, 11 - l1, 0); }
     const by = hipY + 12;
     const breathe = k ? 0 : Math.sin(t * 2.4) * 0.5;
     const sway = k ? Math.sin(ph) * 0.6 : 0;
@@ -208,6 +218,7 @@ export function drawHuman(ctx, look, X, Y, o) {
     if (swinging && swordBehind) drawSwordArm();
     if (L.weapon !== 'sword' && L.weapon) staff(x + 10, by - 12);
     R(L.top, x - 8 + sway, by - 26 - breathe, 16, 14 + breathe); R(L.collar, x - 8 + sway, by - 28 - breathe, 16, 4);
+    if (L.bodyArt) armorSkin(ctx, L.bodyArt, 12, 10, 40, 46, x - 8 + sway, by - 28 - breathe, 16, 16 + breathe, back ? 0.25 : 0);
     if (L.plates) { R(L.plates, x - 8 + sway, by - 23 - breathe, 16, 2); R(L.plates, x - 8 + sway, by - 19, 16, 2); R(L.collar, x - 1 + sway, by - 26, 2, 11); }
     if (L.straps && !back) { R(L.straps, x - 6 + sway, by - 26, 3, 12); R(L.straps, x + 3 + sway, by - 26, 3, 12); }
     if (L.neck && !back) { R('#d9a630', x - 3 + sway, by - 26, 6, 1); R(L.neck, x - 1 + sway, by - 25, 3, 4); }

@@ -365,7 +365,10 @@ await check('ป่าหิมพานต์: หลังล้มยัก�
   const awake = await G(page, () => __ploy.game.mobs.find((m) => m.type === 'khotchasi_king').aggroed);
   assert(awake, 'บอสไม่ตื่น');
   await G(page, () => { const g = __ploy.game; g.mobs.forEach((m) => { m.hp = 1; }); const k = g.mobs.find((m) => m.type === 'khotchasi_king'); g.player.x = k.x - 50; g.player.y = k.y; });
-  for (let i = 0; i < 10; i++) { await page.keyboard.press('KeyJ'); await page.waitForTimeout(150); }
+  for (let i = 0; i < 12 && !(await G(page, () => !!__ploy.game.flags.khotchasi_kingSlain)); i++) {   // ยืนชิดบอสทุกครั้ง (บอสพุ่ง/ขยับได้)
+    await G(page, () => { const g = __ploy.game, k = g.mobs.find((m) => m.type === 'khotchasi_king' && !m.dead); if (k) { g.player.x = k.x - 45; g.player.y = k.y; g.player.aim = 0; g.player.dir = 3; } });
+    await page.keyboard.press('KeyJ'); await page.waitForTimeout(160);
+  }
   assert(await G(page, () => !!__ploy.game.flags.khotchasi_kingSlain), 'ล้มพญาคชสีห์ไม่ได้');
   return types;
 });
@@ -382,6 +385,19 @@ await check('เขาไกรลาส: หลังล้มพญาคช�
   const types = await G(page, () => [...new Set(__ploy.game.mobs.map((m) => m.type))].join(','));
   assert(['kumbhan', 'kinnorn', 'garuda_chick'].every((t) => types.includes(t)), types);
   return types;
+});
+
+await check('ยอดเขาไกรลาส: พญาครุฑราชตื่นเมื่อเข้าใกล้ มีแถบเลือดบอส ล้มได้', async () => {
+  await G(page, () => { const g = __ploy.game; __ploy.enterZone(g, 'kailash'); const k = g.mobs.find((m) => m.type === 'garuda_king'); g.player.x = k.x - 170; g.player.y = k.y; g.player.invuln = 999; });
+  await page.waitForTimeout(1600);
+  await page.screenshot({ path: SHOTS + '/19-garuda-king.png' });
+  assert(await G(page, () => __ploy.game.mobs.find((m) => m.type === 'garuda_king').aggroed), 'บอสไม่ตื่น');
+  await G(page, () => { const g = __ploy.game; g.mobs.forEach((m) => { m.hp = 1; }); const k = g.mobs.find((m) => m.type === 'garuda_king'); g.player.x = k.x - 50; g.player.y = k.y; });
+  for (let i = 0; i < 12 && !(await G(page, () => !!__ploy.game.flags.garuda_kingSlain)); i++) {   // ยืนชิดบอสทุกครั้ง (บอสพุ่ง/ขยับได้)
+    await G(page, () => { const g = __ploy.game, k = g.mobs.find((m) => m.type === 'garuda_king' && !m.dead); if (k) { g.player.x = k.x - 45; g.player.y = k.y; g.player.aim = 0; g.player.dir = 3; } });
+    await page.keyboard.press('KeyJ'); await page.waitForTimeout(160);
+  }
+  assert(await G(page, () => !!__ploy.game.flags.garuda_kingSlain), 'ล้มพญาครุฑราชไม่ได้');
 });
 
 await check('ความเร็ว: มอน 100 ตัวไล่ล้อม ใช้เวลาคำนวณ+วาดต่อเฟรมไม่เกิน 8ms', async () => {

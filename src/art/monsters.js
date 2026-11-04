@@ -224,6 +224,7 @@ export function drawMonster(ctx, type, x, y, o) {
   if (type === 'krasue' || type === 'phi_phong' || type === 'hatsadi' || type === 'kinnorn') shadow(ctx, x, y, 10, 3, 0.18);
   else if (type === 'khotchasi') shadow(ctx, x, y, 22, 6);
   else if (type === 'khotchasi_king') shadow(ctx, x, y, 40, 11, 0.32);
+  else if (type === 'garuda_king') shadow(ctx, x, y, 38, 11, 0.32);
   else if (type === 'yak') shadow(ctx, x, y, 30, 9, 0.32);
   else shadow(ctx, x, y, 13 * big, 4.5 * big);
   if (o.recoil > 0) ctx.translate(o.kbx * o.recoil * 30, o.kby * o.recoil * 20);   // สะดุ้งถอยตอนโดนฟัน
@@ -231,7 +232,7 @@ export function drawMonster(ctx, type, x, y, o) {
   ctx.scale(SCALE, SCALE);
   if (o.recoil > 0) ctx.scale(1 + o.recoil * 0.8, 1 - o.recoil * 0.8);
   if (o.stun) ctx.rotate(Math.sin(o.t * 30) * 0.06);                                    // ขยายให้สมกับตัวละครสูงแบบเอโดเรีย
-  if (o.windup > 0 && type !== 'krasue' && type !== 'yak' && type !== 'khotchasi_king') ctx.translate(Math.sin(o.t * 60) * 1.2, 0);
+  if (o.windup > 0 && type !== 'krasue' && type !== 'yak' && type !== 'khotchasi_king' && type !== 'garuda_king') ctx.translate(Math.sin(o.t * 60) * 1.2, 0);
   ctx.scale(o.face < 0 ? -1 : 1, 1);
   if (o.dying > 0) { const k = Math.min(1, o.dying * 2.2); ctx.translate(-4 * k, -6 * Math.sin(k * Math.PI)); ctx.rotate(-k * 1.4); } // ล้มตะแคง
   if (o.flash > 0 && Math.floor(o.t * 30) % 2) ctx.globalAlpha *= 0.55;
@@ -249,6 +250,12 @@ export function drawMonster(ctx, type, x, y, o) {
   else if (type === 'kumbhan') kumbhan(ctx, o);
   else if (type === 'kinnorn') kinnorn(ctx, o);
   else if (type === 'garuda_chick') garudaChick(ctx, o);
+  else if (type === 'garuda_king') {                          // พญาครุฑราช: ใหญ่สองเท่ากว่า รัศมีทอง คลั่งแล้วเปลวแดง
+    const gl = ctx.createRadialGradient(4, -24, 2, 4, -24, 40);
+    gl.addColorStop(0, o.enraged ? 'rgba(255,70,30,0.5)' : 'rgba(255,220,90,0.45)'); gl.addColorStop(1, 'rgba(255,200,60,0)');
+    ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(4, -24, 40, 0, Math.PI * 2); ctx.fill();
+    ctx.scale(2.2, 2.2); garudaChick(ctx, o);
+  }
   else if (type === 'khotchasi_king') {                       // พญาคชสีห์ทองคำ: ตัวใหญ่เกือบสองเท่า ไอทองรอบตัว คลั่งแล้วแดง
     const gl = ctx.createRadialGradient(4, -14, 2, 4, -14, 30);
     gl.addColorStop(0, o.enraged ? 'rgba(255,80,40,0.45)' : 'rgba(255,215,80,0.4)'); gl.addColorStop(1, 'rgba(255,200,60,0)');
@@ -261,5 +268,5 @@ export function drawMonster(ctx, type, x, y, o) {
 }
 
 export function monsterHeight(type) {
-  return Math.round(({ piglet: 18, boar: 24, bigboar: 34, monkey: 34, krasue: 50, phi_pob: 42, phi_phong: 40, yak: 96, khotchasi: 32, naga_noi: 40, hatsadi: 50, khotchasi_king: 62, kumbhan: 48, kinnorn: 52, garuda_chick: 44 }[type] || 26) * SCALE);
+  return Math.round(({ piglet: 18, boar: 24, bigboar: 34, monkey: 34, krasue: 50, phi_pob: 42, phi_phong: 40, yak: 96, khotchasi: 32, naga_noi: 40, hatsadi: 50, khotchasi_king: 62, kumbhan: 48, kinnorn: 52, garuda_chick: 44, garuda_king: 96 }[type] || 26) * SCALE);
 }
