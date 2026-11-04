@@ -171,7 +171,7 @@ await check('พลอยเสริม: เก็บจากพื้น → 
   assert(sock[0] === 'ruby' && sock.includes('multi'), 'ฝังไม่ได้ ' + JSON.stringify(sock));
   await page.keyboard.press('KeyB'); await page.waitForTimeout(150);
   assert((await state(page)).mode === 'play', 'ปิดกระเป๋าไม่ได้');
-  await G(page, () => { __ploy.game.player.mp = 999; __ploy.game.player.skillCd[0] = 0; __ploy.game.shots.length = 0; });
+  await G(page, () => { const g = __ploy.game, p = g.player; g.mobs.length = 0; p.x = 36 * 32; p.y = 45 * 32; p.aim = -Math.PI / 2; p.targetMob = null; p.mp = 999; p.skillCd[0] = 0; g.shots.length = 0; }); // ยิงบนทางโล่ง ไม่ให้ต้นไม้บังลูกไฟ
   await page.keyboard.press('KeyK'); await page.waitForTimeout(60);
   const n = await G(page, () => __ploy.game.shots.filter((q) => q.from === 'player').length);
   assert(n === 3, 'ลูกไฟ ' + n + ' ลูก');
