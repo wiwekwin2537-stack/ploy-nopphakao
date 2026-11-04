@@ -13,6 +13,7 @@ import { createRng } from '../../src/core/rng.js';
 import { createWorld } from '../../src/systems/world.js';
 import { createPlayer } from '../../src/systems/player.js';
 import { setupLoot } from '../../src/systems/loot.js';
+import { setupFlasks } from '../../src/systems/shop.js';
 import { setupProgress } from '../../src/systems/progress.js';
 import { setupTutorial } from '../../src/systems/tutorial.js';
 import { setupDeath } from '../../src/systems/travel.js';
@@ -30,7 +31,7 @@ export function makeGame() {
   };
   game.world = createWorld(zones, (f) => !!game.flags[f], (t) => game.mobs.some((m) => m.type === t && !m.dead));
   game.player = createPlayer(game.data);
-  setupLoot(game); setupProgress(game); setupTutorial(game); setupDeath(game);
+  setupLoot(game); setupFlasks(game); setupProgress(game); setupTutorial(game); setupDeath(game);
   return game;
 }
 

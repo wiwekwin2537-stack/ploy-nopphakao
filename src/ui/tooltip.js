@@ -3,7 +3,7 @@
 import { C, rrect, circle } from '../art/draw.js';
 import { uiText as text, wrapLines } from './hud.js';
 import { itemName, itemStats, longestLink } from '../systems/items.js';
-import { gemInfo, gemType, computeSkill, supportLines } from '../systems/gems.js';
+import { gemInfo, gemType, computeSkill, supportLines, gemLevel, gemXpInfo, auraAt } from '../systems/gems.js';
 import { gemSprite } from '../art/gems.js';
 import { itemSprite } from '../art/items.js';
 import { SOCKET_COL } from './gemtab.js';
@@ -111,18 +111,24 @@ export function drawGemTip(ctx, game, id, ax, ay, opt = {}) {
   lines.push({ t: aura ? 'พลอยออร่า — ฝังแล้วมีผลตลอด ไม่ต้องกด' : main ? 'พลอยสกิล — ฝังแล้วได้สกิล' : 'พลอยเสริม — เสริมพลอยสกิลที่อยู่ในช่องเชื่อมกัน', col: 'rgba(244,230,200,0.65)', size: 9, center: true });
   const sc = G.socketColors[info.socket];
   lines.push({ t: `ลงได้ในช่องสี${sc.name} หรือช่องขาว`, col: sc.color, size: 9.5, center: true, weight: '600' });
+  const X = gemXpInfo(G, game.player, id), L = G.levels;
+  lines.push({ t: X.max ? `เลเวล ${X.lv} (สูงสุด)` : `เลเวล ${X.lv}/${L.max} · XP ${X.xp}/${X.need}`, col: C.goldHi, size: 9.5, center: true, weight: '600' });
+  if (!X.max) lines.push({ h: 8 * s, draw: (c, x, y, w) => { c.fillStyle = 'rgba(0,0,0,0.6)'; c.fillRect(x + w * 0.2, y + 2 * s, w * 0.6, 4 * s); c.fillStyle = C.goldHi; c.fillRect(x + w * 0.2, y + 2 * s, w * 0.6 * X.xp / X.need, 4 * s); } });
   lines.push({ sep: true, h: 8 * s });
   if (aura) {
     lines.push({ t: `ออร่า: ${info.skill}`, col: C.goldHi, size: 10.5, weight: '600' });
-    for (const l of auraLines(game.data.passives, info.aura)) lines.push({ t: l, size: 10 });
+    for (const l of auraLines(game.data.passives, auraAt(G, id, X.lv))) lines.push({ t: l, size: 10 });
     lines.push({ t: 'พลอยเสริมที่เชื่อมไว้ไม่มีผลกับออร่า', col: 'rgba(244,230,200,0.6)', size: 9 });
   } else if (main) {
-    const sk = opt.final || computeSkill(G, id);                 // ฝังอยู่ = แสดงผลรวมกับพลอยเสริมที่เชื่อมจริง
+    const sk = opt.final || computeSkill(G, id, [], (g) => gemLevel(G, game.player, g));                // ฝังอยู่ = แสดงผลรวมกับพลอยเสริมที่เชื่อมจริง
     lines.push({ t: `สกิล: ${sk.name}`, col: C.goldHi, size: 10.5, weight: '600' });
     for (const l of skillLines(sk)) lines.push({ t: l, size: 10 });
     if (opt.final && sk.supports.length) lines.push({ t: 'เสริมอยู่: ' + sk.supports.map((x) => G.support[x].name.replace('พลอยเสริม', '')).join(' + '), col: '#9af0b0', size: 9.5 });
     if (opt.final && sk.unused && sk.unused.length) lines.push({ t: 'ไม่มีผลกับสกิลนี้: ' + sk.unused.map((x) => G.support[x].name.replace('พลอยเสริม', '')).join(' + '), col: '#ff9a7a', size: 9.5 });
-  } else for (const l of supportLines(G, id)) lines.push({ t: l, size: 10 });
+  } else {
+    for (const l of supportLines(G, id)) lines.push({ t: l, size: 10 });
+    if (X.lv > 1) lines.push({ t: `เลเวลพลอย: ดาเมจสกิลที่เสริม +${Math.round(L.supportDamage * (X.lv - 1) * 100)}%`, size: 10, col: '#9af0b0' });
+  }
   lines.push({ t: info.desc, col: MOD_COL, size: 9.5 });
   if (opt.hint) { lines.push({ sep: true, h: 8 * s }); lines.push({ t: opt.hint, col: '#9af0b0', size: 9.5, weight: '600' }); }
   tipBox(ctx, lines, ax, ay, s, opt.W, opt.H, info.color);

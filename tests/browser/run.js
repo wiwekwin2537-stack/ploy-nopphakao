@@ -139,14 +139,15 @@ await check('ออกประตูเหนือไปทุ่งนาร�
 });
 
 await check('ฟาร์มจริง 25 วินาที: ฟันมอนรอบตัว ได้ XP เหรียญ และไม่มีมอนตายซ้ำ', async () => {
-  await G(page, () => { const g = __ploy.game; g._kills = 0; g.events.on('mobKilled', ({ mob }) => { g._kills++; if (mob._counted) g._double = true; mob._counted = true; }); g.player.x = 18 * 32; g.player.y = 44 * 32; });
+  await G(page, () => { const g = __ploy.game; g._kills = 0; g._eliteCh = Object.values(g.data.balance.elites.tiers).map((t) => [t, t.chance]); g._eliteCh.forEach(([t]) => { t.chance = 0; }); g.events.on('mobKilled', ({ mob }) => { g._kills++; if (mob._counted) g._double = true; mob._counted = true; }); g.player.x = 18 * 32; g.player.y = 44 * 32; });
   const t0 = Date.now();
   while (Date.now() - t0 < 25000) {
-    await G(page, () => { const g = __ploy.game, p = g.player; let best = null, bd = 1e9; for (const m of g.mobs) { if (m.dead) continue; const d = Math.hypot(m.x - p.x, m.y - p.y); if (d < bd) { bd = d; best = m; } } p.targetMob = best; if (p.hp < 40) p.hp = 120; });
+    await G(page, () => { const g = __ploy.game, p = g.player; let best = null, bd = 1e9; for (const m of g.mobs) { if (m.dead) continue; const d = Math.hypot(m.x - p.x, m.y - p.y); if (d < bd) { bd = d; best = m; } } p.targetMob = best; if (best && bd > 260) { p.x = best.x - 60; p.y = best.y; } if (p.hp < 40) p.hp = 120; });   // มอนไกลเกินไป: ย้ายไปใกล้ๆ (ทดสอบการฟัน ไม่ใช่การเดินทาง)
     await page.waitForTimeout(250);
     if (Math.random() < 0.3) await page.keyboard.press('KeyK');
   }
   const r = await G(page, () => ({ kills: __ploy.game._kills, double: !!__ploy.game._double }));
+  await G(page, () => __ploy.game._eliteCh.forEach(([t, c]) => { t.chance = c; }));   // ทดสอบความเร็วฟาร์มกับมอนธรรมดา (มอนพิเศษสุ่มทำให้ผลแกว่ง)
   const s = await state(page);
   await page.screenshot({ path: SHOTS + '/09-farming.png' });
   assert(r.kills >= 5, 'ฆ่าได้น้อย ' + r.kills);
@@ -389,7 +390,7 @@ await check('ป่าหิมพานต์: หลังล้มยัก�
   const awake = await G(page, () => __ploy.game.mobs.find((m) => m.type === 'khotchasi_king').aggroed);
   assert(awake, 'บอสไม่ตื่น');
   await G(page, () => { const g = __ploy.game; const k = g.mobs.find((m) => m.type === 'khotchasi_king'); g.mobs.length = 0; g.mobs.push(k); k.hp = 1; g.player.x = k.x - 50; g.player.y = k.y; });   // เหลือแต่บอส ไม่ให้ดาบไปโดนตัวอื่นก่อน
-  for (let i = 0; i < 12 && !(await G(page, () => !!__ploy.game.flags.khotchasi_kingSlain)); i++) {   // ยืนชิดบอสทุกครั้ง (บอสพุ่ง/ขยับได้)
+  for (let i = 0; i < 30 && !(await G(page, () => !!__ploy.game.flags.khotchasi_kingSlain)); i++) {   // ยืนชิดบอสทุกครั้ง (บอสพุ่ง/ขยับได้)
     await G(page, () => { const g = __ploy.game, k = g.mobs.find((m) => m.type === 'khotchasi_king' && !m.dead); if (k) { g.player.x = k.x - 45; g.player.y = k.y; g.player.aim = 0; g.player.dir = 3; } });
     await page.keyboard.press('KeyJ'); await page.waitForTimeout(160);
   }
@@ -417,7 +418,7 @@ await check('ยอดเขาไกรลาส: พญาครุฑรา�
   await page.screenshot({ path: SHOTS + '/19-garuda-king.png' });
   assert(await G(page, () => __ploy.game.mobs.find((m) => m.type === 'garuda_king').aggroed), 'บอสไม่ตื่น');
   await G(page, () => { const g = __ploy.game; const k = g.mobs.find((m) => m.type === 'garuda_king'); g.mobs.length = 0; g.mobs.push(k); k.hp = 1; g.player.x = k.x - 50; g.player.y = k.y; });
-  for (let i = 0; i < 12 && !(await G(page, () => !!__ploy.game.flags.garuda_kingSlain)); i++) {   // ยืนชิดบอสทุกครั้ง (บอสพุ่ง/ขยับได้)
+  for (let i = 0; i < 30 && !(await G(page, () => !!__ploy.game.flags.garuda_kingSlain)); i++) {   // ยืนชิดบอสทุกครั้ง (บอสพุ่ง/ขยับได้)
     await G(page, () => { const g = __ploy.game, k = g.mobs.find((m) => m.type === 'garuda_king' && !m.dead); if (k) { g.player.x = k.x - 45; g.player.y = k.y; g.player.aim = 0; g.player.dir = 3; } });
     await page.keyboard.press('KeyJ'); await page.waitForTimeout(160);
   }

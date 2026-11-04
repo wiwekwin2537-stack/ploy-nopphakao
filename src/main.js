@@ -40,7 +40,7 @@ import { drawWarp, updateWarp } from './ui/warp.js';
 import { updateWaypoints } from './systems/waypoint.js';
 import { updateAltar } from './systems/maps.js';
 import { drawMapMenu, updateMapMenu } from './ui/mapmenu.js';
-import { updatePotion } from './systems/shop.js';
+import { updatePotion, setupFlasks } from './systems/shop.js';
 
 // สองชั้น: โลกวาดความละเอียดต่ำแล้วขยายแบบพิกเซล (สไตล์เอโดเรีย) · หน้าจอซ้อน/ตัวหนังสือวาดคมเต็มความละเอียด
 const PIXEL = 0.62;
@@ -62,7 +62,7 @@ game.world = createWorld(zones, (f) => !!game.flags[f], (type) => game.mobs.some
 game.input = createInput(canvas, () => layout);
 game.player = createPlayer(game.data);
 game.hasSave = !!readSave(game.data);
-setupLoot(game); setupProgress(game); setupAutosave(game); setupTutorial(game); setupDeath(game);
+setupLoot(game); setupFlasks(game); setupProgress(game); setupAutosave(game); setupTutorial(game); setupDeath(game);
 game.world.load('road');
 const scene = createScene(game);
 
@@ -79,7 +79,7 @@ function continueGame() {
   const s = readSave(game.data);
   if (!s) return startNew(false);
   const p = game.player = createPlayer(game.data);
-  Object.assign(p, { level: s.level, xp: s.xp, coins: s.coins, bag: s.bag.slice(), currency: { ...p.currency, ...s.currency }, passives: s.passives.slice(), items: s.items, equip: { ...p.equip, ...s.equip }, nextUid: s.nextUid, potions: s.potions, mpPotions: s.mpPotions, hp: s.hp, mp: s.mp });
+  Object.assign(p, { level: s.level, xp: s.xp, coins: s.coins, bag: s.bag.slice(), currency: { ...p.currency, ...s.currency }, passives: s.passives.slice(), gemXp: { ...s.gemXp }, items: s.items, equip: { ...p.equip, ...s.equip }, nextUid: s.nextUid, potions: s.potions, mpPotions: s.mpPotions, hp: s.hp, mp: s.mp });
   game.flags = { ...s.flags };
   game.mode = 'play';
   enterZone(game, s.zone, s.x, s.y);

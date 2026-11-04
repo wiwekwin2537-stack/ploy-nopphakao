@@ -73,3 +73,24 @@ export function updatePotion(game, dt) {
   if (game.input.pressed.potion) drinkPotion(game, 'hp');
   if (game.input.pressed.manapot) drinkPotion(game, 'mp');
 }
+
+// เติมขวดจากการฆ่า (แบบ PoE): แต้มสะสมต่อขวด ครบ killsPerRefill = ได้ขวดคืน 1 ขวด (ไม่เกินความจุ)
+export function chargeFlasks(game, pts) {
+  const p = game.player, out = [];
+  for (const [kind, F] of Object.entries(FLASK)) {
+    const P = game.data.shop[F.data], key = F.count + 'Charge';
+    if (p[F.count] >= P.max) { p[key] = 0; continue; }
+    p[key] = (p[key] || 0) + pts;
+    while (p[key] >= P.killsPerRefill && p[F.count] < P.max) { p[key] -= P.killsPerRefill; p[F.count]++; out.push(kind); }
+    if (p[F.count] >= P.max) p[key] = 0;
+  }
+  return out;
+}
+
+export function setupFlasks(game) {
+  game.events.on('mobKilled', ({ mob }) => {
+    if (!game.flags.tutorialDone) return;
+    const C = game.data.shop.flaskCharge, got = chargeFlasks(game, mob.def.boss ? C.boss : C[mob.elite || 'normal']);
+    for (const k of got) game.fx.text(game.player.x + (k === 'hp' ? -14 : 14), game.player.y - 48, k === 'hp' ? '+ยาหม้อ' : '+น้ำมนต์', FLASK[k].col);
+  });
+}

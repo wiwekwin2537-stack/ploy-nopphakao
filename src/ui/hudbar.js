@@ -28,12 +28,13 @@ export function drawBottomBar(ctx, game, L, st) {
   ctx.fillStyle = 'rgba(14,10,8,0.78)'; rrect(ctx, x0, fl[0].y - 14 * s, x1 - x0, fl[0].h + 18 * s, 6 * s); ctx.fill();
   ctx.strokeStyle = 'rgba(217,166,48,0.5)'; ctx.lineWidth = 1; ctx.stroke();
   for (const f of fl) {
-    const kind = f.id === 'potion' ? { n: p.potions, max: D.potion.max, cd: p.potionCd / D.potion.cooldown, col: '#d8302a' }
-      : f.id === 'manapot' ? { n: p.mpPotions, max: D.manaPotion.max, cd: p.mpPotionCd / D.manaPotion.cooldown, col: '#3a6aff' } : null;
+    const kind = f.id === 'potion' ? { n: p.potions, max: D.potion.max, cd: p.potionCd / D.potion.cooldown, col: '#d8302a', ch: (p.potionsCharge || 0) / D.potion.killsPerRefill }
+      : f.id === 'manapot' ? { n: p.mpPotions, max: D.manaPotion.max, cd: p.mpPotionCd / D.manaPotion.cooldown, col: '#3a6aff', ch: (p.mpPotionsCharge || 0) / D.manaPotion.killsPerRefill } : null;
     text(ctx, String(f.i + 1), f.x + f.w / 2, f.y - 7 * s, 9 * s, kind ? '#f4e6c8' : 'rgba(244,230,200,0.35)', 'center', '600');
     if (!kind) { ctx.strokeStyle = 'rgba(184,154,88,0.25)'; ctx.lineWidth = 1; rrect(ctx, f.x + 1, f.y + f.h * 0.28, f.w - 2, f.h * 0.7, f.w * 0.3); ctx.stroke(); continue; }
     flaskIcon(ctx, f.x, f.y, f.w, f.h, kind.n / kind.max, kind.col, kind.n <= 0);
     if (kind.cd > 0) { ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(f.x, f.y + f.h * (1 - kind.cd), f.w, f.h * kind.cd); }
+    if (kind.n < kind.max) { ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(f.x + 2 * s, f.y + f.h + 1 * s, f.w - 4 * s, 3 * s); ctx.fillStyle = '#ffd24a'; ctx.fillRect(f.x + 2 * s, f.y + f.h + 1 * s, (f.w - 4 * s) * Math.min(1, kind.ch), 3 * s); }   // แต้มเติมขวดจากการฆ่า
     text(ctx, String(kind.n), f.x + f.w - 3 * s, f.y + f.h - 5 * s, 9 * s, kind.n ? '#fff' : '#ff8a7a', 'center', '600');
   }
   if (L.touch) return;

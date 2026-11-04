@@ -230,3 +230,36 @@ test('ออร่า: ฝังแล้วได้ค่าเสริมต
     for (const k of Object.keys(a.stats)) assert.ok(g.data.passives.statNames[k], `${id}: ${k}`);
   }
 });
+
+test('เลเวลพลอย (แบบ PoE): เฉพาะพลอยที่ฝังในของที่สวมได้ XP · เลเวลขึ้นแล้วสกิล/ออร่าแรงขึ้น · ตันที่เลเวลสูงสุด', async () => {
+  const { gainGemXp, gemLevel, aurasOf } = await import('../../src/systems/gems.js');
+  const g = makeGame(), G = g.data.gems, p = g.player, L = G.levels;
+  gear(p, ['ruby', 'multi', null], [true, true], ['garnet', null]);
+  p.bag = ['sapphire'];
+  const sk1 = skillsOf(G, p)[0].damageMult, a1 = aurasOf(G, p)[0].stats.dmgMelee;
+  const up = gainGemXp(G, p, L.xpTable[1] / L.xpShare + 1);
+  assert.deepEqual(up.sort(), ['garnet', 'multi', 'ruby']);
+  assert.equal(gemLevel(G, p, 'ruby'), 2); assert.equal(gemLevel(G, p, 'sapphire'), 1, 'พลอยในกระเป๋าไม่ได้ XP');
+  const sk2 = skillsOf(G, p)[0];
+  assert.ok(Math.abs(sk2.damageMult - sk1 * (1 + L.skillDamage) * (1 + L.supportDamage)) < 1e-9, 'สกิล + พลอยเสริมแรงขึ้นตามข้อมูล');
+  assert.equal(sk2.level, 2);
+  assert.ok(aurasOf(G, p)[0].stats.dmgMelee > a1);
+  gainGemXp(G, p, 1e9);
+  assert.equal(gemLevel(G, p, 'ruby'), L.max); assert.equal(p.gemXp.ruby, L.xpTable[L.max - 1]);
+  assert.deepEqual(gainGemXp(G, p, 1e9), [], 'ตันแล้วไม่อัปซ้ำ');
+});
+
+test('เลเวลพลอย: ฆ่ามอนแล้วพลอยที่ฝังได้ XP · เซฟ/โหลดเลเวลพลอยครบ · เซฟเก่ารุ่น 9 ย้ายได้', async () => {
+  const { makeMob } = await import('../../src/systems/monsters.js');
+  const { serialize, validate } = await import('../../src/systems/save.js');
+  const g = makeGame(), p = g.player; g.world.load('road');
+  gear(p, ['ruby', null, null]); p.equip.weapon.colors = ['r', 'w', 'w']; p.equip.body.colors = ['w', 'w']; p.nextUid = 99;
+  const m = makeMob(g, 'boar', 5, 0, 0);
+  g.events.emit('mobKilled', { mob: m });
+  assert.equal(p.gemXp.ruby, Math.round(m.xp * g.data.gems.levels.xpShare));
+  const s = validate(JSON.parse(JSON.stringify(serialize(g))), g.data);
+  assert.ok(s); assert.deepEqual(s.gemXp, p.gemXp);
+  const old = { ...JSON.parse(JSON.stringify(serialize(g))), v: 9 }; delete old.gemXp;
+  assert.deepEqual(validate(old, g.data).gemXp, {});
+  assert.equal(validate({ ...serialize(g), gemXp: { notagem: 5 } }, g.data), null, 'พลอยที่ไม่มีจริงถูกปฏิเสธ');
+});

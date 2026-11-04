@@ -5,7 +5,7 @@
 import { C, rrect, circle, poly } from '../art/draw.js';
 import { gemSprite } from '../art/gems.js';
 import { uiText as text } from './hud.js';
-import { socketGem, unsocketGem, skillsOf, SOCKET_SLOTS } from '../systems/gems.js';
+import { socketGem, unsocketGem, skillsOf, SOCKET_SLOTS, gemLevel } from '../systems/gems.js';
 import { useCurrency, socketMax, itemName } from '../systems/items.js';
 import { itemSprite } from '../art/items.js';
 import { drawItemTip, drawGemTip, drawCurrencyTip } from './tooltip.js';
@@ -35,10 +35,15 @@ export function gemLayout(B, p) {
   return { rows, cur };
 }
 
-export function gemIcon(ctx, G, id, x, y, r, dim) {
+export function gemIcon(ctx, G, id, x, y, r, dim, lv) {
   ctx.globalAlpha = dim ? 0.4 : 1;
   ctx.drawImage(gemSprite(G, id, r * 2.4 * (ctx.getTransform().a || 1)), x - r * 1.2, y - r * 1.2, r * 2.4, r * 2.4);
   ctx.globalAlpha = 1;
+  if (lv > 1) {                                                  // ป้ายเลเวลพลอยมุมขวาล่าง
+    const bx = x + r * 0.85, by = y + r * 0.85, br = Math.max(5, r * 0.42);
+    circle(ctx, bx, by, br, '#1a1210', C.goldHi, 1);
+    text(ctx, String(lv), bx, by + 0.5, br * 1.3, C.goldHi, 'center', '600');
+  }
 }
 
 // ไอคอนของเชื่อม/เจาะ: ศิลา (หินเทามีรู) · ด้ายสายสิญจน์ (ม้วนด้ายขาว)
@@ -109,7 +114,7 @@ export function drawGemTab(ctx, game, B) {
       const so = row.sockets[i], g = it.gems[i], picked = game.sockSel && game.sockSel.slot === row.slot && game.sockSel.idx === i;
       const sc = SOCKET_COL[(it.colors && it.colors[i]) || 'w'];        // ช่องสีแดง/เขียว/น้ำเงิน/ขาว
       circle(ctx, so.x, so.y, so.r, sc.fill, picked ? '#ffffff' : sc.rim, picked ? 3.5 : 3);
-      if (g) gemIcon(ctx, G, g, so.x, so.y, so.r * 0.85);
+      if (g) gemIcon(ctx, G, g, so.x, so.y, so.r * 0.85, false, gemLevel(G, p, g));
     }
     text(ctx, `${n}/${socketMax(I, it)} ช่อง`, A.x, row.y + row.h - 10 * s, 9 * s, 'rgba(244,230,200,0.6)', 'center', 'normal');
   }
@@ -139,7 +144,7 @@ export function drawGemTab(ctx, game, B) {
     const cx = g.x + (i % COLS) * g.cell + g.cell / 2, cy = g.y + Math.floor(i / COLS) * g.cell + g.cell / 2;
     if (cy > B.y + B.h - 50 * s) return;
     ctx.fillStyle = game.bagSel === i ? 'rgba(217,166,48,0.35)' : 'rgba(0,0,0,0.3)'; rrect(ctx, cx - g.cell / 2 + 2, cy - g.cell / 2 + 2, g.cell - 4, g.cell - 4, 6 * s); ctx.fill();
-    gemIcon(ctx, G, id, cx, cy, g.cell * 0.3);
+    gemIcon(ctx, G, id, cx, cy, g.cell * 0.3, false, gemLevel(G, p, id));
   });
   // คำอธิบายล่าง + กล่องรายละเอียดของที่เลือก (วาดทับบนสุดใน bag.js)
   let desc = 'แตะพลอย/ช่อง/ของ 1 ครั้งดูรายละเอียด · เส้นทอง = ช่องเชื่อมกัน พลอยเสริมเสริมพลอยสกิลในกลุ่มเดียวกัน', col = C.goldHi;

@@ -105,3 +105,23 @@ test('ข้อความตรงกับค่าจริง: ยาหม
   assert.ok(S.manaPotion.desc.includes(Math.round(S.manaPotion.heal * 100) + '%'));
   for (let t = 1; t <= 5; t++) assert.ok(I.currency['map' + t].desc.includes('เลเวล ' + (MP.levelBase + t * MP.levelPerTier)), 'map' + t);
 });
+
+test('ขวดเติมจากการฆ่า (แบบ PoE): ฆ่าครบได้ขวดคืน ไม่เกินความจุ · มอนพิเศษ/บอสเติมเร็วกว่า · บทนำไม่เติม', async () => {
+  const { makeMob } = await import('../../src/systems/monsters.js');
+  const g = makeGame(), p = g.player, S = g.data.shop;
+  g.world.load('road');
+  const kill = (m) => g.events.emit('mobKilled', { mob: m });
+  p.potions = 0; p.mpPotions = 0;
+  g.flags.tutorialDone = false;
+  for (let i = 0; i < 20; i++) kill(makeMob(g, 'boar', 1, 0, 0));
+  assert.equal(p.potions, 0, 'บทนำไม่เติม');
+  g.flags.tutorialDone = true;
+  for (let i = 0; i < S.potion.killsPerRefill; i++) kill(makeMob(g, 'boar', 1, 0, 0));
+  assert.equal(p.potions, 1); assert.ok(p.mpPotions >= 1);
+  const rare = makeMob(g, 'boar', 1, 0, 0); rare.elite = 'rare';
+  p.potions = 0; p.potionsCharge = 0; kill(rare);
+  assert.equal(p.potions * S.potion.killsPerRefill + p.potionsCharge, S.flaskCharge.rare, 'หายากได้แต้มตามข้อมูล');
+  for (let i = 0; i < 200; i++) kill(makeMob(g, 'boar', 1, 0, 0));
+  assert.equal(p.potions, S.potion.max); assert.equal(p.mpPotions, S.manaPotion.max); assert.equal(p.potionsCharge, 0);
+  assert.ok(S.flaskCharge.rare > S.flaskCharge.magic && S.flaskCharge.magic > S.flaskCharge.normal);
+});

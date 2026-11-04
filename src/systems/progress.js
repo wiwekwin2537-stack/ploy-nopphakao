@@ -1,4 +1,5 @@
 // ประสบการณ์และเลเวล — รับ XP จาก event 'mobKilled' ที่เดียว
+import { gainGemXp, gemLevel } from './gems.js';
 import { playerStats } from './stats.js';
 
 export function xpNeeded(balance, level) { return balance.xpToNext[level] || Infinity; }
@@ -30,5 +31,12 @@ export function setupProgress(game) {
     game.fx.text(mob.x + 12, mob.y - mob.height - 10, '+' + mob.xp + ' XP', '#9fe08a');
     game.audio.play('mobdie');
     gainXp(game, mob.xp);
+    const G = game.data.gems, p = game.player;
+    for (const id of gainGemXp(G, p, mob.xp)) {                   // พลอยที่ฝังได้ XP ด้วย (แบบ PoE)
+      const info = G.main[id] || G.support[id];
+      game.fx.text(p.x, p.y - 90, `${info.name} เลเวล ${gemLevel(G, p, id)}!`, info.hi || info.color, true);
+      game.audio.play('level');
+      game.events.emit('gemLevelUp', { id });
+    }
   });
 }
