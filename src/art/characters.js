@@ -36,9 +36,16 @@ export function swingPose(swing, combo, aim) {
 
 let BLADE = '#d8e0e4';   // สีใบดาบตามอาวุธที่สวม (ตั้งต่อการวาดหนึ่งครั้ง)
 let WEAPON = 'sword';    // ทรงอาวุธ: sword / kris / glaive
+let WSPRITE = null;      // ภาพอาวุธจริงจาก art/items.js (เหมือนในกระเป๋า) — ไม่มี = วาดแบบเรียบ
 
 function sword(ctx, x, y, ang, len = 19) {
   ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
+  if (WSPRITE) {                                              // ภาพอาวุธตัวเดียวกับไอคอน หมุนให้ปลายชี้ไปตามแขน
+    const want = WEAPON === 'glaive' ? len + 16 : WEAPON === 'kris' ? 15 : len + 4, k = want / WSPRITE.reach;
+    ctx.rotate(Math.PI / 2);
+    ctx.drawImage(WSPRITE.sprite, -32 * k, -WSPRITE.gy * k, 64 * k, 64 * k);
+    ctx.restore(); return;
+  }
   ctx.fillStyle = '#5a2f1a'; ctx.fillRect(-5, -1.5, 5, 3);
   ctx.fillStyle = C.gold; ctx.fillRect(-1, -4, 3, 8);
   if (WEAPON === 'glaive') {                                  // ง้าว: ด้ามยาว ใบโค้งที่ปลาย
@@ -105,7 +112,7 @@ function head(ctx, L, d, f, x, y, t, side) {
 
 export function drawHuman(ctx, look, X, Y, o) {
   const L = typeof look === 'string' ? LOOKS[look] : look;
-  BLADE = o.blade || '#d8e0e4'; WEAPON = o.weapon || 'sword';
+  BLADE = o.blade || '#d8e0e4'; WEAPON = o.weapon || 'sword'; WSPRITE = o.weaponArt || null;
   const d = o.dir ?? 0, side = d === 2 || d === 3, f = d === 2 ? -1 : 1;
   const k = o.amt ?? (o.moving ? 1 : 0), ph = (o.walk || 0) * Math.PI * 2, t = o.t || 0;
   const swinging = o.swing >= 0 && L.weapon === 'sword';

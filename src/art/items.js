@@ -166,21 +166,28 @@ const RINGS = {
 
 const ALL = { ...WEAPONS, ...HEADS, ...BODIES, ...LEGS, ...ARMS, ...NECKS, ...RINGS };
 
-function paintItem(g, base, id) {
+function paintItem(g, base, id, upright) {
   const M = base.mat === 'cloth' ? clothMat(base.color) : MAT[base.mat] || MAT.iron;
-  if (WEAPONS[id]) { g.translate(32, 32); g.rotate(Math.PI / 4); g.scale(1.08, 1.08); g.translate(-32, -32); }
+  if (WEAPONS[id] && !upright) { g.translate(32, 32); g.rotate(Math.PI / 4); g.scale(1.08, 1.08); g.translate(-32, -32); }
   (ALL[id] || BODIES.cotton_shirt)(g, M);
 }
 
 // ภาพไอเท็มขนาด px (แคชไว้) — ใช้ drawImage วาดได้ทุกที่
 const cache = new Map();
-export function itemSprite(I, baseId, px) {
-  const size = Math.max(16, Math.ceil(px / 16) * 16), key = baseId + '|' + size;
+export function itemSprite(I, baseId, px, upright = false) {
+  const size = Math.max(16, Math.ceil(px / 16) * 16), key = baseId + '|' + size + (upright ? 'u' : '');
   let c = cache.get(key);
   if (c) return c;
   c = document.createElement('canvas'); c.width = c.height = size;
   const g = c.getContext('2d'); g.scale(size / 64, size / 64);
-  paintItem(g, I.bases[baseId] || { mat: 'iron', color: '#999' }, baseId);
+  paintItem(g, I.bases[baseId] || { mat: 'iron', color: '#999' }, baseId, upright);
   cache.set(key, c);
   return c;
+}
+
+// อาวุธในมือตัวละคร: ภาพเดียวกับไอคอนแต่ตั้งตรง (ปลายอยู่บน) + จุดจับ (gy) และความยาวจากมือถึงปลาย (reach) บนช่อง 64
+const GRIP = { brass_glaive: { gy: 50, reach: 48 }, silver_kris: { gy: 52, reach: 50 } };
+export function weaponInHand(I, baseId) {
+  if (!baseId || !WEAPONS[baseId]) return null;
+  return { sprite: itemSprite(I, baseId, 96, true), ...(GRIP[baseId] || { gy: 50, reach: 49 }) };
 }

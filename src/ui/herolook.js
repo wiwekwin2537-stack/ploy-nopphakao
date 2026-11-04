@@ -1,6 +1,7 @@
 // หน้าตาผู้เล่นตามของที่สวม (ใช้ทั้งในฉากและหน้าโปรไฟล์): สีเสื้อ หมวก กางเกง ปลอกแขน สร้อย อาวุธ ประกาย
 import { LOOKS } from '../art/characters.js';
 import { shade } from '../art/draw.js';
+import { weaponInHand } from '../art/items.js';
 
 const lookCache = { key: '', look: null };
 
@@ -26,6 +27,7 @@ export function heroGear(game) {
   const rs = Object.values(e).filter(Boolean).map((it) => it.rarity);
   return {
     blade: w ? I.bases[w.base].color : '#d8e0e4',
+    weaponArt: w ? weaponInHand(I, w.base) : null,
     weapon: w ? ((I.bases[w.base].look || {}).kind || 'sword') : 'sword',
     glow: rs.includes('red') ? I.rarity.red.color : rs.includes('purple') ? I.rarity.purple.color : null,
   };
