@@ -7,6 +7,7 @@ let nextDropId = 1;
 
 export function setupLoot(game) {
   game.events.on('mobKilled', ({ mob }) => {
+    if (mob.named && !game.flags[mob.named.flag]) { game.flags[mob.named.flag] = true; game.notice = { text: `ล้ม${mob.named.name}แล้ว! กลับไปรับรางวัลในเมือง`, t: 6 }; game.events.emit('questProgress', { flag: mob.named.flag }); }
     const def = mob.def, rng = game.rng, G = game.data.gems, T = mob.elite ? game.data.balance.elites.tiers[mob.elite] : null;
     if (T || rng.chance(def.coinChance)) {                         // มอนพิเศษได้เบี้ยแน่นอน คูณตามระดับ
       const amount = rng.int(def.coins[0], def.coins[1]) * mob.level * (T ? T.coins : 1);

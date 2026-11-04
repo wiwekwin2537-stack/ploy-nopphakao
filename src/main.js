@@ -41,6 +41,7 @@ import { updateWaypoints } from './systems/waypoint.js';
 import { updateAltar } from './systems/maps.js';
 import { drawMapMenu, updateMapMenu } from './ui/mapmenu.js';
 import { drawStash, updateStash, stashLayout } from './ui/stash.js';
+import { drawReward, updateReward, rewardLayout } from './ui/reward.js';
 import { drawHuman } from './art/characters.js';
 import { heroLook, heroGear } from './ui/herolook.js';
 import { itemSprite } from './art/items.js';
@@ -85,7 +86,7 @@ function continueGame() {
   const s = readSave(game.data);
   if (!s) return startNew(false);
   const p = game.player = createPlayer(game.data);
-  Object.assign(p, { level: s.level, xp: s.xp, coins: s.coins, bag: s.bag.slice(), currency: { ...p.currency, ...s.currency }, passives: s.passives.slice(), gemXp: { ...s.gemXp }, items: s.items, stash: s.stash || [], equip: { ...p.equip, ...s.equip }, nextUid: s.nextUid, potions: s.potions, mpPotions: s.mpPotions, hp: s.hp, mp: s.mp });
+  Object.assign(p, { level: s.level, xp: s.xp, coins: s.coins, bag: s.bag.slice(), currency: { ...p.currency, ...s.currency }, passives: s.passives.slice(), gemXp: { ...s.gemXp }, questPoints: s.questPoints || 0, items: s.items, stash: s.stash || [], equip: { ...p.equip, ...s.equip }, nextUid: s.nextUid, potions: s.potions, mpPotions: s.mpPotions, hp: s.hp, mp: s.mp });
   game.flags = { ...s.flags };
   game.mode = 'play';
   enterZone(game, s.zone, s.x, s.y);
@@ -132,6 +133,8 @@ function update(dt) {
     if (r) { game.mode = r === 'back' ? 'bag' : 'play'; input.setUiMode(false); writeSave(game); }
   } else if (game.mode === 'play' && input.pressed.tree) {
     game.mode = 'tree'; openTree(game); game.audio.play('click');
+  } else if (game.mode === 'reward') {
+    if (updateReward(game, layout, game.camera.viewW, game.camera.viewH)) { game.mode = 'play'; writeSave(game); }
   } else if (game.mode === 'stash') {
     if (updateStash(game, layout, game.camera.viewW, game.camera.viewH)) { game.mode = 'play'; writeSave(game); }
   } else if (game.mode === 'mapmenu') {
@@ -198,6 +201,7 @@ function render() {
     if (game.mode === 'warp') drawWarp(ctx, game, layout, w, h);
     if (game.mode === 'mapmenu') drawMapMenu(ctx, game, layout, w, h);
     if (game.mode === 'stash') drawStash(ctx, game, layout, w, h);
+    if (game.mode === 'reward') drawReward(ctx, game, layout, w, h);
   }
 }
 
@@ -219,4 +223,4 @@ game.loopStats = loop.stats;
 loop.start();
 
 // test-hook: เปิดเฉพาะเมื่อมี ?test ใน URL ใช้ในเทสต์อัตโนมัติเท่านั้น
-if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, rollElite, makeUnique, spawnDrop, art: { drawHuman, heroLook, heroGear, itemSprite }, damage: damageMob, stashLayout: () => stashLayout(game.camera.viewW, game.camera.viewH, layout.s), shopLayout: () => shopLayout(game.camera.viewW, game.camera.viewH, layout.s), skills: () => skillsOf(game.data.gems, game.player, game.data.items), stats: () => playerStats(game.player, game.data), layout: () => layout, bagLayout: () => bagLayout(game.camera.viewW, game.camera.viewH, layout.s), gemLayout: () => gemLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s), game.player) }; // test-hook
+if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, rollElite, makeUnique, spawnDrop, art: { drawHuman, heroLook, heroGear, itemSprite }, damage: damageMob, stashLayout: () => stashLayout(game.camera.viewW, game.camera.viewH, layout.s), rewardLayout: () => rewardLayout(game.camera.viewW, game.camera.viewH, layout.s), shopLayout: () => shopLayout(game.camera.viewW, game.camera.viewH, layout.s), skills: () => skillsOf(game.data.gems, game.player, game.data.items), stats: () => playerStats(game.player, game.data), layout: () => layout, bagLayout: () => bagLayout(game.camera.viewW, game.camera.viewH, layout.s), gemLayout: () => gemLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s), game.player) }; // test-hook

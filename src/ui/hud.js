@@ -6,7 +6,7 @@ import { pointsLeft } from '../systems/passives.js';
 import { drawBottomBar } from './hudbar.js';
 import { skillSprite } from '../art/skills.js';
 import { skillOf } from '../systems/skills.js';
-import { currentQuest } from '../systems/quests.js';
+import { questTracker } from '../systems/quests.js';
 import { hintText, tutorialTarget } from '../systems/tutorial.js';
 
 const FONT = 'Kanit, sans-serif';
@@ -334,16 +334,23 @@ export function drawTitle(ctx, game, L, w, h) {
 
 // เป้าหมายเนื้อเรื่อง (ใต้เบี้ย มุมซ้ายบน): หัวข้อทอง + คำอธิบายตัดบรรทัด
 function drawQuest(ctx, game, x, y, s) {
-  const q = currentQuest(game);
-  if (!q || game.mode !== 'play') return;
-  const w = 200 * s, fs = 9.5 * s, lines = [];
+  const list = questTracker(game);
+  if (!list.length || game.mode !== 'play') return;
+  const w = 210 * s, fs = 9.5 * s, pad = 9 * s;
   ctx.font = `normal ${fs}px ${FONT}`;
-  lines.push(...wrapLines(ctx, q.text, w - 16 * s).slice(0, 4));
-  const h = 24 * s + lines.length * fs * 1.4;
+  const blocks = list.map((e, i) => ({ e, lines: wrapLines(ctx, e.text, w - 16 * s).slice(0, i === 0 ? 3 : 2) }));
+  const h = 18 * s + blocks.reduce((a, b) => a + 15 * s + b.lines.length * fs * 1.35 + 4 * s, 0);
   ctx.fillStyle = 'rgba(14,12,18,0.6)'; rrect(ctx, x, y, w, h, 7 * s); ctx.fill();
-  ctx.fillStyle = q.here ? '#7dff8a' : C.gold; ctx.fillRect(x, y + 4 * s, 3 * s, h - 8 * s);
-  text(ctx, `◆ ${q.title}${q.until ? ` (${q.step}/${q.total - 1})` : ''}`, x + 9 * s, y + 11 * s, 10.5 * s, C.goldHi, 'left', '600');
-  lines.forEach((l, i) => text(ctx, l, x + 9 * s, y + 24 * s + i * fs * 1.4, fs, 'rgba(244,230,200,0.85)', 'left', 'normal'));
+  text(ctx, list[0].act, x + pad, y + 9 * s, 9 * s, 'rgba(244,230,200,0.6)', 'left', '600');
+  let cy = y + 20 * s;
+  for (const { e, lines } of blocks) {
+    const col = e.kind === 'ready' ? '#7dff8a' : e.kind === 'side' ? '#9ac0ff' : C.goldHi;
+    const bh = 15 * s + lines.length * fs * 1.35;
+    ctx.fillStyle = e.here || e.kind === 'ready' ? '#7dff8a' : e.kind === 'side' ? '#6a8ad8' : C.gold; ctx.fillRect(x, cy - 2 * s, 3 * s, bh);
+    text(ctx, (e.kind === 'side' ? '◇ ' : '◆ ') + e.title, x + pad, cy + 5 * s, 10.5 * s, col, 'left', '600');
+    lines.forEach((l, i) => text(ctx, l, x + pad, cy + 18 * s + i * fs * 1.35, fs, 'rgba(244,230,200,0.85)', 'left', 'normal'));
+    cy += bh + 4 * s;
+  }
 }
 
 // ตัดบรรทัดตามคำภาษาไทย (Intl.Segmenter) ไม่ตัดกลางคำ · ใช้ฟอนต์ที่ตั้งไว้ใน ctx

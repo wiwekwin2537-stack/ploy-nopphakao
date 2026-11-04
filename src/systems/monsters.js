@@ -36,6 +36,7 @@ export function spawnZoneMobs(game) {
   z.spawns.forEach((s, gi) => {
     game.spawnTimers[gi] = [];
     if (s.afterFlag && !game.flags[s.afterFlag]) return;
+    if (s.named && game.flags[s.named.flag]) return;            // มอนชื่อเฉพาะของเควส: ล้มแล้วไม่เกิดอีก
     const n = game.data.monsters[s.type].boss ? s.count : Math.round(s.count * ((z.def.mobMods && z.def.mobMods.count) || 1));   // บอสไม่ทวีจำนวน
     for (let i = 0; i < n; i++) spawnOne(game, s, gi, p.x, p.y, 280);
   });
@@ -48,7 +49,8 @@ function spawnOne(game, s, gi, ax, ay, minD) {
   const m = makeMob(game, s.type, lv, spot.x, spot.y, gi);
   const M = game.world.zone.def.mobMods;                        // ค่าปรับของถ้ำลายแทง (เลือดหนา/ตีแรง/เร็ว)
   if (M) { m.hp = m.maxHp = Math.round(m.maxHp * (M.hp || 1)); m.damage = Math.round(m.damage * (M.damage || 1)); m.speed = m.baseSpeed = m.baseSpeed * (M.speed || 1); }
-  if (game.flags.tutorialDone && !m.def.boss) rollElite(game, m);
+  if (s.named) { rollElite(game, m, 'rare'); m.named = s.named; }   // มอนเควส: หายากสีเหลืองเสมอ มีชื่อเฉพาะ
+  else if (game.flags.tutorialDone && !m.def.boss) rollElite(game, m);
   game.mobs.push(m);
   return m;
 }
@@ -71,6 +73,7 @@ export function rollElite(game, m, force) {
 
 // ชื่อบนหัว: มอนพิเศษมีชื่อค่าพิเศษนำหน้า (แบบ PoE)
 export function mobName(game, m) {
+  if (m.named) return m.named.name;
   if (!m.elite) return m.def.name;
   const E = game.data.balance.elites;
   return m.eliteMods.map((id) => E.mods[id].name).join(' ') + ' ' + m.def.name;

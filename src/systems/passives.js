@@ -2,7 +2,7 @@
 // คืนแต้มได้เฉพาะโหนดที่ถอดแล้วต้นยังต่อถึงจุดเริ่มครบ
 
 export function startOf(p, P) { return (p.passives || []).find((id) => P.nodes[id] && P.nodes[id].kind === 'start') || null; }
-export function pointsTotal(p, P) { return (p.level - 1) * P.pointsPerLevel; }
+export function pointsTotal(p, P) { return (p.level - 1) * P.pointsPerLevel + (p.questPoints || 0); }   // + แต้มจากเควสรอง
 export function pointsSpent(p, P) { return (p.passives || []).filter((id) => P.nodes[id] && P.nodes[id].kind !== 'start').length; }
 export function pointsLeft(p, P) { return pointsTotal(p, P) - pointsSpent(p, P); }
 

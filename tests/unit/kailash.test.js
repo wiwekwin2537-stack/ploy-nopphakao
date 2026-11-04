@@ -10,7 +10,7 @@ import { damageMob } from '../../src/systems/combat.js';
 
 function canReach(g) {
   enterZone(g, 'himmapan'); g.world.refreshFlags();
-  const e = g.world.zone.exits.find((x) => x.to === 'kailash');
+  const e = g.world.zone.exits.find((x) => x.to === 'hermitage');
   return !!reachable(g.world, g.world.zone.start, (x, y) => g.world.exitAt(x, y) === e);
 }
 
@@ -38,7 +38,7 @@ test('บุษราคัมทะลุ 2 ตัวในตัว · พล�
 });
 
 test('พ่อเฒ่าจันทร์เล่าเรื่องเขาไกรลาสครั้งเดียวหลังล้มพญาคชสีห์', () => {
-  const g = makeGame(); Object.assign(g.flags, { tutorialDone: true, metChan: true, yakSlain: true, heardHimmapan: true, khotchasi_kingSlain: true });
+  const g = makeGame(); Object.assign(g.flags, { tutorialDone: true, metChan: true, yakSlain: true, heardHimmapan: true, q_q1_main: true, khotchasi_kingSlain: true });
   enterZone(g, 'town');
   const chan = g.world.zone.npcs.find((n) => n.id === 'chan');
   talkTo(g, chan); assert.deepEqual(g.dialog.lines, g.data.dialogue.chan_king); g.dialog.onDone();

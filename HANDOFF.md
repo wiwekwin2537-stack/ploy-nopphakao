@@ -43,6 +43,7 @@ AI ทุกตัวต้องใช้สกิล `clean-game-dev` · อ�
 - ร้านค้าแบบตาราง (แบบ PoE/เอโดเรีย): ซ้ายช่องของขาย (ราคาใต้ไอคอน) ขวากระเป๋าผู้เล่น · แตะ 1 = กล่องรายละเอียด+เทียบ · แตะซ้ำ = ซื้อ/ขาย · shopLayout export
 - ของยูนีคสีส้ม: items.json "uniques" (ฐาน ค่าตายตัว grants/trigger ตำนาน from/world) · systems/uniques.js · สกิลจากของต่อท้ายปุ่มสกิล (กรอบส้ม) ออร่าจากของรวมใน aurasOf · trigger hit/hurt คูลดาวน์ 0.4 วิ ไม่ใช้มานา · releaseSkill แยกจาก castSkill · เล่นแร่แปรธาตุไม่ได้
 - GitHub: wiwekwin2537-stack/ploy-nopphakao (main) · เล่นจริง: https://ploy-nopphakao.onrender.com (Render static site srv-dbloo4uk1f9s73encsog เสิร์ฟ docs/ · auto-deploy ทุก push) · ทุกงานที่เสร็จ: npm test → commit → push
+- เนื้อเรื่องแบบบท (Act) ของ PoE: data/quests.json (acts + list) · systems/quests.js (questState/currentAct/questTracker/readyQuestFor/claimQuest) · เมืองประจำบท 2-4: ค่ายพรานไพร อาศรมฤๅษีเชิงเขา ศาลาท่าสวรรค์ (สร้างด้วย tools/gen_towns.py — มีศาลวาร์ป หีบ ร้าน คนให้เควส) · เควสหลัก = ล้มบอสท้ายบท → คุยกับคนให้เควส → หน้าต่างเลือกพลอย 1 จาก 3 (ui/reward.js) · เควสรอง = ล้มมอนชื่อเฉพาะ (spawn "named" หายากเสมอ ไม่เกิดซ้ำ) → แต้มพาสซีฟ (p.questPoints) · เซฟรุ่น 12 · มุมซ้ายบนแสดงบท + เควส 3 อัน (เขียว = รับรางวัลค้าง ฟ้า = เควสรอง)
 - check.js ตรวจด้วยว่าทุก import มี export จริง (เคยมีไฟล์ถูกเขียนว่างแล้วตัวตรวจไม่จับ)
 - ท่าเดิน: ระยะก้าว STRIDE ใน player.js (ยิ่งมากยิ่งก้าวยาว)
 - ยังไม่มี repo บน GitHub ที่ Claude เขียนได้ → ตอนนี้ส่งเกมเป็นหน้าเว็บ artifact

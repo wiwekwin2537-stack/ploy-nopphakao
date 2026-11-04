@@ -5,6 +5,7 @@ import { makeGame } from './helpers.js';
 import { reachable } from './path.js';
 import { enterZone } from '../../src/systems/travel.js';
 import { talkTo } from '../../src/systems/npc.js';
+import { claimQuest } from '../../src/systems/quests.js';
 import { gainXp } from '../../src/systems/progress.js';
 import { damageMob } from '../../src/systems/combat.js';
 import { rollItem } from '../../src/systems/items.js';
@@ -13,7 +14,7 @@ import { updateMonsters } from '../../src/systems/monsters.js';
 
 function canReachForest(g) {
   enterZone(g, 'field'); g.world.refreshFlags();
-  const e = g.world.zone.exits.find((x) => x.to === 'himmapan');
+  const e = g.world.zone.exits.find((x) => x.to === 'camp_hunter');
   return !!reachable(g.world, g.world.zone.start, (x, y) => g.world.exitAt(x, y) === e);
 }
 
@@ -40,6 +41,10 @@ test('พ่อเฒ่าจันทร์เล่าเรื่องป�
   g.flags.yakSlain = true;
   talkTo(g, chan); assert.deepEqual(g.dialog.lines, g.data.dialogue.chan_yak);
   g.dialog.onDone();
+  assert.equal(g.mode, 'reward', 'เล่าจบแล้วเปิดหน้าต่างเลือกพลอยรางวัล');
+  talkTo(g, chan); assert.deepEqual(g.dialog.lines, g.data.dialogue.chan_yak, 'ยังไม่เลือก = รับใหม่ได้');
+  assert.ok(claimQuest(g, g.data.quests.list.find((q) => q.id === 'q1_main'), 'sapphire'));
+  assert.ok(g.player.bag.includes('sapphire') && g.flags.heardHimmapan);
   talkTo(g, chan); assert.notDeepEqual(g.dialog.lines, g.data.dialogue.chan_yak);
 });
 

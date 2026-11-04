@@ -9,7 +9,7 @@ import { damageMob } from '../../src/systems/combat.js';
 
 function canReach(g) {
   enterZone(g, 'kailash'); g.world.refreshFlags();
-  const e = g.world.zone.exits.find((x) => x.to === 'tavatimsa');
+  const e = g.world.zone.exits.find((x) => x.to === 'sky_sala');
   return !!reachable(g.world, g.world.zone.start, (x, y) => g.world.exitAt(x, y) === e);
 }
 
@@ -37,7 +37,7 @@ test('ล้มท้าวเวสสุวรรณ: ของม่วง/�
   damageMob(g, boss, 1e8); damageMob(g, boss, 1e8);
   assert.equal(g.drops.slice(n).filter((d) => d.kind === 'item' && d.item.rarity !== 'unique').length, 4);
   assert.equal(g.flags.vessavanaSlain, true);
-  Object.assign(g.flags, { metChan: true, heardHimmapan: true, heardKailash: true, heardHeaven: true });
+  Object.assign(g.flags, { metChan: true, heardHimmapan: true, q_q1_main: true, heardKailash: true, heardHeaven: true });
   enterZone(g, 'town');
   const chan = g.world.zone.npcs.find((x) => x.id === 'chan');
   talkTo(g, chan); assert.deepEqual(g.dialog.lines, g.data.dialogue.chan_vessavana); g.dialog.onDone();

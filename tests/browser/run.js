@@ -376,6 +376,10 @@ await check('ป่าหิมพานต์: หลังล้มยัก�
   await G(page, () => { const g = __ploy.game; g.flags.yakSlain = true; g.world.refreshFlags(); __ploy.enterZone(g, 'field', 66 * 32, 29 * 32); g.player.invuln = 999; g.mobs.length = 0; });
   await page.waitForTimeout(300);
   await hold(page, 'KeyD', 1600);
+  assert((await state(page)).zone === 'camp_hunter', 'ไม่ถึงค่ายพรานไพร: ' + (await state(page)).zone);   // บทใหม่: ผ่านเมืองของบทก่อน
+  await page.screenshot({ path: SHOTS + '/28-camp_hunter.png' });
+  await G(page, () => { const g = __ploy.game; g.player.x = 29.6 * 32; g.player.y = 11 * 32; });
+  await hold(page, 'KeyD', 900);
   const s = await state(page);
   assert(s.zone === 'himmapan', 'เดินเข้าป่าไม่ได้: ' + s.zone);
   await G(page, () => { const g = __ploy.game; g.player.x = 30 * 32; g.player.y = 21 * 32; });
@@ -402,6 +406,10 @@ await check('เขาไกรลาส: หลังล้มพญาคช�
   await G(page, () => { const g = __ploy.game; g.flags.khotchasi_kingSlain = true; __ploy.enterZone(g, 'himmapan', 65 * 32, 34.5 * 32); g.player.invuln = 999; g.mobs.length = 0; });
   await page.waitForTimeout(300);
   await hold(page, 'KeyD', 1600);
+  assert((await state(page)).zone === 'hermitage', 'ไม่ถึงอาศรมฤๅษี: ' + (await state(page)).zone);   // บทใหม่: ผ่านเมืองของบทก่อน
+  await page.screenshot({ path: SHOTS + '/28-hermitage.png' });
+  await G(page, () => { const g = __ploy.game; g.player.x = 29.6 * 32; g.player.y = 11 * 32; });
+  await hold(page, 'KeyD', 900);
   const s = await state(page);
   assert(s.zone === 'kailash', 'เดินขึ้นเขาไม่ได้: ' + s.zone);
   await G(page, () => { const g = __ploy.game; g.player.x = 20 * 32; g.player.y = 13.5 * 32; });
@@ -429,6 +437,10 @@ await check('สวรรค์ดาวดึงส์: ล้มครุฑ�
   await G(page, () => { const g = __ploy.game; g.flags.garuda_kingSlain = true; g.world.refreshFlags(); __ploy.enterZone(g, 'kailash', 56 * 32, 5.5 * 32); g.player.invuln = 999; g.mobs.length = 0; });
   await page.waitForTimeout(300);
   await hold(page, 'KeyD', 1200);
+  assert((await state(page)).zone === 'sky_sala', 'ไม่ถึงศาลาท่าสวรรค์: ' + (await state(page)).zone);
+  await page.screenshot({ path: SHOTS + '/28-sky_sala.png' });
+  await G(page, () => { const g = __ploy.game; g.player.x = 29.6 * 32; g.player.y = 11 * 32; });
+  await hold(page, 'KeyD', 900);
   assert((await state(page)).zone === 'tavatimsa', 'เข้าสวรรค์ไม่ได้: ' + (await state(page)).zone);
   await G(page, () => { const g = __ploy.game, k = g.mobs.find((m) => m.type === 'vessavana'); g.player.x = k.x; g.player.y = k.y + 170; });
   await page.waitForTimeout(1500);

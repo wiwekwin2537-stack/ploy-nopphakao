@@ -1,4 +1,5 @@
 // ชาวเวียงและกล่องบทสนทนา
+import { readyQuestFor, claimQuest } from './quests.js';
 export function openDialog(game, speaker, lines, onDone) {
   game.dialog = { speaker, lines, i: 0, shown: 0, onDone };
   game.mode = 'dialog';
@@ -10,6 +11,14 @@ function lineFor(game, npc) {
   if (npc.id === 'chan' && !game.flags.metChan) {
     return { lines: D.chan_first, done: () => { game.flags.metChan = true; game.flags.tutorialDone = true; game.events.emit('metChan', {}); } };
   }
+  // เควสที่ทำสำเร็จแล้ว: บทพูดรับรางวัล → แต้มพาสซีฟทันที / เปิดหน้าต่างเลือกพลอย
+  const q = readyQuestFor(game, npc.id);
+  if (q) return { lines: D[q.talk], done: () => {
+    if (q.reward.gems) { game.reward = { quest: q.id, sel: null }; game.mode = 'reward'; return; }
+    claimQuest(game, q);
+    game.notice = { text: `เควส "${q.title}" สำเร็จ! ได้แต้มพาสซีฟ ${q.reward.passive} แต้ม`, t: 6 };
+    game.audio.play('level');
+  } };
   // บทพูดตามเหตุการณ์ (data/dialogue.json "events"): พูดครั้งเดียวเมื่อมีธงที่กำหนด
   const ev = (D.events || []).find((e) => e.npc === npc.id && game.flags[e.flag] && !game.flags[e.once]);
   if (ev) return { lines: D[ev.lines], done: () => { game.flags[ev.once] = true; } };
@@ -22,7 +31,7 @@ export function talkTo(game, npc) {
   const p = game.player;
   p.moveTarget = null; p.targetMob = null; game.pendingTalk = null;
   npc.face = p.x < npc.x ? -1 : 1;
-  if (npc.shop) {                                      // แม่ค้า: ทักทายแล้วเปิดร้าน
+  if (npc.shop && !readyQuestFor(game, npc.id)) {                                      // แม่ค้า: ทักทายแล้วเปิดร้าน
     openDialog(game, npc.name, game.data.dialogue[npc.id], () => { game.mode = 'shop'; game.shopSel = null; });
     return;
   }

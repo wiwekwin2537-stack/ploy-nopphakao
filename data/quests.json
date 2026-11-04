@@ -1,10 +1,21 @@
 {
- "_doc": "เป้าหมายเนื้อเรื่องบนจอ (มุมซ้ายบน): แสดงข้อแรกที่ธง until ยังไม่ถูกตั้ง · until = null คือเป้าหมายสุดท้ายแบบเล่นได้เรื่อยๆ",
+ "_doc": "เนื้อเรื่องแบ่งเป็นบท (Act) แบบ PoE: แต่ละบทมีเมืองของตัวเอง เควสหลัก (ล้มบอสท้ายบท → คุยกับคนสั่งเควส → เลือกพลอย 1 จาก 3) และเควสรอง (ล้มมอนชื่อเฉพาะ → ได้แต้มพาสซีฟ) · done = ธงที่ทำให้เควสสำเร็จ · giver = NPC ที่ให้รางวัล · talk = บทพูดตอนรับรางวัล (data/dialogue.json) · alsoFlag = ธงเดิมที่ตั้งพร้อมกัน",
+ "acts": [
+  { "n": 1, "name": "บทที่ 1 · วัดร้าง", "town": "town", "zones": ["town", "field", "dungeon1", "dungeon2", "dungeon3"] },
+  { "n": 2, "name": "บทที่ 2 · ป่าหิมพานต์", "town": "camp_hunter", "zones": ["camp_hunter", "himmapan"] },
+  { "n": 3, "name": "บทที่ 3 · เขาไกรลาส", "town": "hermitage", "zones": ["hermitage", "kailash"] },
+  { "n": 4, "name": "บทที่ 4 · สวรรค์ดาวดึงส์", "town": "sky_sala", "zones": ["sky_sala", "tavatimsa"] },
+  { "n": 5, "name": "หลังจบเรื่อง · ถ้ำลายแทง", "town": "town", "zones": ["map"] }
+ ],
  "list": [
-  { "until": "yakSlain", "title": "ปราบยักษ์วัด", "text": "ไปวัดร้างมุมตะวันออกเฉียงเหนือของทุ่งนาร้าง ลงถึงชั้น 3 แล้วล้มยักษ์วัด", "zones": ["dungeon1", "dungeon2", "dungeon3"] },
-  { "until": "khotchasi_kingSlain", "title": "ป่าหิมพานต์", "text": "ม่านเวทหายแล้ว ออกทางตะวันออกของทุ่งนาร้าง เข้าป่าหิมพานต์ ล้มพญาคชสีห์ทองคำ", "zones": ["himmapan"] },
-  { "until": "garuda_kingSlain", "title": "ยอดเขาไกรลาส", "text": "ผ่านม่านปลายป่าหิมพานต์ ขึ้นเขาไกรลาส ล้มพญาครุฑราชบนยอดเขา", "zones": ["kailash"] },
-  { "until": "vessavanaSlain", "title": "สวรรค์ดาวดึงส์", "text": "เข้าประตูสวรรค์บนยอดเขาไกรลาส ล้มท้าวเวสสุวรรณ", "zones": ["tavatimsa"] },
-  { "until": null, "title": "ถ้ำลายแทง", "text": "เก็บลายแทงจากมอนและบอส ใช้ที่แท่นลายแทงในเวียงด่านหิน ผจญถ้ำสุ่มที่ยากขึ้นทีละขั้น", "zones": ["map"] }
- ]
+  { "id": "q1_main", "act": 1, "kind": "main", "title": "ปราบยักษ์วัด", "text": "ไปวัดร้างมุมตะวันออกเฉียงเหนือของทุ่งนาร้าง ลงถึงชั้นสาม แล้วล้มยักษ์วัด", "done": "yakSlain", "giver": "chan", "giverName": "พ่อเฒ่าจันทร์", "talk": "chan_yak", "alsoFlag": "heardHimmapan", "reward": { "gems": ["sapphire", "emerald", "onyx"] } },
+  { "id": "q1_side", "act": 1, "kind": "side", "title": "กระสือเรือนทอง", "text": "ยายแม้นเล่าว่ามีกระสือตัวใหญ่ลอยวนแถบหนองน้ำทางเหนือของทุ่งนาร้าง ไปปราบกระสือนางเรือนทอง", "done": "q1_side_kill", "giver": "maen", "giverName": "ยายแม้น", "talk": "maen_reward", "reward": { "passive": 1 } },
+  { "id": "q2_main", "act": 2, "kind": "main", "title": "พญาคชสีห์ทองคำ", "text": "ออกทางตะวันออกของค่ายพรานไพร เข้าป่าหิมพานต์ ล้มพญาคชสีห์ทองคำที่ปลายป่า", "done": "khotchasi_kingSlain", "giver": "phran", "giverName": "พรานบุญ", "talk": "phran_reward", "reward": { "gems": ["multi", "area", "power"] } },
+  { "id": "q2_side", "act": 2, "kind": "side", "title": "หัสดีลิงค์ตาเดียว", "text": "พรานบุญเห็นหัสดีลิงค์ตาเดียวทำรังทางเหนือของป่าหิมพานต์ ไปล้มมันให้ได้", "done": "q2_side_kill", "giver": "lam", "giverName": "ลูกหาบล่ำ", "talk": "lam_reward", "reward": { "passive": 1 } },
+  { "id": "q3_main", "act": 3, "kind": "main", "title": "พญาครุฑราช", "text": "ออกทางตะวันออกของอาศรมฤๅษี ขึ้นเขาไกรลาส ล้มพญาครุฑราชบนยอดเขา", "done": "garuda_kingSlain", "giver": "ruesi", "giverName": "ฤๅษีโคดม", "talk": "ruesi_reward", "reward": { "gems": ["garnet", "jade", "zircon"] } },
+  { "id": "q3_side", "act": 3, "kind": "side", "title": "กินนรดำแห่งหุบหิมะ", "text": "ศิษย์ฤๅษีถูกกินนรดำทำร้ายที่หุบหิมะทางใต้ของเขาไกรลาส ไปปราบมัน", "done": "q3_side_kill", "giver": "sit", "giverName": "ศิษย์ฤๅษี", "talk": "sit_reward", "reward": { "passive": 1 } },
+  { "id": "q4_main", "act": 4, "kind": "main", "title": "ท้าวเวสสุวรรณ", "text": "เข้าสวรรค์ชั้นดาวดึงส์ทางตะวันออกของศาลาท่าสวรรค์ ล้มท้าวเวสสุวรรณ", "done": "vessavanaSlain", "giver": "thep_su", "giverName": "เทพบุตรสุริยา", "talk": "thep_reward", "reward": { "gems": ["diamond", "haste", "pierce"] } },
+  { "id": "q4_side", "act": 4, "kind": "side", "title": "เทวบุตรหลงสวรรค์", "text": "คนธรรพ์บอกว่ามีเทวบุตรเสียสติเดินเพ่นพ่านทางเหนือของดาวดึงส์ ไปหยุดเขา", "done": "q4_side_kill", "giver": "khon_fao", "giverName": "คนธรรพ์เฝ้าประตู", "talk": "khon_reward", "reward": { "passive": 1 } }
+ ],
+ "endgame": { "title": "ถ้ำลายแทง", "text": "เก็บลายแทงจากมอนและบอส ใช้ที่แท่นลายแทงในเวียงด่านหิน ผจญถ้ำสุ่มที่ยากขึ้นทีละขั้น" }
 }
