@@ -53,22 +53,13 @@ export function doAttack(game) {
   if (target) faceAngle(p, Math.atan2(target.y - target.height * 0.3 - (p.y - 10), target.x - p.x));
   p.attackCd = playerStats(p, game.data).attackCooldown;
   const kind = weaponKind(game);
-  if (kind === 'bow' || kind === 'crossbow') {                    // ธนู/หน้าไม้: ยิงลูกศรไปหาเป้า
-    const tg = target || nearestMob(game, p.x, p.y, 380);
+  if (kind === 'bow' || kind === 'crossbow' || kind === 'staff') {   // อาวุธระยะไกล: ท่าง้าง/ร่ายก่อน แล้วปล่อยกระสุนตามจังหวะ (ไม่ยิงออกดื้อๆ)
+    const bow = kind !== 'staff', A = bow ? B.arrow : B.staffBolt;
+    const tg = target || nearestMob(game, p.x, p.y, bow ? 380 : 340);
     if (tg) faceAngle(p, Math.atan2(tg.y - tg.height * 0.3 - (p.y - 10), tg.x - p.x));
-    const st = playerStats(p, game.data), A = B.arrow, sy = p.y - 20, a = tg ? Math.atan2(tg.y - tg.height * 0.4 - sy, tg.x - p.x) : p.aim;
-    spawnShot(game, { x: p.x + Math.cos(a) * 12, y: sy + Math.sin(a) * 8, vx: Math.cos(a) * A.speed, vy: Math.sin(a) * A.speed, life: A.life, radius: A.radius, from: 'player', damage: st.damage * A.damage, crit: st.crit, critMult: st.critMult, kind: 'arrow', splash: 0, pierce: kind === 'crossbow' ? A.crossbowPierce : 0, grace: 0.12 });
-    p.castT = 0.2; p.combatTimer = 4; game.audio.play('swing');
-    game.events.emit('playerAttacked', { hits: 0, ranged: true });
-    return true;
-  }
-  if (kind === 'staff') {                                         // คทา: ชูคทาแล้วยิงลูกพลังไปหาเป้า (ไม่เอาคทาตี)
-    const tg = target || nearestMob(game, p.x, p.y, 340);
-    if (tg) faceAngle(p, Math.atan2(tg.y - tg.height * 0.3 - (p.y - 10), tg.x - p.x));
-    const st = playerStats(p, game.data), S = B.staffBolt, sy = p.y - 20, a = tg ? Math.atan2(tg.y - tg.height * 0.4 - sy, tg.x - p.x) : p.aim;
-    spawnShot(game, { x: p.x + Math.cos(a) * 14, y: sy + Math.sin(a) * 10, vx: Math.cos(a) * S.speed, vy: Math.sin(a) * S.speed, life: S.life, radius: S.radius, from: 'player', damage: st.damage * S.damage, crit: st.crit, critMult: st.critMult, kind: 'arcane', splash: 0, pierce: 0, grace: 0.12 });
-    p.castT = 0.25; p.combatTimer = 4; game.audio.play('cast');
-    game.events.emit('playerAttacked', { hits: 0, ranged: true });
+    p.shootT = A.pose; p.shootDur = A.pose; p.shootKind = kind; p.combatTimer = 4;
+    p.pendingShot = { t: A.pose * A.release, target: tg, kind, bow };
+    if (!bow) game.audio.play('cast');
     return true;
   }
   // คอมโบ 3 จังหวะ: ฟันขวา→ซ้าย, ซ้าย→ขวา, แทงตรง (กดต่อเนื่องภายใน 0.7 วิ)
@@ -84,6 +75,26 @@ export function doAttack(game) {
 export const SWING_TIME = 0.34;
 // ระยะเดินต่อการก้าวครบ 1 รอบ (ซ้าย+ขวา) — ค่ามากขึ้น = ก้าวยาวช้าลง ดูสมจริงขึ้น
 export const STRIDE = 92;
+
+// ปล่อยกระสุนของอาวุธระยะไกลตอนถึงจังหวะ (ลูกศรออกจากสาย / ลูกพลังออกจากหัวคทา)
+function applyPendingShot(game, dt) {
+  const p = game.player, B = game.data.balance.player, h = p.pendingShot;
+  if (!h) return;
+  h.t -= dt;
+  if (h.t > 0) return;
+  p.pendingShot = null;
+  const A = h.bow ? B.arrow : B.staffBolt, st = playerStats(p, game.data), tg = h.target && !h.target.dead ? h.target : null;
+  const o = shotOrigin(p, h.bow ? 'bow' : 'staff'), a = tg ? Math.atan2(tg.y - tg.height * 0.4 - o.y, tg.x - o.x) : p.aim;
+  if (tg) faceAngle(p, Math.atan2(tg.y - tg.height * 0.3 - (p.y - 10), tg.x - p.x));
+  spawnShot(game, { x: o.x, y: o.y, vx: Math.cos(a) * A.speed, vy: Math.sin(a) * A.speed, life: A.life, radius: A.radius, from: 'player', damage: st.damage * A.damage, crit: st.crit, critMult: st.critMult, kind: h.bow ? 'arrow' : 'arcane', splash: 0, pierce: h.kind === 'crossbow' ? A.crossbowPierce : 0, grace: 0.12 });
+  game.audio.play(h.bow ? 'swing' : 'cast');
+  game.events.emit('playerAttacked', { hits: 0, ranged: true });
+}
+
+// จุดที่กระสุนออก: ธนู = ระดับไหล่ข้างหน้า · คทา = หัวคทาที่ชูขึ้น (ตรงกับภาพใน characters.js)
+export function shotOrigin(p, kind) {
+  return kind === 'bow' ? { x: p.x + Math.cos(p.aim) * 14, y: p.y - 26 + Math.sin(p.aim) * 10 } : { x: p.x + Math.cos(p.aim) * 8, y: p.y - 46 };
+}
 
 function applyPendingHit(game, dt) {
   const p = game.player, B = game.data.balance.player, h = p.pendingHit;
@@ -128,6 +139,8 @@ export function updatePlayer(game, dt) {
   p.invuln = Math.max(0, p.invuln - dt);
   p.hurt = Math.max(0, p.hurt - dt);
   p.castT = Math.max(0, p.castT - dt);
+  p.shootT = Math.max(0, (p.shootT || 0) - dt);
+  applyPendingShot(game, dt);
   p.combatTimer = Math.max(0, p.combatTimer - dt);
   if (p.swing >= 0) { p.swing += dt / SWING_TIME; if (p.swing > 1) p.swing = -1; }
   p.comboT = Math.max(0, (p.comboT || 0) - dt);

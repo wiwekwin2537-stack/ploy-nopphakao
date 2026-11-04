@@ -66,15 +66,19 @@
    "speed": 460,
    "life": 0.75,
    "radius": 7,
-   "damage": 0.9
+   "damage": 0.9,
+   "pose": 0.32,
+   "release": 0.5
   },
   "arrow": {
-   "_doc": "ธนู/หน้าไม้ ตีธรรมดา = ยิงลูกศร (ดาเมจโจมตี × damage) · หน้าไม้ทะลุ 1 ตัว",
+   "_doc": "ธนู/หน้าไม้ ตีธรรมดา = ยิงลูกศร (ดาเมจโจมตี × damage) · หน้าไม้ทะลุ 1 ตัว · pose = เวลาท่ายิงทั้งหมด (วิ) · release = จังหวะปล่อยศร (สัดส่วนของท่า: ง้างสาย → ปล่อย)",
    "speed": 640,
    "life": 0.6,
    "radius": 5,
    "damage": 1.0,
-   "crossbowPierce": 1
+   "crossbowPierce": 1,
+   "pose": 0.34,
+   "release": 0.6
   }
  },
  "monsterScale": {

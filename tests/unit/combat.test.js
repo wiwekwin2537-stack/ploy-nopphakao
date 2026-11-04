@@ -89,7 +89,7 @@ test('คอมโบฟัน: ดาบโดนหลังจังหวะ
 });
 
 test('คทา (หมอผี): ตีธรรมดาเป็นลูกพลังพุ่งไปหาเป้าไกล ไม่ใช่เอาคทาฟัน · อาชีพอื่นยังฟันใกล้', async () => {
-  const { giveStarterGear, doAttack } = await import('../../src/systems/player.js');
+  const { giveStarterGear, doAttack, updatePlayer } = await import('../../src/systems/player.js');
   const { makeMob } = await import('../../src/systems/monsters.js');
   const { enterZone } = await import('../../src/systems/travel.js');
   for (const [cls, ranged] of [['shaman', true], ['warrior', false]]) {
@@ -97,14 +97,17 @@ test('คทา (หมอผี): ตีธรรมดาเป็นลูก
     enterZone(g, 'field'); g.mobs.length = 0;
     const p = g.player, m = makeMob(g, 'boar', 1, p.x + 200, p.y, -1); g.mobs.push(m);
     assert.ok(doAttack(g));
+    if (ranged) { assert.equal(g.shots.length, 0, 'ยังไม่ปล่อยทันที — มีท่าร่ายก่อน'); assert.ok(p.shootT > 0 && p.shootKind === 'staff'); }
+    const swung = p.swing >= 0;
+    for (let i = 0; i < 30 && !g.shots.length; i++) updatePlayer(g, 1 / 60);
     assert.equal(g.shots.filter((s) => s.from === 'player').length, ranged ? 1 : 0, cls);
     if (ranged) { const s = g.shots[0]; assert.equal(s.kind, 'arcane'); assert.ok(s.vx > 0, 'พุ่งไปทางมอน'); assert.equal(p.swing, -1, 'ไม่เหวี่ยงคทา'); }
-    else assert.ok(p.swing >= 0);
+    else assert.ok(swung);
   }
 });
 
 test('ธนู/หน้าไม้: ตีธรรมดายิงลูกศร (หน้าไม้ทะลุ 1) · สกิลศรใช้ได้เฉพาะตอนถือธนู/หน้าไม้ และใช้ดาเมจโจมตี', async () => {
-  const { giveStarterGear, doAttack } = await import('../../src/systems/player.js');
+  const { giveStarterGear, doAttack, updatePlayer } = await import('../../src/systems/player.js');
   const { makeMob } = await import('../../src/systems/monsters.js');
   const { enterZone } = await import('../../src/systems/travel.js');
   const { castSkill } = await import('../../src/systems/skills.js');
@@ -113,10 +116,11 @@ test('ธนู/หน้าไม้: ตีธรรมดายิงลู�
   const p = g.player;
   assert.equal(p.equip.weapon.base, 'bamboo_bow');
   enterZone(g, 'field'); g.mobs.length = 0; g.mobs.push(makeMob(g, 'boar', 1, p.x + 250, p.y, -1));
-  assert.ok(doAttack(g)); assert.equal(g.shots[0].kind, 'arrow'); assert.equal(g.shots[0].pierce, 0);
+  const fire = () => { assert.ok(doAttack(g)); assert.equal(g.shots.length, 0, 'ง้างสายก่อนปล่อย'); for (let i = 0; i < 30 && !g.shots.length; i++) updatePlayer(g, 1 / 60); };
+  fire(); assert.equal(g.shots[0].kind, 'arrow'); assert.equal(g.shots[0].pierce, 0); assert.equal(p.shootKind, 'bow');
   g.shots.length = 0; p.attackCd = 0;
   p.equip.weapon = { ...p.equip.weapon, base: 'wood_crossbow' }; p.level = 5;
-  assert.ok(doAttack(g)); assert.equal(g.shots[0].pierce, 1, 'หน้าไม้ทะลุ');
+  fire(); assert.equal(g.shots[0].pierce, 1, 'หน้าไม้ทะลุ');
   g.shots.length = 0;
   p.equip.weapon.gems = ['tourmaline', null, null]; p.mp = 100;
   assert.ok(castSkill(g, 0)); const st = playerStats(p, g.data);

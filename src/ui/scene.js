@@ -281,7 +281,7 @@ export function createScene(game) {
           }
           ctx.globalAlpha = 1;
           drawAuraRings(ctx, game, p, t);
-          drawHuman(ctx, heroLook(game), p.x, p.y, { ...heroGear(game), dir: p.dir, walk: p.walk, amt: p.walkAmt, moving: p.moving, swing: p.swing, combo: p.combo, aim: p.aim, hurt: p.hurt, t, dash: p.dashT > 0, cast: p.castT > 0 });
+          drawHuman(ctx, heroLook(game), p.x, p.y, { ...heroGear(game), dir: p.dir, walk: p.walk, amt: p.walkAmt, moving: p.moving, swing: p.swing, combo: p.combo, aim: p.aim, hurt: p.hurt, t, dash: p.dashT > 0, cast: p.castT > 0, shoot: p.shootT > 0 ? 1 - p.shootT / p.shootDur : -1, shootKind: p.shootKind });
         }
       }
       for (const s of game.shots) drawShot(ctx, s);

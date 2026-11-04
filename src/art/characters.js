@@ -175,6 +175,7 @@ export function drawHuman(ctx, look, X, Y, o) {
     if (swinging) sword(ctx, hx, hy, pose.ang);
   };
   const staff = (hx, hy) => {
+    if (o.shoot >= 0 && o.shootKind) return;                      // กำลังยิง/ร่าย: วาดอาวุธในท่ายิงแทน (rangedPose)
     if ((WEAPON === 'staff' || WEAPON === 'bow' || WEAPON === 'crossbow') && WSPRITE) { sword(ctx, hx, hy + 8, -Math.PI / 2, 22); return; }   // คทาของผู้เล่น: ถือตั้งตรง (ภาพเดียวกับไอคอน)
     if (L.weapon === 'spear') { R(C.teak, hx - 1, hy - 34, 2, 44); R('#d8e0e4', hx - 2, hy - 40, 4, 7); R(C.red, hx - 2, hy - 33, 4, 2); }
     else if (L.weapon === 'cane') { R(C.teakDark, hx - 1, hy - 4, 2, 20); R(C.teakDark, hx - 4, hy - 6, 5, 2); }
@@ -279,6 +280,7 @@ export function drawHuman(ctx, look, X, Y, o) {
       sword(ctx, hx, hy, pose.ang, 19 + pose.ext * 0.4);
     }
   }
+  if (o.shoot >= 0 && o.shootKind && WSPRITE) rangedPose(ctx, L, x, y, o);
   if (o.glow) {                                              // ประกายชุดระดับสูง (ม่วง/แดง)
     for (let i = 0; i < 3; i++) {
       const ph2 = (t * 1.3 + i * 0.37) % 1, gx = X + Math.sin(i * 2.1 + t * 0.7) * 9, gy = Y - 10 - ph2 * 34;
@@ -296,6 +298,49 @@ function darker(hex) {           // สีเข้มขึ้นเล็ก�
 }
 
 // แขนยื่นจากไหล่ไปถึงมือ (ท่อนเดียวตรงๆ ตอนฟันให้ดูเหวี่ยงเต็มแขน)
+// ท่ายิงธนู/ร่ายคทา (วาดทับตัวละคร ตามมุมเล็งจริง):
+// ธนู: แขนหน้าเหยียดจับกลางคัน คันตั้งฉากกับทิศยิง ท้องคันหันไปหาเป้า · แขนหลังน้าวสายเข้าหาแก้ม (ง้าง) แล้วปล่อย สายดีดกลับ
+// คทา: ชูคทาขึ้นเหนือหัว หัวคทาเรืองแสงสะสมพลัง → ชี้ไปข้างหน้าตอนปล่อย
+function rangedPose(ctx, L, x, y, o) {
+  const a = o.aim || 0, t = o.shoot, ca = Math.cos(a), sa = Math.sin(a), sx = x + ca * 2, sy = y - 26;
+  if (o.shootKind === 'crossbow') {                               // หน้าไม้: ประทับรางตามแนวเล็ง สองมือจับราง ปล่อยแล้วสะบัดถอย
+    const rec = t > 0.6 ? Math.max(0, 1 - (t - 0.6) / 0.15) * 3 : 0, hx = sx + ca * (12 - rec), hy = sy + sa * (12 - rec);
+    const k = 13 / WSPRITE.reach;
+    ctx.save(); ctx.translate(hx, hy); ctx.rotate(a + Math.PI / 2);
+    ctx.drawImage(WSPRITE.sprite, -(WSPRITE.gx || 32) * k, -WSPRITE.gy * k, 64 * k, 64 * k);
+    if (t < 0.6) { ctx.fillStyle = '#8a5a32'; ctx.fillRect(-0.7, -16, 1.4, 12); }    // ลูกดอกพาดราง
+    ctx.restore();
+    armTo(ctx, sx - ca * 3, sy + 1, hx - ca * 5, hy - sa * 5, 4, darker(L.top), L.skin);
+    armTo(ctx, sx, sy, hx + ca * 3, hy + sa * 3, 4, L.top, L.skin);
+  } else if (o.shootKind === 'bow') {
+    const rel = 0.6, pull = t < rel ? 10 * Math.min(1, t / rel * 1.4) : Math.max(0, 10 * (1 - (t - rel) / 0.12)), hx = sx + ca * 13, hy = sy + sa * 13;
+    const k = 15 / WSPRITE.reach, gx = WSPRITE.gx || 32, gy = WSPRITE.gy;
+    const strX = (27 - gx) * k, tipY = (4 - gy) * k, tipY2 = (60 - gy) * k, nock = strX - pull;   // ตำแหน่งสาย/ปลายคันในกรอบของคัน
+    ctx.save(); ctx.translate(hx, hy); ctx.rotate(a);
+    ctx.drawImage(WSPRITE.sprite, -gx * k, -gy * k, 64 * k, 64 * k);
+    if (pull > 0.5) {                                              // สายถูกน้าวเป็นรูปตัว V + ลูกศรพาดสาย
+      ctx.strokeStyle = '#f4f0e0'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(strX, tipY); ctx.lineTo(nock, 0); ctx.lineTo(strX, tipY2); ctx.stroke();
+      ctx.fillStyle = '#8a5a32'; ctx.fillRect(nock, -0.7, 15 + pull * 0.4, 1.4);
+      ctx.fillStyle = '#dfe6ea'; ctx.beginPath(); ctx.moveTo(nock + 18 + pull * 0.4, 0); ctx.lineTo(nock + 14 + pull * 0.4, -2); ctx.lineTo(nock + 14 + pull * 0.4, 2); ctx.closePath(); ctx.fill();
+    }
+    ctx.restore();
+    const bx = hx + ca * nock - 0, by = hy + sa * nock;            // มือหลังอยู่ที่จุดน้าวสาย
+    armTo(ctx, sx - ca * 3, sy + 1, bx, by, 4, darker(L.top), L.skin);
+    armTo(ctx, sx, sy, hx, hy, 4, L.top, L.skin);
+  } else {
+    const rel = 0.5, up = t < rel ? Math.min(1, t / rel * 1.5) : 1 - (t - rel) / (1 - rel) * 0.6;
+    const hx = sx + ca * (5 + (t > rel ? 6 : 0)), hy = sy - 6 - up * 8;
+    armTo(ctx, sx, sy, hx, hy, 4, L.top, L.skin);
+    const tilt = t > rel ? a * 0.25 : 0;
+    sword(ctx, hx, hy + 8, -Math.PI / 2 + tilt, 22);
+    const tipX = hx + Math.sin(tilt) * 20, tipY = hy - 14, glow = t < rel ? 3 + up * 6 : 9 * (1 - (t - rel) / (1 - rel));
+    const gl = ctx.createRadialGradient(tipX, tipY, 0, tipX, tipY, glow * 1.8);
+    gl.addColorStop(0, 'rgba(255,240,255,0.95)'); gl.addColorStop(0.4, 'rgba(190,130,255,0.7)'); gl.addColorStop(1, 'rgba(120,60,220,0)');
+    ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(tipX, tipY, glow * 1.8, 0, Math.PI * 2); ctx.fill();
+    if (t < rel) for (let i = 0; i < 3; i++) { const ang = o.t * 6 + i * 2.1, r = 10 - up * 6; ctx.fillStyle = '#d8b8ff'; ctx.fillRect(tipX + Math.cos(ang) * r - 1, tipY + Math.sin(ang) * r - 1, 2, 2); }   // ประกายพลังไหลเข้าหัวคทา
+  }
+}
+
 function armTo(ctx, sx, sy, hx, hy, w, col, skin) {
   const a = Math.atan2(hy - sy, hx - sx), len = Math.hypot(hx - sx, hy - sy);
   ctx.save(); ctx.translate(sx, sy); ctx.rotate(a - Math.PI / 2);

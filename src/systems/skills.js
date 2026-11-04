@@ -45,7 +45,9 @@ export function castSkill(game, group) {
   faceAngle(p, ang);
   if (st0.bloodMagic) p.hp = Math.max(1, p.hp - sk.mp); else p.mp -= sk.mp;
   p.skillCd[group] = sk.cooldown * st0.castCdMult; p.combatTimer = 4;
-  if (sk.melee) { p.swing = 0.28; p.combo = sk.shape === 'line' ? 2 : sk.shape === 'cone' ? 1 : 0; p.comboT = 0; }   // สกิลฟัน = ท่าฟันด้วยอาวุธจริง (แนวตรง = แทง)
+  const wk = weaponKind(game);
+  if (sk.arrow || ((wk === 'staff' || wk === 'bow' || wk === 'crossbow') && !sk.melee)) { p.shootKind = wk === 'sword' || wk === 'kris' || wk === 'glaive' ? 'bow' : wk; p.shootDur = 0.3; p.shootT = 0.3 * 0.45; }   // สกิลศร/พลอยตอนถืออาวุธระยะไกล = ท่าปล่อย
+  else if (sk.melee) { p.swing = 0.28; p.combo = sk.shape === 'line' ? 2 : sk.shape === 'cone' ? 1 : 0; p.comboT = 0; }   // สกิลฟัน = ท่าฟันด้วยอาวุธจริง (แนวตรง = แทง)
   else p.castT = 0.22;                                           // สกิลพลอย = ท่ายกมือร่าย
   releaseSkill(game, sk, ang);
   game.events.emit('skillCast', { group, gem: sk.gem });
