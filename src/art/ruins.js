@@ -94,5 +94,12 @@ export const RUINS = {
       else g.fillRect(2, -fh + 2 + i * (fh - 4) / n, fw - 4, (fh - 4) / n - 1);
     }
   } },
+  spirit_wall: { pad: [14, 80, 14, 4], draw(g, fw, fh) {        // ม่านเวทหิมพานต์ (หายเมื่อล้มยักษ์วัด)
+    const gl = g.createLinearGradient(0, -80, 0, 0); gl.addColorStop(0, 'rgba(150,110,255,0)'); gl.addColorStop(1, 'rgba(150,110,255,0.55)');
+    g.fillStyle = gl; g.fillRect(-10, -80 - fh, fw + 20, 80 + fh);
+    g.strokeStyle = 'rgba(230,210,255,0.8)'; g.lineWidth = 1.5;
+    for (let i = 0; i < 6; i++) { const x = -6 + i * (fw + 12) / 5; g.beginPath(); g.moveTo(x, 0); g.quadraticCurveTo(x + 6, -40 - fh / 2, x - 2, -78 - fh); g.stroke(); }
+    for (let i = 0; i < 5; i++) circle(g, hash2(i, 3, 1) * fw, -10 - hash2(i, 4, 1) * (60 + fh), 2, '#f3d27a', null);   // อักขระยันต์ลอย
+  } },
   portal: { hidden: true },                                          // ประตูมิติวาดสดใน scene.js (ขยับได้)
 };

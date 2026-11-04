@@ -10,6 +10,9 @@ function lineFor(game, npc) {
   if (npc.id === 'chan' && !game.flags.metChan) {
     return { lines: D.chan_first, done: () => { game.flags.metChan = true; game.flags.tutorialDone = true; game.events.emit('metChan', {}); } };
   }
+  // บทพูดตามเหตุการณ์ (data/dialogue.json "events"): พูดครั้งเดียวเมื่อมีธงที่กำหนด
+  const ev = (D.events || []).find((e) => e.npc === npc.id && game.flags[e.flag] && !game.flags[e.once]);
+  if (ev) return { lines: D[ev.lines], done: () => { game.flags[ev.once] = true; } };
   const list = D[npc.id] || ['...'];
   npc.talkIdx = ((npc.talkIdx ?? -1) + 1) % list.length;
   return { lines: [list[npc.talkIdx]], done: null };

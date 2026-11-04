@@ -100,6 +100,49 @@ function phiPhong(ctx, o) {                       // ผีโพง: ลอย�
   circle(ctx, 7, -29, f, '#ff9a3a', null); circle(ctx, 7, -29, f * 0.5, '#fff0b0', null);   // ดวงไฟโพง
 }
 
+function khotchasi(ctx, o) {                      // คชสีห์: กายสิงห์สีทอง หัวช้างมีงา แผงคอแดง
+  const run = o.moving ? Math.sin((o.walk || 0) * Math.PI * 2) : 0, lean = o.charging ? 3 : 0;
+  ctx.translate(0, -Math.abs(Math.cos((o.walk || 0) * Math.PI * 2)) * (o.moving ? 1.4 : 0));
+  ctx.fillStyle = '#9a6a2a'; [-9, -4, 5, 10].forEach((lx, i) => ctx.fillRect(lx, -6 + (i % 2 ? run : -run) * 1.5, 3, 6));
+  poly(ctx, [-13, -14, 8 + lean, -16, 13 + lean, -10, 12 + lean, -4, -12, -4, -15, -9], '#d9a630', C.line, 1.4);
+  ctx.fillStyle = '#b8862a'; for (let i = 0; i < 4; i++) ctx.fillRect(-10 + i * 5, -12, 2, 6);   // ลายเกล็ด
+  ctx.strokeStyle = '#c03a2a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-13, -12); ctx.quadraticCurveTo(-19, -16, -17, -8); ctx.stroke();  // หางพู่
+  poly(ctx, [6 + lean, -20, 12 + lean, -24, 14 + lean, -14, 7 + lean, -12], '#c03a2a', C.line, 1.2);   // แผงคอ
+  box(ctx, 10 + lean, -23, 9, 10, '#8a8a92', C.line, 1.3);                                             // หัวช้าง
+  ctx.strokeStyle = '#8a8a92'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(18 + lean, -15); ctx.quadraticCurveTo(22 + lean, -8, 19 + lean, -3); ctx.stroke();  // งวง
+  poly(ctx, [16 + lean, -14, 21 + lean, -12, 17 + lean, -12.5], '#f4ecd8', C.line, 0.8);              // งา
+  box(ctx, 8 + lean, -24, 4, 7, '#7a7a82', C.line, 1);                                                 // หู
+  ctx.fillStyle = o.windup > 0 ? '#ff3a2a' : '#ffd24a'; ctx.fillRect(14 + lean, -21, 2, 2);
+  poly(ctx, [11 + lean, -23, 14 + lean, -29, 17 + lean, -23], C.gold, C.line, 1);                       // มงกุฎ
+}
+
+function nagaNoi(ctx, o) {                        // นาคน้อย: ลำตัวเขียวมรกตขดเป็นวง ชูหัวมีหงอน
+  const sway = Math.sin(o.t * 3) * 2;
+  ctx.fillStyle = 'rgba(60,160,200,0.25)'; ctx.beginPath(); ctx.ellipse(0, -2, 14, 4, 0, 0, Math.PI * 2); ctx.fill();
+  for (let i = 0; i < 5; i++) circle(ctx, -9 + i * 4, -3 - Math.sin(i + o.t * 4) * 1.5, 4, i % 2 ? '#2f8a5a' : '#3aa86a', C.line, 1);
+  ctx.strokeStyle = C.line; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(6, -4); ctx.quadraticCurveTo(10 + sway, -14, 4 + sway, -24); ctx.stroke();
+  ctx.strokeStyle = '#3aa86a'; ctx.lineWidth = 5; ctx.stroke();
+  ctx.strokeStyle = '#d8e8a0'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(8, -6); ctx.quadraticCurveTo(11 + sway, -14, 6 + sway, -22); ctx.stroke();  // ท้องเกล็ด
+  box(ctx, 0 + sway, -31, 10, 8, '#3aa86a', C.line, 1.2);
+  poly(ctx, [1 + sway, -31, 3 + sway, -38, 5 + sway, -32, 7 + sway, -39, 9 + sway, -31], C.gold, C.line, 1);   // หงอนทอง
+  ctx.fillStyle = o.windup > 0 ? '#ffffff' : '#ffd24a'; ctx.fillRect(6 + sway, -29, 2, 2);
+  if (o.windup > 0) circle(ctx, 11 + sway, -26, 3 + o.windup * 3, 'rgba(120,220,255,0.7)', null);
+}
+
+function hatsadi(ctx, o) {                        // นกหัสดีลิงค์: นกยักษ์หัวช้าง ปีกแดงทอง บินโฉบ
+  const flap = Math.sin(o.t * 10), bob = Math.sin(o.t * 4) * 3;
+  ctx.translate(0, -26 + bob);
+  poly(ctx, [-2, -4, -20, -14 - flap * 8, -16, -2, -6, 2], '#c9433a', C.line, 1.2);    // ปีกหลัง
+  ctx.fillStyle = C.gold; ctx.fillRect(-16, -9 - flap * 5, 8, 2);
+  box(ctx, -8, -8, 16, 11, '#e2a23a', C.line, 1.3);                                    // ลำตัว
+  poly(ctx, [-8, -2, -16, 2, -14, -4], '#a3262a', C.line, 1);                          // หาง
+  box(ctx, 6, -15, 9, 9, '#8a8a92', C.line, 1.2);                                      // หัวช้าง
+  ctx.strokeStyle = '#8a8a92'; ctx.lineWidth = 2.6; ctx.beginPath(); ctx.moveTo(14, -8); ctx.quadraticCurveTo(18, -2, 15, 3); ctx.stroke();
+  ctx.fillStyle = o.windup > 0 ? '#ff3a2a' : '#1b1410'; ctx.fillRect(11, -13, 2, 2);
+  poly(ctx, [2, -4, 18, -16 + flap * 8, 14, -2, 6, 2], '#e04a3a', C.line, 1.2);        // ปีกหน้า
+  ctx.fillStyle = '#6a4a2a'; ctx.fillRect(-3, 3, 2, 5); ctx.fillRect(2, 3, 2, 5);      // กรงเล็บ
+}
+
 function yak(ctx, o) {                             // ยักษ์วัด: ยักษ์ทวารบาลหน้าเขียว ชฎายอด กระบองใหญ่
   const run = o.moving ? Math.sin((o.walk || 0) * Math.PI * 2) : 0, w = o.windup > 0;
   const lift = w ? -18 : o.charging ? -6 : 0;
@@ -136,7 +179,8 @@ export function drawMonster(ctx, type, x, y, o) {
   const big = type === 'bigboar' ? 1.45 : type === 'piglet' ? 0.75 : 1;
   ctx.save();
   if (o.dying > 0) ctx.globalAlpha = Math.max(0, 1 - o.dying);
-  if (type === 'krasue' || type === 'phi_phong') shadow(ctx, x, y, 8, 3, 0.18);
+  if (type === 'krasue' || type === 'phi_phong' || type === 'hatsadi') shadow(ctx, x, y, 10, 3, 0.18);
+  else if (type === 'khotchasi') shadow(ctx, x, y, 22, 6);
   else if (type === 'yak') shadow(ctx, x, y, 30, 9, 0.32);
   else shadow(ctx, x, y, 13 * big, 4.5 * big);
   if (o.recoil > 0) ctx.translate(o.kbx * o.recoil * 30, o.kby * o.recoil * 20);   // สะดุ้งถอยตอนโดนฟัน
@@ -158,9 +202,12 @@ export function drawMonster(ctx, type, x, y, o) {
   else if (type === 'phi_pob') phiPob(ctx, o);
   else if (type === 'phi_phong') phiPhong(ctx, o);
   else if (type === 'yak') yak(ctx, o);
+  else if (type === 'khotchasi') khotchasi(ctx, o);
+  else if (type === 'naga_noi') nagaNoi(ctx, o);
+  else if (type === 'hatsadi') hatsadi(ctx, o);
   ctx.restore();
 }
 
 export function monsterHeight(type) {
-  return Math.round(({ piglet: 18, boar: 24, bigboar: 34, monkey: 34, krasue: 50, phi_pob: 42, phi_phong: 40, yak: 96 }[type] || 26) * SCALE);
+  return Math.round(({ piglet: 18, boar: 24, bigboar: 34, monkey: 34, krasue: 50, phi_pob: 42, phi_phong: 40, yak: 96, khotchasi: 32, naga_noi: 40, hatsadi: 50 }[type] || 26) * SCALE);
 }

@@ -1,18 +1,52 @@
 {
-  "tile": 32,
-  "maxLevel": 10,
-  "xpToNext": [0, 30, 70, 130, 210, 320, 460, 640, 860, 1130],
-  "player": {
-    "hp": 100, "hpPerLevel": 14,
-    "mp": 50, "mpPerLevel": 4,
-    "damage": 10, "damagePerLevel": 2.2,
-    "speed": 150,
-    "attackCooldown": 0.42, "attackRange": 46, "attackArc": 1.9,
-    "dashSpeed": 620, "dashTime": 0.17, "dashCooldown": 0.8,
-    "mpRegen": 3, "hpRegen": 1, "townHpRegen": 15,
-    "hurtInvuln": 0.35
-  },
-  "monsterScale": { "hpPerLevel": 0.28, "damagePerLevel": 0.16, "xpPerLevel": 0.22 },
-  "deathCoinLoss": 0.1,
-  "autosaveSeconds": 10
+ "tile": 32,
+ "maxLevel": 20,
+ "xpToNext": [
+  0,
+  30,
+  70,
+  130,
+  210,
+  320,
+  460,
+  640,
+  860,
+  1130,
+  1450,
+  1820,
+  2250,
+  2740,
+  3300,
+  3930,
+  4640,
+  5430,
+  6310,
+  7290
+ ],
+ "player": {
+  "hp": 100,
+  "hpPerLevel": 14,
+  "mp": 50,
+  "mpPerLevel": 4,
+  "damage": 10,
+  "damagePerLevel": 2.2,
+  "speed": 150,
+  "attackCooldown": 0.42,
+  "attackRange": 46,
+  "attackArc": 1.9,
+  "dashSpeed": 620,
+  "dashTime": 0.17,
+  "dashCooldown": 0.8,
+  "mpRegen": 3,
+  "hpRegen": 1,
+  "townHpRegen": 15,
+  "hurtInvuln": 0.35
+ },
+ "monsterScale": {
+  "hpPerLevel": 0.28,
+  "damagePerLevel": 0.16,
+  "xpPerLevel": 0.22
+ },
+ "deathCoinLoss": 0.1,
+ "autosaveSeconds": 10
 }

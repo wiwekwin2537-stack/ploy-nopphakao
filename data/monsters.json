@@ -167,5 +167,64 @@
   "waveThick": 22,
   "summon": "monkey",
   "summonCount": 3
+ },
+ "khotchasi": {
+  "name": "คชสีห์",
+  "hp": 120,
+  "damage": 20,
+  "xp": 34,
+  "speed": 80,
+  "radius": 20,
+  "ai": "charger",
+  "aggro": 280,
+  "attackRange": 28,
+  "attackCooldown": 1.3,
+  "chargeSpeed": 440,
+  "chargeWindup": 0.8,
+  "chargeTime": 0.7,
+  "chargeCooldown": 3.6,
+  "coins": [
+   4,
+   9
+  ],
+  "coinChance": 0.7
+ },
+ "naga_noi": {
+  "name": "นาคน้อย",
+  "hp": 70,
+  "damage": 17,
+  "xp": 28,
+  "speed": 85,
+  "radius": 13,
+  "ai": "caster",
+  "aggro": 300,
+  "keepDistance": 160,
+  "attackRange": 280,
+  "attackCooldown": 1.8,
+  "shotSpeed": 240,
+  "coins": [
+   3,
+   7
+  ],
+  "coinChance": 0.65,
+  "shotKind": "water"
+ },
+ "hatsadi": {
+  "name": "นกหัสดีลิงค์",
+  "hp": 80,
+  "damage": 16,
+  "xp": 30,
+  "speed": 140,
+  "radius": 15,
+  "ai": "melee",
+  "aggro": 320,
+  "attackRange": 26,
+  "attackCooldown": 0.9,
+  "coins": [
+   3,
+   8
+  ],
+  "coinChance": 0.65,
+  "flying": true
  }
 }

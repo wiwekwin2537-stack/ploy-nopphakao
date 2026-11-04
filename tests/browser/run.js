@@ -320,6 +320,20 @@ await check('วัดร้าง: เดินเข้าซุ้มปร�
   return 'สถานะบอสตอนสู้ ' + seen.st + ' วงเตือน ' + seen.hz;
 });
 
+await check('ป่าหิมพานต์: หลังล้มยักษ์ ม่านเวทหาย → เดินทางตะวันออกของทุ่งเข้าป่า → มอนใหม่ครบ', async () => {
+  await G(page, () => { const g = __ploy.game; g.flags.yakSlain = true; g.world.refreshFlags(); __ploy.enterZone(g, 'field', 66 * 32, 29 * 32); g.player.invuln = 999; g.mobs.length = 0; });
+  await page.waitForTimeout(300);
+  await hold(page, 'KeyD', 1600);
+  const s = await state(page);
+  assert(s.zone === 'himmapan', 'เดินเข้าป่าไม่ได้: ' + s.zone);
+  await G(page, () => { const g = __ploy.game; g.player.x = 30 * 32; g.player.y = 21 * 32; });
+  await page.waitForTimeout(900);
+  await page.screenshot({ path: SHOTS + '/16-himmapan.png' });
+  const types = await G(page, () => [...new Set(__ploy.game.mobs.map((m) => m.type))].join(','));
+  assert(types.includes('khotchasi') && types.includes('naga_noi') && types.includes('hatsadi'), types);
+  return types;
+});
+
 await check('ความเร็ว: มอน 100 ตัวไล่ล้อม ใช้เวลาคำนวณ+วาดต่อเฟรมไม่เกิน 8ms', async () => {
   await G(page, () => { const g = __ploy.game, p = g.player; const types = ['boar', 'monkey', 'krasue', 'piglet']; for (let i = 0; i < 2000 && g.mobs.length < 100; i++) { const m = __ploy.makeMob(g, types[i % 4], 3, p.x + (Math.random() - 0.5) * 700, p.y + (Math.random() - 0.5) * 400, -1); if (!g.world.blocked(m.x, m.y, m.radius)) g.mobs.push(m); } g.mobs.forEach((m) => { m.aggroed = true; }); p.invuln = 99; });
   await page.waitForTimeout(1500);
