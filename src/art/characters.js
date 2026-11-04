@@ -180,7 +180,15 @@ export function drawHuman(ctx, look, X, Y, o) {
   };
   const staff = (hx, hy) => {
     if (o.shoot >= 0 && o.shootKind) return;                      // กำลังยิง/ร่าย: วาดอาวุธในท่ายิงแทน (rangedPose)
-    if ((WEAPON === 'staff' || WEAPON === 'bow' || WEAPON === 'crossbow') && WSPRITE) { sword(ctx, hx, hy + 8, -Math.PI / 2, 22); return; }   // คทาของผู้เล่น: ถือตั้งตรง (ภาพเดียวกับไอคอน)
+    if ((WEAPON === 'bow' || WEAPON === 'crossbow') && WSPRITE) {   // ธนู/หน้าไม้ตอนถือเฉยๆ: มือจับกลางคันพอดี คันตั้งข้างตัว
+      const k = (WEAPON === 'bow' ? 15 : 13) / WSPRITE.reach, gx = WSPRITE.gx || 32;
+      ctx.save(); ctx.translate(hx, hy);
+      if (side) ctx.scale(f, 1);                                   // มุมข้าง: ท้องคันหันไปทางที่ตัวละครหัน สายอยู่ฝั่งตัว
+      else ctx.scale(d === 1 ? -0.45 : 0.45, 1);                   // มุมหน้า/หลัง: เห็นคันเกือบด้านสัน (บาง) ข้างตัว ไม่พาดผ่านลำตัว
+      ctx.drawImage(WSPRITE.sprite, -gx * k, -WSPRITE.gy * k, 64 * k, 64 * k);
+      ctx.restore(); return;
+    }
+    if (WEAPON === 'staff' && WSPRITE) { sword(ctx, hx, hy + 8, -Math.PI / 2, 22); return; }   // คทาของผู้เล่น: ถือตั้งตรง (ภาพเดียวกับไอคอน)
     if (L.weapon === 'spear') { R(C.teak, hx - 1, hy - 34, 2, 44); R('#d8e0e4', hx - 2, hy - 40, 4, 7); R(C.red, hx - 2, hy - 33, 4, 2); }
     else if (L.weapon === 'cane') { R(C.teakDark, hx - 1, hy - 4, 2, 20); R(C.teakDark, hx - 4, hy - 6, 5, 2); }
   };

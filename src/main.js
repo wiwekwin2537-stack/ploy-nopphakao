@@ -77,6 +77,8 @@ setupLoot(game); setupFlasks(game); setupUniques(game); setupActs(game); setupPr
 game.world.load('road');
 const scene = createScene(game);
 
+const inRect = (r, t) => t.sx >= r.x && t.sx <= r.x + r.w && t.sy >= r.y && t.sy <= r.y + r.h;
+
 function startNew(skip, cls = 'warrior', name = 'นักล่าพลอย') {
   clearSave();
   game.flags = {};
@@ -116,6 +118,7 @@ function update(dt) {
   // ปุ่มเสียงกดได้ทุกหน้า
   for (const t of input.taps) if (!t.consumed && hitCircle(t, layout.mute)) { t.consumed = true; game.audio.unlock(); game.audio.toggleMute(); }
 
+  layout.uiRects[1] = game.questRect || { x: 0, y: 0, w: 0, h: 0 };   // แผงเควส: แตะแล้วไม่เริ่มจอยเดิน
   if (game.mode === 'title') {
     for (const t of input.taps) {
       if (t.consumed) continue;
@@ -162,6 +165,9 @@ function update(dt) {
     const r = updateBag(game, layout, game.camera.viewW, game.camera.viewH);
     if (r === 'tree') { game.mode = 'tree'; openTree(game); }
     else if (r) { game.mode = 'play'; game.bagSel = null; writeSave(game); }
+  } else if (game.mode === 'play' && game.questRect && input.taps.some((t) => !t.consumed && inRect(game.questRect, t))) {
+    input.taps.forEach((t) => { if (inRect(game.questRect, t)) t.consumed = true; });   // แตะแผงเควส = ย่อ/ขยาย
+    game.questMin = !game.questMin; game.audio.play('click');
   } else if (game.mode === 'play' && (input.pressed.bag || input.taps.some((t) => !t.consumed && profileHit(layout, t)))) {
     const byTap = input.taps.some((t) => !t.consumed && profileHit(layout, t));
     input.taps.forEach((t) => { if (profileHit(layout, t)) t.consumed = true; });

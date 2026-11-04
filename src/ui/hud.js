@@ -354,24 +354,36 @@ export function drawTitle(ctx, game, L, w, h) {
 }
 
 // เป้าหมายเนื้อเรื่อง (ใต้เบี้ย มุมซ้ายบน): หัวข้อทอง + คำอธิบายตัดบรรทัด
+// แผงเควสมุมซ้ายบน (แบบ PoE ย่อได้): ปกติ = หัวข้อ + คำอธิบาย 1 บรรทัด สูงสุด 2 เควส · แตะแผง = ย่อเหลือแถบเดียว / ขยายกลับ
 function drawQuest(ctx, game, x, y, s) {
+  game.questRect = null;
   const list = questTracker(game);
   if (!list.length || game.mode !== 'play') return;
-  const w = 210 * s, fs = 9.5 * s, pad = 9 * s;
-  ctx.font = `normal ${fs}px ${FONT}`;
-  const blocks = list.map((e, i) => ({ e, lines: wrapLines(ctx, e.text, w - 16 * s).slice(0, i === 0 ? 3 : 2) }));
-  const h = 18 * s + blocks.reduce((a, b) => a + 15 * s + b.lines.length * fs * 1.35 + 4 * s, 0);
-  ctx.fillStyle = 'rgba(14,12,18,0.6)'; rrect(ctx, x, y, w, h, 7 * s); ctx.fill();
-  text(ctx, list[0].act, x + pad, y + 9 * s, 9 * s, 'rgba(244,230,200,0.6)', 'left', '600');
-  let cy = y + 20 * s;
-  for (const { e, lines } of blocks) {
-    const col = e.kind === 'ready' ? '#7dff8a' : e.kind === 'side' ? '#9ac0ff' : C.goldHi;
-    const bh = 15 * s + lines.length * fs * 1.35;
-    ctx.fillStyle = e.here || e.kind === 'ready' ? '#7dff8a' : e.kind === 'side' ? '#6a8ad8' : C.gold; ctx.fillRect(x, cy - 2 * s, 3 * s, bh);
-    text(ctx, (e.kind === 'side' ? '◇ ' : '◆ ') + e.title, x + pad, cy + 5 * s, 10.5 * s, col, 'left', '600');
-    lines.forEach((l, i) => text(ctx, l, x + pad, cy + 18 * s + i * fs * 1.35, fs, 'rgba(244,230,200,0.85)', 'left', 'normal'));
-    cy += bh + 4 * s;
+  const w = 190 * s, fs = 9 * s, pad = 8 * s;
+  if (game.questMin) {                                             // ย่อ: แถบเดียว
+    const h = 20 * s;
+    ctx.fillStyle = 'rgba(14,12,18,0.6)'; rrect(ctx, x, y, w * 0.62, h, 6 * s); ctx.fill();
+    const ready = list.some((e) => e.kind === 'ready');
+    text(ctx, `◆ เควส ${list.length} ▸`, x + pad, y + h / 2, 10 * s, ready ? '#7dff8a' : C.goldHi, 'left', '600');
+    game.questRect = { x, y, w: w * 0.62, h };
+    return;
   }
+  const shown = list.slice(0, 2);
+  ctx.font = `normal ${fs}px ${FONT}`;
+  const clip = (t) => { const l = wrapLines(ctx, t, w - pad * 2); return l.length > 1 ? l[0] + '…' : l[0]; };
+  const h = 16 * s + shown.length * 31 * s + (list.length > 2 ? 12 * s : 0);
+  ctx.fillStyle = 'rgba(14,12,18,0.55)'; rrect(ctx, x, y, w, h, 7 * s); ctx.fill();
+  text(ctx, list[0].act + '  ◂', x + pad, y + 8 * s, 8.5 * s, 'rgba(244,230,200,0.6)', 'left', '600');
+  let cy = y + 17 * s;
+  for (const e of shown) {
+    const col = e.kind === 'ready' ? '#7dff8a' : e.kind === 'side' ? '#9ac0ff' : C.goldHi;
+    ctx.fillStyle = e.here || e.kind === 'ready' ? '#7dff8a' : e.kind === 'side' ? '#6a8ad8' : C.gold; ctx.fillRect(x, cy - 1 * s, 3 * s, 27 * s);
+    text(ctx, (e.kind === 'side' ? '◇ ' : '◆ ') + e.title, x + pad, cy + 6 * s, 10 * s, col, 'left', '600');
+    text(ctx, clip(e.text), x + pad, cy + 19 * s, fs, 'rgba(244,230,200,0.85)', 'left', 'normal');
+    cy += 31 * s;
+  }
+  if (list.length > 2) text(ctx, `+ อีก ${list.length - 2} เควส`, x + pad, cy + 3 * s, 8.5 * s, 'rgba(244,230,200,0.55)', 'left', 'normal');
+  game.questRect = { x, y, w, h };
 }
 
 // ตัดบรรทัดตามคำภาษาไทย (Intl.Segmenter) ไม่ตัดกลางคำ · ใช้ฟอนต์ที่ตั้งไว้ใน ctx
