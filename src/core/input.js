@@ -20,6 +20,7 @@ export function createInput(target, getLayout) {
   let mouseHeld = null;      // ค้างคลิกซ้ายเพื่อเดินตามเมาส์
   let padPrev = {};
 
+  function capture(id) { try { target.setPointerCapture(id); } catch { /* นิ้วที่ระบบไม่รู้จัก (เช่นเทสต์) ข้ามได้ */ } }
   function press(a) { if (!held[a]) pressed[a] = true; held[a] = true; }
   function release(a) { held[a] = false; }
 
@@ -63,7 +64,7 @@ export function createInput(target, getLayout) {
       if (e.pointerType !== 'mouse') mode = 'touch';
       uiPtr.set(e.pointerId, { x, y, sx: x, sy: y, moved: 0 });
       if (uiPtr.size === 2) { const [a, b] = [...uiPtr.values()]; pinchD = Math.hypot(a.x - b.x, a.y - b.y); }
-      target.setPointerCapture?.(e.pointerId);
+      capture(e.pointerId);
       return;
     }
     if (e.pointerType === 'touch' || e.pointerType === 'pen') {
@@ -71,7 +72,8 @@ export function createInput(target, getLayout) {
       const L = getLayout();
       const b = hitButton(x, y);
       if (b) { touch.buttons.set(e.pointerId, b); press(b); return; }
-      if (L && x < L.joyZoneW && touch.joyId === null) {
+      const onUi = L && (L.uiRects || []).some((r) => x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h);
+      if (L && !onUi && x < L.joyZoneW && touch.joyId === null) {   // แผงโปรไฟล์/ปุ่มเสียง = แตะ ไม่ใช่จอย
         touch.joyId = e.pointerId; touch.joyX = x; touch.joyY = y; touch.dx = 0; touch.dy = 0;
         return;
       }
@@ -83,7 +85,7 @@ export function createInput(target, getLayout) {
       if (e.button === 0) { taps.push({ sx: x, sy: y, kind: 'mouse' }); mouseHeld = { sx: x, sy: y }; }
       if (e.button === 2) { press('skill'); }
     }
-    target.setPointerCapture?.(e.pointerId);
+    capture(e.pointerId);
   });
   target.addEventListener('pointermove', (e) => {
     const up = uiPtr.get(e.pointerId);

@@ -89,6 +89,7 @@ function update(dt) {
   const lk = input.mode === 'touch' ? 't' : 'k';          // สลับจอสัมผัส ↔ คีย์บอร์ด: จัดปุ่มใหม่
   if (lk !== layoutKey) { layoutKey = lk; layout = computeLayout(game.camera.viewW || innerWidth, game.camera.viewH || innerHeight, lk === 't'); }
   layout.near = !!game.nearNpc;
+  input.setUiMode(game.mode !== 'play');                   // หน้าต่าง/บทพูด/หน้าแรก: แตะ = กดปุ่ม ไม่ใช่จอยเดิน
   game.audio.update();
   if (game.toast) game.toast.t -= dt;
   if (game.notice) game.notice.t -= dt;

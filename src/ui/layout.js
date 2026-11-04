@@ -34,5 +34,6 @@ export function computeLayout(w, h, touch = false) {
     minimap: { x: w - 52 * s, y: 50 * s, r: 40 * s },
     mute: { x: w - 30 * s, y: 128 * s, r: 15 * s },
     profile: { x: 8 * s, y: 6 * s, w: 188 * s, h: 50 * s },   // แผงรูปตัวละครมุมซ้ายบน = ปุ่มโปรไฟล์
+    uiRects: [{ x: 0, y: 0, w: 210 * s, h: 90 * s }],        // บริเวณที่แตะแล้วเป็นการกดแผง ไม่เริ่มจอยเดิน
   };
 }

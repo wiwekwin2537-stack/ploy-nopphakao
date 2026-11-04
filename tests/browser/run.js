@@ -400,6 +400,16 @@ await check('มือถือ: แตะเริ่ม → ลากจอย
   await touch('pointerup', btn.x, btn.y, 2);
   assert(cd > before, 'ปุ่มดาบไม่ทำงาน');
   await p.screenshot({ path: SHOTS + '/11-mobile.png' });
+  // แตะรูปตัวละครมุมซ้ายบนบนมือถือ = เปิดโปรไฟล์ (เคยถูกจอยเดินแย่งไป)
+  const pr = await G(p, () => __ploy.layout().profile);
+  await touch('pointerdown', pr.x + 30, pr.y + 20, 3); await p.waitForTimeout(40); await touch('pointerup', pr.x + 30, pr.y + 20, 3);
+  await p.waitForTimeout(200);
+  assert(await G(p, () => __ploy.game.mode === 'bag'), 'แตะรูปตัวละครบนมือถือแล้วโปรไฟล์ไม่เปิด');
+  const tb = await G(p, () => __ploy.bagLayout().tabs.find((q) => q.id === 'gems'));
+  await touch('pointerdown', tb.x + tb.w / 2, tb.y + tb.h / 2, 4); await p.waitForTimeout(40); await touch('pointerup', tb.x + tb.w / 2, tb.y + tb.h / 2, 4);
+  await p.waitForTimeout(150);
+  assert(await G(p, () => __ploy.game.bagTab === 'gems'), 'แตะแถบในโปรไฟล์บนมือถือไม่ได้');
+  await p.screenshot({ path: SHOTS + '/11b-mobile-profile.png' });
   assert(mob.errors.length === 0, mob.errors.join(' | '));
 });
 await mob.browser.close();
