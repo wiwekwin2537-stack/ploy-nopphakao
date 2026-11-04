@@ -1,5 +1,5 @@
 // รูปสกิล (ไอคอนสี่เหลี่ยมแบบแถบสกิล PoE): ลูกไฟ หอกน้ำแข็ง หมอกพิษ สายฟ้า — ใช้บนปุ่มสกิลและสลักในพลอยสกิล
-const BG = { fire: ['#5a1008', '#1a0402'], ice: ['#0e2a5a', '#040a1a'], poison: ['#0e3a14', '#031006'], bolt: ['#3a2a06', '#100a02'], holy: ['#4a4a5a', '#101018'], slash: ['#4a0a0a', '#120202'] };
+const BG = { fire: ['#5a1008', '#1a0402'], ice: ['#0e2a5a', '#040a1a'], poison: ['#0e3a14', '#031006'], bolt: ['#3a2a06', '#100a02'], holy: ['#4a4a5a', '#101018'], slash: ['#4a0a0a', '#120202'], cleave: ['#0a3a14', '#021006'], frost: ['#0a2050', '#020818'] };
 
 function paintSkill(g, kind, plate) {
   if (plate) {                                                   // พื้นหลังไอคอน
@@ -35,6 +35,13 @@ function paintSkill(g, kind, plate) {
     g.save(); g.translate(32, 32); g.rotate(-0.8);
     g.fillStyle = '#e8eef4'; g.fillRect(-2.5, -20, 5, 26); g.fillStyle = '#d9a630'; g.fillRect(-7, 6, 14, 3); g.fillStyle = '#5a2f1a'; g.fillRect(-2, 9, 4, 8);
     g.restore();
+  } else if (kind === 'cleave') {                                // ดาบลมกรด: คลื่นลมเขียวพุ่งเป็นแนว
+    for (let i = 0; i < 3; i++) { g.strokeStyle = ['rgba(120,255,150,0.35)', 'rgba(170,255,190,0.6)', '#e8fff0'][i]; g.lineWidth = 9 - i * 3; g.beginPath(); g.moveTo(8, 50 - i * 2); g.quadraticCurveTo(30, 34, 56, 12 + i * 2); g.stroke(); }
+    g.save(); g.translate(16, 46); g.rotate(-0.75); g.fillStyle = '#e8eef4'; g.fillRect(-2, -18, 4, 20); g.fillStyle = '#d9a630'; g.fillRect(-6, 2, 12, 3); g.restore();
+  } else if (kind === 'frost') {                                 // ฟันน้ำแข็ง: พัดฟันสีฟ้า มีผลึกน้ำแข็ง
+    g.fillStyle = 'rgba(140,200,255,0.35)'; g.beginPath(); g.moveTo(14, 50); g.arc(14, 50, 44, -1.5, -0.1); g.closePath(); g.fill();
+    g.strokeStyle = '#e8f4ff'; g.lineWidth = 3; g.beginPath(); g.arc(14, 50, 40, -1.45, -0.15); g.stroke();
+    for (const [x, y] of [[40, 22], [50, 38], [28, 14]]) { g.fillStyle = '#cfe8ff'; g.beginPath(); g.moveTo(x, y - 6); g.lineTo(x + 3, y); g.lineTo(x, y + 6); g.lineTo(x - 3, y); g.closePath(); g.fill(); }
   } else if (kind === 'holy') {                                  // รัศมีเพชร: แสงขาววาบเป็นแฉก
     const gl = g.createRadialGradient(32, 32, 2, 32, 32, 26); gl.addColorStop(0, '#ffffff'); gl.addColorStop(0.5, 'rgba(230,230,255,0.6)'); gl.addColorStop(1, 'rgba(200,200,255,0)');
     g.fillStyle = gl; g.beginPath(); g.arc(32, 32, 26, 0, Math.PI * 2); g.fill();

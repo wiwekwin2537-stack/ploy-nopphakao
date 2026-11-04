@@ -32,7 +32,7 @@ export function computeSkill(G, mainId, supportIds = []) {
     splash: m.splash || 0, count: 1, pierce: m.pierce || 0, slow: m.slow || 0, slowTime: m.slowTime || 0,
     poison: m.poison || 0, poisonTime: m.poisonTime || 0, supports: [],
   };
-  sk.melee = !!m.melee; sk.unused = [];
+  sk.melee = !!m.melee; sk.shape = m.shape || null; sk.width = m.width || 0; sk.arc = m.arc || 0; sk.unused = [];
   for (const sid of supportIds) {
     const s = sid && G.support[sid];
     if (!s) continue;

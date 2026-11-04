@@ -100,7 +100,48 @@
    "socket": "r",
    "color": "#d8283a",
    "hi": "#ff9a9a",
-   "melee": true
+   "melee": true,
+   "shape": "circle"
+  },
+  "cateye": {
+   "name": "ไพฑูรย์",
+   "skill": "ดาบลมกรด",
+   "desc": "ฟันคลื่นลมพุ่งเป็นแนวตรงไปข้างหน้า โดนทุกตัวในแนว ใช้ดาเมจดาบ",
+   "kind": "cleave",
+   "mp": 8,
+   "cooldown": 0.6,
+   "damageMult": 1.45,
+   "speed": 0,
+   "life": 0,
+   "radius": 0,
+   "splash": 150,
+   "socket": "g",
+   "color": "#2ab84a",
+   "hi": "#a8ffb0",
+   "melee": true,
+   "shape": "line",
+   "width": 44
+  },
+  "moonstone": {
+   "name": "มุกดา",
+   "skill": "ฟันน้ำแข็งมุกดา",
+   "desc": "ฟันเป็นรูปพัดด้านหน้า มอนที่โดนช้าลง ใช้ดาเมจดาบ",
+   "kind": "frost",
+   "mp": 8,
+   "cooldown": 0.55,
+   "damageMult": 1.35,
+   "speed": 0,
+   "life": 0,
+   "radius": 0,
+   "splash": 100,
+   "socket": "b",
+   "color": "#2a5fd8",
+   "hi": "#9ac0ff",
+   "melee": true,
+   "shape": "cone",
+   "arc": 2.1,
+   "slow": 0.45,
+   "slowTime": 2
   }
  },
  "support": {
@@ -208,6 +249,16 @@
   },
   {
    "gem": "onyx",
+   "chance": 0.01,
+   "minLevel": 3
+  },
+  {
+   "gem": "cateye",
+   "chance": 0.01,
+   "minLevel": 3
+  },
+  {
+   "gem": "moonstone",
    "chance": 0.01,
    "minLevel": 3
   }

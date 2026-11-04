@@ -17,7 +17,7 @@ const SHAPES = {
 const LOOK = {
   ruby: { shape: 'round', sym: 'flame' }, sapphire: { shape: 'octagon', sym: 'snow' }, emerald: { shape: 'pear', sym: 'drop' },
   multi: { shape: 'trillion', sym: 'three' }, pierce: { shape: 'marquise', sym: 'arrow' }, area: { shape: 'hexagon', sym: 'ring' }, haste: { shape: 'kite', sym: 'bolt' },
-  topaz: { shape: 'cushion', sym: 'zap' }, power: { shape: 'shield', sym: 'plus' }, purity: { shape: 'round', sym: 'ring' },
+  topaz: { shape: 'cushion', sym: 'zap' }, power: { shape: 'shield', sym: 'plus' }, purity: { shape: 'round', sym: 'ring' }, cateye: { shape: 'round', sym: null }, moonstone: { shape: 'round', sym: null },
 };
 
 function hexToRgb(h) { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }

@@ -152,7 +152,7 @@ export function createScene(game) {
   }
 
   // ป้ายชื่อแบบเอโดเรีย: แผ่นสีเข้มมุมมน ขอบทอง
-  function plate(ctx, text, x, y, size, color = '#f4e6c8', border = 'rgba(217,166,48,0.9)', lv = null) {
+  function plate(ctx, text, x, y, size, color = '#f4e6c8', border = 'rgba(217,166,48,0.9)', lv = null, lvCol = '#ffd24a') {
     ctx.font = `600 ${size}px Kanit, sans-serif`;
     const lvW = lv ? ctx.measureText(lv).width + 6 : 0;
     const w = ctx.measureText(text).width + 12 + lvW, h = size + 7;
@@ -160,7 +160,7 @@ export function createScene(game) {
     ctx.strokeStyle = border; ctx.lineWidth = 1; ctx.stroke();
     ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
     ctx.fillStyle = color; ctx.fillText(text, x - w / 2 + 6, y + 0.5);
-    if (lv) { ctx.fillStyle = '#ffd24a'; ctx.fillText(lv, x - w / 2 + 6 + ctx.measureText(text).width + 6, y + 0.5); }
+    if (lv) { ctx.fillStyle = lvCol; ctx.fillText(lv, x - w / 2 + 6 + ctx.measureText(text).width + 6, y + 0.5); }
   }
 
   function overlay(ctx) {
@@ -181,13 +181,15 @@ export function createScene(game) {
         ctx.fillStyle = 'rgba(255,90,70,0.8)'; ctx.fillRect(0, -m.radius, len * k, 2); ctx.fillRect(0, m.radius - 2, len * k, 2);
         ctx.restore();
       }
-      if (m.def.boss) continue;                                    // บอสมีแถบเลือดใหญ่บนจอ (hud.js)
-      if (m.hp < m.maxHp || m.aggroed || m.type === 'bigboar') {
-        const w = Math.max(28, m.radius * 2.6), x = m.x - w / 2, y = m.y - m.height - 8;
+      // ชื่อมอนบนหัวทุกตัว (แบบเอโดเรีย): ชื่อ + เลเวล · บอส/มอนพิเศษป้ายทองใหญ่ · แถบเลือดใต้ชื่อเมื่อโดนตีหรือไล่ตาม
+      const big = m.def.boss || m.type === 'bigboar', y = m.y - m.height - 8;
+      const lvCol = m.level >= game.player.level + 3 ? '#ff7a6a' : m.level <= game.player.level - 3 ? '#a8a8a8' : '#ffd24a';   // สีเลเวลบอกความยาก
+      if (big) plate(ctx, m.def.name, m.x, y - 10, 12, '#ffd24a', m.def.boss ? 'rgba(255,90,60,0.95)' : 'rgba(255,138,42,0.9)', 'Lv.' + m.level);
+      else plate(ctx, m.def.name, m.x, y - 8, 9.5, '#f4e6c8', 'rgba(160,120,90,0.55)', 'Lv.' + m.level, lvCol);
+      if (!m.def.boss && (m.hp < m.maxHp || m.aggroed || big)) {
+        const w = Math.max(28, m.radius * 2.6), x = m.x - w / 2;
         ctx.fillStyle = 'rgba(20,12,8,0.85)'; rrect(ctx, x - 1, y - 1, w + 2, 6, 3); ctx.fill();
-        ctx.fillStyle = m.type === 'bigboar' ? '#ff8a2a' : '#e0443a'; rrect(ctx, x, y, Math.max(2, w * (m.hp / m.maxHp)), 4, 2); ctx.fill();
-        if (m.type === 'bigboar') plate(ctx, m.def.name, m.x, y - 12, 11, '#ffd24a', 'rgba(255,138,42,0.9)', 'Lv.' + m.level);
-        else { ctx.font = '600 10px Kanit, sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = C.ink; ctx.strokeText('Lv.' + m.level, m.x, y - 6); ctx.fillStyle = '#f4e6c8'; ctx.fillText('Lv.' + m.level, m.x, y - 6); }
+        ctx.fillStyle = big ? '#ff8a2a' : '#e0443a'; rrect(ctx, x, y, Math.max(2, w * (m.hp / m.maxHp)), 4, 2); ctx.fill();
       }
     }
     for (const n of z.npcs) {

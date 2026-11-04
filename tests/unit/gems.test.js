@@ -188,3 +188,20 @@ test('นิล ฟันพายุ: โดนมอนรอบตัวท�
   assert.ok(near.every((m) => m.hp < 9999), 'ต้องโดนทุกตัวรอบตัว');
   assert.equal(far.hp, 9999, 'ตัวไกลต้องไม่โดน');
 });
+
+test('ไพฑูรย์ (แนวตรง) โดนเฉพาะตัวในแนว · มุกดา (พัดหน้า) โดนข้างหน้าไม่โดนข้างหลัง และทำให้ช้า', async () => {
+  const { castSkill } = await import('../../src/systems/skills.js');
+  const run = (gem, color, spots) => {
+    const g = makeGame(), p = g.player; g.world.load('field'); g.flags.tutorialDone = true;
+    p.x = 1200; p.y = 1300; p.mp = 999; p.aim = 0;
+    gear(p, [gem, null, null], [true, true]); p.equip.weapon.colors = [color, 'w', 'w'];
+    const mobs = spots.map(([dx, dy]) => { const m = makeMob(g, 'boar', 1, p.x + dx, p.y + dy); m.hp = m.maxHp = 9999; m.chargeCd = 99; g.mobs.push(m); return m; });
+    p.targetMob = mobs[0];
+    assert.ok(castSkill(g, 0));
+    return mobs;
+  };
+  const [l1, l2, side] = run('cateye', 'g', [[60, 0], [130, 0], [60, 90]]);
+  assert.ok(l1.hp < 9999 && l2.hp < 9999, 'ตัวในแนวต้องโดน'); assert.equal(side.hp, 9999, 'ตัวข้างแนวต้องไม่โดน');
+  const [front, behind] = run('moonstone', 'b', [[60, 5], [-70, 0]]);
+  assert.ok(front.hp < 9999 && front.slowT > 0, 'ข้างหน้าต้องโดนและช้า'); assert.equal(behind.hp, 9999, 'ข้างหลังต้องไม่โดน');
+});

@@ -31,15 +31,23 @@ export function castSkill(game, group) {
   if (st0.bloodMagic) p.hp = Math.max(1, p.hp - sk.mp); else p.mp -= sk.mp;
   p.skillCd[group] = sk.cooldown * st0.castCdMult; p.castT = 0.22; p.combatTimer = 4;
   const st = playerStats(p, game.data);
-  if (sk.melee) {                                                // ฟันพายุ: ดาบหมุนรอบตัว ใช้ดาเมจดาบ วงตามพลอยเสริมระเบิด + วงระเบิดจากพาสซีฟ
-    const R = sk.splash * st.areaMult;
+  if (sk.melee) {                                                // สกิลฟัน (ใช้ดาเมจดาบ): วงรอบตัว / แนวตรง / พัดด้านหน้า — ขนาดขยายด้วยพลอยเสริมระเบิด + พาสซีฟ
+    const R = sk.splash * st.areaMult, ca = Math.cos(ang), sa = Math.sin(ang);
+    const hit = (m) => {
+      const dx = m.x - p.x, dy = (m.y - p.y) * 1.2, d = Math.hypot(dx, dy);
+      if (sk.shape === 'line') { const along = dx * ca + dy * sa, side = Math.abs(-dx * sa + dy * ca); return along > -10 && along < R + m.radius && side < sk.width / 2 + m.radius; }
+      if (sk.shape === 'cone') { let da = Math.abs(Math.atan2(dy, dx) - ang); if (da > Math.PI) da = Math.PI * 2 - da; return d < R + m.radius && (da < sk.arc / 2 || d < m.radius + 14); }
+      return d < R + m.radius;
+    };
     for (const m of game.mobs) {
-      if (m.dead || Math.hypot(m.x - p.x, (m.y - p.y) * 1.2) > R + m.radius) continue;
+      if (m.dead || !hit(m)) continue;
       const r = rollDamage(st.damage * sk.damageMult, game.rng, st.crit, st.critMult);
       damageMob(game, m, r.amount, r.crit);
+      if (sk.slow && !m.dead) { m.slowT = sk.slowTime; m.slowK = 1 - sk.slow; }
     }
-    game.fx.ring(p.x, p.y - 10, R, '#ff6a5a'); game.fx.ring(p.x, p.y - 10, R * 0.7, '#ffd0a0');
-    for (let i = 0; i < 4; i++) game.fx.slash(p.x, p.y - 14, i * Math.PI / 2, R * 0.8, 1.6, 1);
+    if (sk.shape === 'line') { for (let i = 1; i <= 6; i++) game.fx.burst(p.x + ca * R * i / 6, p.y - 14 + sa * R * i / 6, '#a8ffb0', 3, 60, 0.3, 2.5); game.fx.slash(p.x, p.y - 14, ang, R, 0.35, 1); }
+    else if (sk.shape === 'cone') { game.fx.slash(p.x, p.y - 14, ang, R, sk.arc, 1); game.fx.slash(p.x, p.y - 14, ang, R * 0.7, sk.arc, -1); game.fx.burst(p.x + ca * R * 0.6, p.y - 14 + sa * R * 0.6, '#cfe8ff', 10, 90, 0.4, 3); }
+    else { game.fx.ring(p.x, p.y - 10, R, '#ff6a5a'); game.fx.ring(p.x, p.y - 10, R * 0.7, '#ffd0a0'); for (let i = 0; i < 4; i++) game.fx.slash(p.x, p.y - 14, i * Math.PI / 2, R * 0.8, 1.6, 1); }
     game.camera.shake = Math.max(game.camera.shake, 3);
     game.audio.play('swing');
     game.events.emit('skillCast', { group, gem: sk.gem });
