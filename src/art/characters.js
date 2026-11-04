@@ -36,7 +36,9 @@ export function swingPose(swing, combo, aim) {
 
 let BLADE = '#d8e0e4';   // สีใบดาบตามอาวุธที่สวม (ตั้งต่อการวาดหนึ่งครั้ง)
 let WEAPON = 'sword';    // ทรงอาวุธ: sword / kris / glaive
-let WSPRITE = null;      // ภาพอาวุธจริงจาก art/items.js (เหมือนในกระเป๋า) — ไม่มี = วาดแบบเรียบ
+let WSPRITE = null;
+// ตัวนับแขนที่วาดในตัวละครล่าสุด (เทสต์ใช้ตรวจว่าทุกท่ามีแขนครบ 2 ข้างพอดี ไม่ซ้อนกันเป็น 4 แขน)
+export const drawStats = { arms: 0 };      // ภาพอาวุธจริงจาก art/items.js (เหมือนในกระเป๋า) — ไม่มี = วาดแบบเรียบ
 
 function sword(ctx, x, y, ang, len = 19) {
   ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
@@ -150,6 +152,8 @@ function armorSkin(ctx, art, sx, sy, sw, sh, dx, dy, dw, dh, dark) {
 
 export function drawHuman(ctx, look, X, Y, o) {
   const L = typeof look === 'string' ? LOOKS[look] : look;
+  drawStats.arms = 0;
+  const shooting = o.shoot >= 0 && !!o.shootKind && !!o.weaponArt;   // ท่ายิง/ร่าย: แขนทั้งสองข้างวาดใน rangedPose แทนแขนปกติ
   BLADE = o.blade || '#d8e0e4'; WEAPON = o.weapon || 'sword'; WSPRITE = o.weaponArt || null;
   const d = o.dir ?? 0, side = d === 2 || d === 3, f = d === 2 ? -1 : 1;
   const k = o.amt ?? (o.moving ? 1 : 0), ph = (o.walk || 0) * Math.PI * 2, t = o.t || 0;
@@ -197,12 +201,12 @@ export function drawHuman(ctx, look, X, Y, o) {
     const breathe = k ? 0 : Math.sin(t * 2.4) * 0.5;
     const armUp = ph;
     const farArm = () => {
-      if (swinging) return;
+      if (swinging) { (drawStats.arms++, limb)(ctx, 0, -13, f * 0.75, 6, f * 0.35, 6, 5, darker(L.top), (L.foreArt || darker(L.fore || L.top)), L.skin, 3); return; }   // ตอนฟัน: แขนหลังเหวี่ยงไปข้างหลังรับน้ำหนัก (ไม่หายไป)
       const a1 = f * Math.sin(armUp) * 0.65 * k + (o.dash ? f * 1.1 : 0), a2 = a1 - f * (0.35 + Math.max(0, Math.sin(armUp)) * 0.5 * k);
-      limb(ctx, 0, -13, a1, 6, a2, 6, 5, darker(L.top), (L.foreArt || darker(L.fore || L.top)), L.skin, 3);
+      (drawStats.arms++, limb)(ctx, 0, -13, a1, 6, a2, 6, 5, darker(L.top), (L.foreArt || darker(L.fore || L.top)), L.skin, 3);
     };
     if (L.weapon === 'sword' && !swinging) sword(ctx, -f * 3, -15, f > 0 ? 2.25 : Math.PI - 2.25, 17); // ดาบสะพายหลัง
-    farArm();
+    if (!shooting) farArm();
     if (L.weapon !== 'sword' && L.weapon) staff(f * 9, -6);
     R(L.top, -4.5, -14 - breathe, 9, 14 + breathe); R(L.collar, -5, -16 - breathe, 10, 4);
     if (L.bodyArt) armorSkin(ctx, L.bodyArt, 20, 12, 24, 44, -4.5, -15 - breathe, 9, 15 + breathe, 0);
@@ -214,7 +218,7 @@ export function drawHuman(ctx, look, X, Y, o) {
     if (L.hat === 'elder' || L.hat === 'bun') { R(L.sash, -2, -15, 4, 12); }
     head(ctx, L, d, f, 0, -16 - breathe, t, true);
     // แขนใกล้: ถือดาบ / ร่าย / แกว่งตามจังหวะเดิน
-    if (swinging) {
+    if (shooting) { /* แขนวาดใน rangedPose */ } else if (swinging) {
       const hx = Math.cos(pose.ang) * (8 + pose.ext * 0.5), hy = -12 + Math.sin(pose.ang) * (7 + pose.ext * 0.4);
       ctx.save(); ctx.rotate(-f * lean); // ดาบชี้ตามมุมโลก ไม่เอนตามตัว
       drawSmear(ctx, pose, hx, hy);
@@ -222,11 +226,11 @@ export function drawHuman(ctx, look, X, Y, o) {
       sword(ctx, hx, hy, pose.ang, 19 + pose.ext * 0.4);
       ctx.restore();
     } else if (o.cast) {
-      limb(ctx, 0, -13, -f * 1.45, 6, -f * 1.6, 6, 5, L.top, L.foreArt || L.fore || L.top, L.skin, 3);
+      (drawStats.arms++, limb)(ctx, 0, -13, -f * 1.45, 6, -f * 1.6, 6, 5, L.top, L.foreArt || L.fore || L.top, L.skin, 3);
       ctx.fillStyle = 'rgba(255,90,90,0.7)'; ctx.beginPath(); ctx.arc(f * 13, -15, 3.5, 0, 7); ctx.fill();
     } else {
       const a1 = -f * Math.sin(armUp) * 0.65 * k + (o.dash ? f * 1.2 : 0), a2 = a1 - f * (0.35 + Math.max(0, -Math.sin(armUp)) * 0.5 * k);
-      limb(ctx, 0, -13, a1, 6, a2, 6, 5, L.top, L.foreArt || L.fore || L.top, L.skin, 3);
+      (drawStats.arms++, limb)(ctx, 0, -13, a1, 6, a2, 6, 5, L.top, L.foreArt || L.fore || L.top, L.skin, 3);
     }
     ctx.restore();
   } else {
@@ -260,13 +264,13 @@ export function drawHuman(ctx, look, X, Y, o) {
     if (L.hat === 'elder' || L.hat === 'bun') { R(L.sash, x - 8, by - 27, 5, 3); R(L.sash, x - 4, by - 24, 4, 9); }
     // แขนซ้าย (ฝั่งที่ไม่ถือดาบ) แกว่งสวนขา
     const swingA = k ? Math.sin(ph) * 0.45 : Math.sin(t * 2.4) * 0.04;
-    const armL = () => { const sh = swingA * 5 * (back ? -1 : 1); limb(ctx, x - 9 + sway, by - 26 + Math.max(0, sh) * 0.4, 0.1, 6 - Math.max(0, sh) * 0.3, 0.06, 6 - Math.max(0, sh) * 0.5, 4, L.top, L.foreArt || L.fore || L.top, L.skin, 4); };
-    armL();
-    if (!swinging) {
-      if (o.cast) { R(L.top, x + 7, by - 32, 4, 10); R(L.skin, x + 7, by - 35, 4, 4); ctx.fillStyle = 'rgba(255,90,90,0.7)'; ctx.beginPath(); ctx.arc(x + 9, by - 37, 4, 0, 7); ctx.fill(); }
+    const armL = () => { const sh = swingA * 5 * (back ? -1 : 1); (drawStats.arms++, limb)(ctx, x - 9 + sway, by - 26 + Math.max(0, sh) * 0.4, 0.1, 6 - Math.max(0, sh) * 0.3, 0.06, 6 - Math.max(0, sh) * 0.5, 4, L.top, L.foreArt || L.fore || L.top, L.skin, 4); };
+    if (!shooting) armL();
+    if (!swinging && !shooting) {
+      if (o.cast) { drawStats.arms++; R(L.top, x + 7, by - 32, 4, 10); R(L.skin, x + 7, by - 35, 4, 4); ctx.fillStyle = 'rgba(255,90,90,0.7)'; ctx.beginPath(); ctx.arc(x + 9, by - 37, 4, 0, 7); ctx.fill(); }
       else {
         const sh = -swingA * 5 * (back ? -1 : 1);
-        limb(ctx, x + 9 + sway, by - 26 + Math.max(0, sh) * 0.4, -0.1, 6 - Math.max(0, sh) * 0.3, -0.06, 6 - Math.max(0, sh) * 0.5, 4, L.top, L.foreArt || L.fore || L.top, L.skin, 4);
+        (drawStats.arms++, limb)(ctx, x + 9 + sway, by - 26 + Math.max(0, sh) * 0.4, -0.1, 6 - Math.max(0, sh) * 0.3, -0.06, 6 - Math.max(0, sh) * 0.5, 4, L.top, L.foreArt || L.fore || L.top, L.skin, 4);
       }
     }
     head(ctx, L, d, f, x + sway * 0.5, by - 28 - breathe, t, false);
@@ -302,7 +306,9 @@ function darker(hex) {           // สีเข้มขึ้นเล็ก�
 // ธนู: แขนหน้าเหยียดจับกลางคัน คันตั้งฉากกับทิศยิง ท้องคันหันไปหาเป้า · แขนหลังน้าวสายเข้าหาแก้ม (ง้าง) แล้วปล่อย สายดีดกลับ
 // คทา: ชูคทาขึ้นเหนือหัว หัวคทาเรืองแสงสะสมพลัง → ชี้ไปข้างหน้าตอนปล่อย
 function rangedPose(ctx, L, x, y, o) {
-  const a = o.aim || 0, t = o.shoot, ca = Math.cos(a), sa = Math.sin(a), sx = x + ca * 2, sy = y - 26;
+  const a = o.aim || 0, t = o.shoot, ca = Math.cos(a), sa = Math.sin(a), side = o.dir === 2 || o.dir === 3;
+  // ไหล่จริงของตัวละคร: หน้า/หลัง = ไหล่ซ้าย-ขวาห่างกัน 16 · ข้าง = ไหล่ซ้อนกันกลางตัว — แขนหน้า (ถืออาวุธ) ออกจากไหล่ฝั่งเป้า
+  const fr = side ? 1 : (ca >= 0 ? 1 : -1), sx = x + (side ? ca * 2 : fr * 8), sy = y - 26, bsx = x + (side ? -ca * 2 : -fr * 8), bsy = y - 25;
   if (o.shootKind === 'crossbow') {                               // หน้าไม้: ประทับรางตามแนวเล็ง สองมือจับราง ปล่อยแล้วสะบัดถอย
     const rec = t > 0.6 ? Math.max(0, 1 - (t - 0.6) / 0.15) * 3 : 0, hx = sx + ca * (12 - rec), hy = sy + sa * (12 - rec);
     const k = 13 / WSPRITE.reach;
@@ -310,7 +316,7 @@ function rangedPose(ctx, L, x, y, o) {
     ctx.drawImage(WSPRITE.sprite, -(WSPRITE.gx || 32) * k, -WSPRITE.gy * k, 64 * k, 64 * k);
     if (t < 0.6) { ctx.fillStyle = '#8a5a32'; ctx.fillRect(-0.7, -16, 1.4, 12); }    // ลูกดอกพาดราง
     ctx.restore();
-    armTo(ctx, sx - ca * 3, sy + 1, hx - ca * 5, hy - sa * 5, 4, darker(L.top), L.skin);
+    armTo(ctx, bsx, bsy, hx - ca * 5, hy - sa * 5, 4, darker(L.top), L.skin);
     armTo(ctx, sx, sy, hx + ca * 3, hy + sa * 3, 4, L.top, L.skin);
   } else if (o.shootKind === 'bow') {
     const rel = 0.6, pull = t < rel ? 10 * Math.min(1, t / rel * 1.4) : Math.max(0, 10 * (1 - (t - rel) / 0.12)), hx = sx + ca * 13, hy = sy + sa * 13;
@@ -325,11 +331,12 @@ function rangedPose(ctx, L, x, y, o) {
     }
     ctx.restore();
     const bx = hx + ca * nock - 0, by = hy + sa * nock;            // มือหลังอยู่ที่จุดน้าวสาย
-    armTo(ctx, sx - ca * 3, sy + 1, bx, by, 4, darker(L.top), L.skin);
+    armTo(ctx, bsx, bsy, bx, by, 4, darker(L.top), L.skin);
     armTo(ctx, sx, sy, hx, hy, 4, L.top, L.skin);
   } else {
     const rel = 0.5, up = t < rel ? Math.min(1, t / rel * 1.5) : 1 - (t - rel) / (1 - rel) * 0.6;
     const hx = sx + ca * (5 + (t > rel ? 6 : 0)), hy = sy - 6 - up * 8;
+    armTo(ctx, bsx, bsy, bsx + (side ? -ca : -fr) * 2, bsy + 11, 4, darker(L.top), L.skin);   // มืออีกข้างห้อยข้างตัว
     armTo(ctx, sx, sy, hx, hy, 4, L.top, L.skin);
     const tilt = t > rel ? a * 0.25 : 0;
     sword(ctx, hx, hy + 8, -Math.PI / 2 + tilt, 22);
@@ -342,6 +349,7 @@ function rangedPose(ctx, L, x, y, o) {
 }
 
 function armTo(ctx, sx, sy, hx, hy, w, col, skin) {
+  drawStats.arms++;
   const a = Math.atan2(hy - sy, hx - sx), len = Math.hypot(hx - sx, hy - sy);
   ctx.save(); ctx.translate(sx, sy); ctx.rotate(a - Math.PI / 2);
   ctx.fillStyle = col; ctx.fillRect(-w / 2, -1, w, len - 2);

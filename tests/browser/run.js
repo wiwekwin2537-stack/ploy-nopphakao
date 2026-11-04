@@ -602,6 +602,30 @@ await check('รางวัลเควสแบบ PoE: ล้มยักษ�
   return 'ได้พลอยรางวัล';
 });
 
+await check('ท่าตัวละครสมจริง: ทุกท่า (ยืน เดิน ฟัน ร่าย ยิงธนู หน้าไม้ คทา) ทุกทิศ ทุกจังหวะ มีแขนพอดี 2 ข้าง ไม่ซ้อนเป็น 4 แขน', async () => {
+  const bad = await G(page, () => {
+    const P = __ploy, g = P.game, out = [], c = document.createElement('canvas').getContext('2d'), keep = g.player.equip.weapon;
+    const weapons = [['bamboo_sword', null], ['bamboo_bow', 'bow'], ['wood_crossbow', 'crossbow'], ['herb_staff', 'staff']];
+    for (const [base, sk] of weapons) {
+      g.player.equip.weapon = { uid: 1, base, rarity: 'normal', ilvl: 1, mods: [], sockets: 0, links: [], gems: [], colors: [] };
+      const L = P.art.heroLook(g), Gr = P.art.heroGear(g);
+      for (let dir = 0; dir < 4; dir++) {
+        const aim = [Math.PI / 2, -Math.PI / 2, Math.PI, 0][dir];
+        const poses = [{ n: 'ยืน' }, { n: 'เดิน', moving: true, amt: 1, walk: 0.3 }, { n: 'ร่าย', cast: true }, { n: 'ฟัน', swing: 0.4, combo: 1 }];
+        if (sk) for (const t of [0.1, 0.4, 0.62, 0.9]) poses.push({ n: 'ยิง' + t, shoot: t, shootKind: sk });
+        for (const ps of poses) {
+          P.art.drawHuman(c, L, 50, 80, { ...Gr, dir, t: 1, swing: -1, aim, ...ps });
+          if (P.art.drawStats.arms !== 2) out.push(`${base} ทิศ${dir} ${ps.n}: ${P.art.drawStats.arms} แขน`);
+        }
+      }
+    }
+    g.player.equip.weapon = keep;
+    return out;
+  });
+  assert(!bad.length, bad.slice(0, 6).join(' · '));
+  return 'ครบทุกท่า';
+});
+
 await check('ความเร็ว: มอน 100 ตัวไล่ล้อม ใช้เวลาคำนวณ+วาดต่อเฟรมไม่เกิน 8ms', async () => {
   await G(page, () => { const g = __ploy.game, p = g.player; const types = ['boar', 'monkey', 'krasue', 'piglet']; for (let i = 0; i < 2000 && g.mobs.length < 100; i++) { const m = __ploy.makeMob(g, types[i % 4], 3, p.x + (Math.random() - 0.5) * 700, p.y + (Math.random() - 0.5) * 400, -1); if (!g.world.blocked(m.x, m.y, m.radius)) g.mobs.push(m); } g.mobs.forEach((m) => { m.aggroed = true; }); p.invuln = 99; });
   await page.waitForTimeout(1500);
