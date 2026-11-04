@@ -115,7 +115,7 @@ test('บอสสู้จริง 20 วินาที: ทุกท่า�
   assert.equal(yak.dead, false);
 });
 
-test('ในดันเจี้ยนมอนตายแล้วไม่เกิดใหม่ เข้าใหม่จึงรีเซ็ต', () => {
+test('พื้นที่แบบ PoE: มอนตายแล้วไม่เกิดใหม่ · ออกแล้วกลับมาเร็ว = พื้นที่เดิม (ยังตาย) · นานเกินเวลา = พื้นที่ใหม่', () => {
   const g = makeGame(); g.flags.tutorialDone = true; g.flags.gotRuby = true;
   enterZone(g, 'dungeon1');
   const n = g.mobs.length;
@@ -124,7 +124,31 @@ test('ในดันเจี้ยนมอนตายแล้วไม่�
   for (let i = 0; i < 60 * 40; i++) updateMonsters(g, 1 / 60);
   assert.equal(g.mobs.length, 0);
   enterZone(g, 'dungeon2'); enterZone(g, 'dungeon1');
-  assert.ok(g.mobs.length >= n - 3);
+  assert.equal(g.mobs.length, 0, 'กลับมาเร็ว = มอนที่ตายแล้วยังตาย');
+  enterZone(g, 'dungeon2'); g.time += g.data.balance.instance.keepSeconds + 1; enterZone(g, 'dungeon1');
+  assert.ok(g.mobs.length >= n - 3, 'เกินเวลา = พื้นที่ใหม่ มอนครบ');
+});
+
+test('ฝูงมอนแบบ PoE: ทุ่งนามีหลายฝูงกระจายทั่วพื้นที่ (ไม่กองรวม) · ฝูงหายากมีหัวหน้าสีเหลืองตัวเดียว', () => {
+  const g = makeGame(); g.flags.tutorialDone = true;
+  enterZone(g, 'field');
+  const ms = g.mobs.filter((m) => !m.named);
+  const cells = new Set(ms.map((m) => Math.floor(m.x / 640) + ',' + Math.floor(m.y / 640)));
+  assert.ok(cells.size >= 5, 'มอนกระจายหลายโซน: ' + cells.size);
+  let rareLeaders = 0;
+  for (let i = 0; i < 30; i++) { g.time += 1e4; enterZone(g, 'town'); g.time += 1e4; enterZone(g, 'himmapan'); rareLeaders += g.mobs.filter((m) => m.elite === 'rare' && !m.named).length; }
+  assert.ok(rareLeaders > 0, 'ป่าหิมพานต์มีฝูงหายากบ้าง (ทุ่งนาเลเวลต่ำกว่าเกณฑ์)');
+});
+
+test('หมอกดำแบบ PoE: ยังไม่เดิน = มืด · เดินแล้วเปิด · เมืองเปิดหมด', async () => {
+  const { updateExplore, isExplored, exploredRatio } = await import('../../src/systems/explore.js');
+  const g = makeGame(); g.flags.tutorialDone = true;
+  enterZone(g, 'field'); updateExplore(g);
+  const p = g.player;
+  assert.ok(isExplored(g, p.x, p.y)); assert.equal(isExplored(g, 10, 10), false);
+  const r0 = exploredRatio(g); p.x = 600; p.y = 600; updateExplore(g);
+  assert.ok(exploredRatio(g) > r0 && isExplored(g, 600, 600));
+  enterZone(g, 'town'); assert.equal(exploredRatio(g), 1);
 });
 
 test('เซฟในดันเจี้ยน = เซฟไว้หน้าทางเข้าวัดร้าง โหลดได้ ของไม่ซ้ำ', () => {

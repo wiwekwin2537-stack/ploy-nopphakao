@@ -1,8 +1,9 @@
 // เดินทางระหว่างพื้นที่ผ่านทางออกจริง และการตาย/ฟื้น
-import { spawnZoneMobs } from './monsters.js';
+import { spawnZoneMobs, leaveInstance } from './monsters.js';
 import { playerStats } from './stats.js';
 
 export function enterZone(game, id, x, y) {
+  if (game.world.zone && game.world.zone.id !== id) leaveInstance(game, game.world.zone.id);   // พื้นที่เดิมเริ่มนับเวลาหมดอายุ
   const z = game.world.load(id);
   const p = game.player;
   p.x = x ?? z.start.x; p.y = y ?? z.start.y;

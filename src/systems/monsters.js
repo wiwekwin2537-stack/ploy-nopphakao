@@ -29,20 +29,56 @@ function freeSpot(game, area, r, avoidX, avoidY, minD) {
   return null;
 }
 
+// พื้นที่แบบ PoE (instance): จำมอนที่ตายแล้วไว้ keepSeconds วินาทีหลังออกจากพื้นที่ — กลับมาทันก็เจอพื้นที่เดิม
+export function zoneInstance(game, z) {
+  const K = game.data.balance.instance, all = game.instances || (game.instances = {});
+  let inst = all[z.id];
+  if (!inst || game.time > inst.until) inst = all[z.id] = { dead: new Set(), until: 0, explored: null };
+  inst.until = Infinity;                                          // อยู่ในพื้นที่ = ไม่หมดอายุ (เริ่มนับตอนออก)
+  return inst;
+}
+export function leaveInstance(game, zoneId) {
+  const inst = game.instances && game.instances[zoneId];
+  if (inst) inst.until = game.time + game.data.balance.instance.keepSeconds;
+}
+
 export function spawnZoneMobs(game) {
   game.mobs.length = 0;
   game.spawnTimers = [];
-  const z = game.world.zone, p = game.player;
+  const z = game.world.zone, p = game.player, K = game.data.balance.instance, inst = zoneInstance(game, z);
   z.spawns.forEach((s, gi) => {
     game.spawnTimers[gi] = [];
     if (s.afterFlag && !game.flags[s.afterFlag]) return;
     if (s.named && game.flags[s.named.flag]) return;            // มอนชื่อเฉพาะของเควส: ล้มแล้วไม่เกิดอีก
-    const n = game.data.monsters[s.type].boss ? s.count : Math.round(s.count * ((z.def.mobMods && z.def.mobMods.count) || 1));   // บอสไม่ทวีจำนวน
-    for (let i = 0; i < n; i++) spawnOne(game, s, gi, p.x, p.y, 280);
+    const boss = game.data.monsters[s.type].boss;
+    const n = boss ? s.count : Math.round(s.count * ((z.def.mobMods && z.def.mobMods.count) || 1));   // บอสไม่ทวีจำนวน
+    // แบ่งเป็นฝูง 3–5 ตัว แต่ละฝูงมีจุดศูนย์กลางสุ่มในพื้นที่ของกลุ่ม (แบบ PoE ไม่กองรวมกัน)
+    let slot = 0;
+    while (slot < n) {
+      const size = boss || s.named ? 1 : Math.min(n - slot, game.rng.int(K.packSize[0], K.packSize[1]));
+      const c = freeSpot(game, s.area, 18, p.x, p.y, 300);
+      if (!c) break;
+      const tier = !boss && !s.named && game.flags.tutorialDone ? packTier(game, s) : null;
+      for (let k = 0; k < size; k++, slot++) {
+        const key = gi + ':' + slot;
+        if (inst.dead.has(key)) continue;
+        const area = { x: c.x - K.packRadius, y: c.y - K.packRadius, w: K.packRadius * 2, h: K.packRadius * 2 };
+        const m = spawnOne(game, { ...s, area }, gi, p.x, p.y, 200, k === 0 ? tier : tier === 'magic' ? 'magic' : 'none');
+        if (m) m.slot = key;
+      }
+    }
   });
 }
 
-function spawnOne(game, s, gi, ax, ay, minD) {
+// ฝูงแบบ PoE: ฝูงหายาก = หัวหน้าสีเหลือง 1 ตัว + ลูกสมุน · ฝูงเวท = ทั้งฝูงสีฟ้า
+function packTier(game, s) {
+  const E = game.data.balance.elites.tiers, lv = s.level[1];
+  if (lv >= E.rare.minLevel && game.rng.chance(E.rare.chance * 3)) return 'rare';
+  if (lv >= E.magic.minLevel && game.rng.chance(E.magic.chance * 3)) return 'magic';
+  return 'none';
+}
+
+function spawnOne(game, s, gi, ax, ay, minD, tier) {
   const lv = s.level[0] + Math.floor(Math.random() * (s.level[1] - s.level[0] + 1));
   const spot = freeSpot(game, s.area, game.data.monsters[s.type].radius, ax, ay, minD);
   if (!spot) return null;
@@ -50,7 +86,8 @@ function spawnOne(game, s, gi, ax, ay, minD) {
   const M = game.world.zone.def.mobMods;                        // ค่าปรับของถ้ำลายแทง (เลือดหนา/ตีแรง/เร็ว)
   if (M) { m.hp = m.maxHp = Math.round(m.maxHp * (M.hp || 1)); m.damage = Math.round(m.damage * (M.damage || 1)); m.speed = m.baseSpeed = m.baseSpeed * (M.speed || 1); }
   if (s.named) { rollElite(game, m, 'rare'); m.named = s.named; }   // มอนเควส: หายากสีเหลืองเสมอ มีชื่อเฉพาะ
-  else if (game.flags.tutorialDone && !m.def.boss) rollElite(game, m);
+  else if (tier && tier !== 'none') rollElite(game, m, tier);
+  else if (tier === undefined && game.flags.tutorialDone && !m.def.boss) rollElite(game, m);
   game.mobs.push(m);
   return m;
 }
@@ -223,7 +260,7 @@ export function updateMonsters(game, dt) {
       m.dying += dt * 1.8;
       if (m.dying >= 1) {
         game.mobs.splice(i, 1);
-        if (m.group >= 0 && z.spawns[m.group] && z.spawns[m.group].respawn) game.spawnTimers[m.group].push(z.spawns[m.group].respawn);
+        if (m.slot && game.instances && game.instances[z.id]) game.instances[z.id].dead.add(m.slot);   // ตายแล้วไม่เกิดใหม่ในพื้นที่นี้ (แบบ PoE)
       }
       continue;
     }

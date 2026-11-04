@@ -48,6 +48,7 @@ import { drawHuman } from './art/characters.js';
 import { heroLook, heroGear } from './ui/herolook.js';
 import { itemSprite } from './art/items.js';
 import { updateStashSpot } from './systems/stash.js';
+import { updateExplore } from './systems/explore.js';
 import { updatePotion, setupFlasks } from './systems/shop.js';
 import { setupUniques, makeUnique } from './systems/uniques.js';
 
@@ -171,6 +172,7 @@ function update(dt) {
     updateWaypoints(game);
     updateAltar(game);
     updateStashSpot(game);
+    updateExplore(game);
     if (game.mode === 'play') {
       updatePotion(game, dt);
       updateSkillTimers(game, dt);

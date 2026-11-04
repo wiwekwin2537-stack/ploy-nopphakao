@@ -64,6 +64,7 @@ export function openMap(game, tier) {
   if (!(p.currency[key] > 0)) return false;
   p.currency[key]--;
   game.data.zones.map = generateMap(game, tier, (Date.now() ^ (tier * 7919)) & 0x7fffffff);
+  if (game.instances) delete game.instances.map;                 // ลายแทงใหม่ = ถ้ำใหม่ (มอนครบ หมอกปิด)
   game.world.forget('map');
   game.mode = 'play';
   enterZone(game, 'map');
