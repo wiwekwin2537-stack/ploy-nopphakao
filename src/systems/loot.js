@@ -60,7 +60,7 @@ function pickGem(game, gem) {
   game.audio.play('gem');
   if (gem !== 'ruby' && !game.flags.bagHint) {
     game.flags.bagHint = true;
-    game.notice = { text: (gemType(G, gem) === 'support' ? 'ได้พลอยเสริม! ' : 'ได้พลอยหลักใหม่! ') + 'เปิดกระเป๋าพลอย (ปุ่มกระเป๋า / B) เพื่อฝัง', t: 7 };
+    game.notice = { text: (gemType(G, gem) === 'support' ? 'ได้พลอยเสริม! ' : 'ได้พลอยหลักใหม่! ') + 'แตะรูปตัวละครมุมซ้ายบน → แถบพลอย เพื่อฝัง', t: 7 };
   }
   game.events.emit('gemPicked', { gem });
 }
@@ -87,13 +87,13 @@ export function updateLoot(game, dt) {
         const I = game.data.items;
         if (!giveItem(p, I, d.item)) {                       // กระเป๋าเต็ม: ของยังอยู่ที่พื้น
           game.drops.push(d); d.t = -1.5;
-          game.notice = { text: 'กระเป๋าเต็ม! เปิดกระเป๋าเพื่อทิ้งหรือสวมของ', t: 4 };
+          game.notice = { text: 'กระเป๋าเต็ม! แตะรูปตัวละคร → แถบชุด เพื่อทิ้งหรือสวมของ', t: 4 };
           continue;
         }
         const col = I.rarity[d.item.rarity].color;
         game.fx.text(p.x, p.y - 74, itemName(I, d.item), col, d.item.rarity !== 'normal');
         game.audio.play(d.item.rarity === 'purple' || d.item.rarity === 'red' ? 'gem' : 'coin');
-        if (!game.flags.gearHint) { game.flags.gearHint = true; game.notice = { text: 'ได้ของสวมใส่! เปิดกระเป๋า แตะแถบ "ชุด" เพื่อสวม', t: 6 }; }
+        if (!game.flags.gearHint) { game.flags.gearHint = true; game.notice = { text: 'ได้ของสวมใส่! แตะรูปตัวละครมุมซ้ายบน → แถบชุด เพื่อสวม', t: 6 }; }
         game.events.emit('itemPicked', { uid: d.item.uid });
       }
     }

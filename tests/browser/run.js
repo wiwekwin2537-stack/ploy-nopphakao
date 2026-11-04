@@ -158,8 +158,12 @@ await check('พลอยเสริม: เก็บจากพื้น → 
   await G(page, () => { const g = __ploy.game, p = g.player; g.mobs.length = 0; g.drops.push({ id: 9001, kind: 'gem', gem: 'multi', x: p.x + 20, y: p.y, t: 1, z: 0, vz: 0, vx: 0, vy: 0 }); });
   await wait(page, () => __ploy.game.player.bag.includes('multi'), null, 3000);
   const L = await G(page, () => __ploy.layout());
-  await page.mouse.click(L.bag.x, L.bag.y);
+  await page.mouse.click(L.profile.x + 30, L.profile.y + 30);              // แตะรูปตัวละคร = เปิดโปรไฟล์
   await wait(page, () => __ploy.game.mode === 'bag', null, 2000);
+  assert(await G(page, () => __ploy.game.bagTab === 'stats'), 'แตะรูปแล้วต้องเปิดหน้าตัวละคร');
+  await page.screenshot({ path: SHOTS + '/10a-profile.png' });
+  const gt = await G(page, () => __ploy.bagLayout().tabs.find((q) => q.id === 'gems'));
+  await page.mouse.click(gt.x + gt.w / 2, gt.y + gt.h / 2); await page.waitForTimeout(100);
   const cell = await G(page, () => { const g = __ploy.game, L = __ploy.layout(), w = g.camera.viewW, h = g.camera.viewH, s = L.s, G2 = g.data.gems;
     const pw = Math.min(w - 20, 720 * s), ph = Math.min(h - 16, 360 * s), x = w / 2 - pw / 2, y = h / 2 - ph / 2, c = Math.min(46 * s, (pw * 0.5 - 24 * s) / 6);
     const i = g.player.bag.indexOf('multi');                  // หาเม็ดที่เพิ่งเก็บ (ในกระเป๋าอาจมีพลอยที่ดรอประหว่างฟาร์มอยู่ก่อน)
@@ -203,6 +207,21 @@ await check('ต้นพาสซีฟ: กด P → แตะนักรบ�
   return 'เลเวล ' + dmg0;
 });
 
+await check('โปรไฟล์: แตะรูปตัวละคร → แถบพาสซีฟเปิดต้นเต็มจอ → ปุ่ม "โปรไฟล์" กลับมา → ปิดแล้วเดินได้', async () => {
+  const L = await G(page, () => __ploy.layout());
+  await page.mouse.click(L.profile.x + 100, L.profile.y + 20);
+  await wait(page, () => __ploy.game.mode === 'bag', null, 2000);
+  const tt = await G(page, () => __ploy.bagLayout().tabs.find((q) => q.id === 'tree'));
+  await page.mouse.click(tt.x + tt.w / 2, tt.y + tt.h / 2);
+  await wait(page, () => __ploy.game.mode === 'tree', null, 2000);
+  const bk = await G(page, () => { const s = __ploy.layout().s, w = __ploy.game.camera.viewW; return { x: w - 150 * s + 48 * s, y: 25 * s }; });
+  await page.mouse.click(bk.x, bk.y);
+  await wait(page, () => __ploy.game.mode === 'bag', null, 2000);
+  await page.keyboard.press('Escape'); await page.waitForTimeout(150);
+  assert((await state(page)).mode === 'play', 'ปิดโปรไฟล์ไม่ได้');
+  const x0 = (await state(page)).x; await hold(page, 'KeyA', 400); assert((await state(page)).x < x0 - 20, 'เดินไม่ได้หลังปิดโปรไฟล์');
+});
+
 await check('ของสวมใส่: เก็บดาบหายากจากพื้น → แถบชุด → แตะสองครั้งสวม → ดาเมจเพิ่ม สีดาบเปลี่ยน', async () => {
   await G(page, () => { const g = __ploy.game, p = g.player; p.level = Math.max(p.level, 4);
     g.drops.push({ id: 9002, kind: 'item', x: p.x + 14, y: p.y, t: 1, z: 0, vz: 0, vx: 0, vy: 0, item: { uid: 0, base: 'silver_kris', rarity: 'purple', ilvl: 4, mods: [{ id: 'heavy', tier: 1, value: 6 }, { id: 'tiger', tier: 1, value: 3 }, { id: 'sharp', tier: 1, value: 15 }], rareName: 'เขี้ยวพญาเสือ' } }); });
@@ -214,7 +233,8 @@ await check('ของสวมใส่: เก็บดาบหายาก�
     const pw = Math.min(w - 20, 720 * s), ph = Math.min(h - 16, 360 * s), x = w / 2 - pw / 2, y = h / 2 - ph / 2;
     const gx = x + 175 * s, gy = y + 52 * s, info = y + ph - 78 * s, cell = Math.min(44 * s, (x + pw - gx - 14 * s) / 6);
     const i = g.player.items.findIndex((q) => q.base === 'silver_kris');
-    return { tab: { x: x + 176 * s + 35 * s, y: y + 20 * s }, item: { x: gx + (i % 6) * cell + cell / 2, y: gy + Math.floor(i / 6) * cell + cell / 2 } }; });
+    const tb = __ploy.bagLayout().tabs.find((q) => q.id === 'gear');
+    return { tab: { x: tb.x + tb.w / 2, y: tb.y + tb.h / 2 }, item: { x: gx + (i % 6) * cell + cell / 2, y: gy + Math.floor(i / 6) * cell + cell / 2 } }; });
   await page.mouse.click(pos.tab.x, pos.tab.y); await page.waitForTimeout(80);
   const before = await G(page, () => __ploy.game.player.equip.weapon && __ploy.game.player.equip.weapon.base);
   await page.mouse.click(pos.item.x, pos.item.y); await page.waitForTimeout(80);

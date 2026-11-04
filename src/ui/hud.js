@@ -2,6 +2,7 @@
 import { C, kanokFrame, rrect, circle, poly } from '../art/draw.js';
 import { playerStats } from '../systems/stats.js';
 import { xpNeeded } from '../systems/progress.js';
+import { pointsLeft } from '../systems/passives.js';
 import { skillOf } from '../systems/skills.js';
 import { hintText, tutorialTarget } from '../systems/tutorial.js';
 
@@ -168,21 +169,11 @@ export function drawHud(ctx, game, L, w, h) {
   ctx.fillStyle = 'rgba(14,12,18,0.78)'; rrect(ctx, M.x - 30 * s, M.y + M.r + 4 * s, 60 * s, 18 * s, 9 * s); ctx.fill();
   text(ctx, '☀ ' + clock, M.x, M.y + M.r + 13.5 * s, 11 * s, '#f4e6c8', 'center', '600');
   speaker(ctx, L.mute.x, L.mute.y, L.mute.r, game.audio.muted);
-  // ปุ่มกระเป๋าพลอย (ใต้เบี้ย) มีจุดแดงเมื่อมีพลอยยังไม่ได้ฝัง
-  const BG = L.bag;
-  circle(ctx, BG.x, BG.y, BG.r, 'rgba(14,12,18,0.78)', C.gold, 1.5);
-  ctx.fillStyle = '#a8803a'; rrect(ctx, BG.x - BG.r * 0.5, BG.y - BG.r * 0.25, BG.r, BG.r * 0.75, 3 * s); ctx.fill();
-  ctx.strokeStyle = '#d8b060'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(BG.x, BG.y - BG.r * 0.25, BG.r * 0.3, Math.PI, 0); ctx.stroke();
-  poly(ctx, [BG.x, BG.y - BG.r * 0.1, BG.x + BG.r * 0.2, BG.y + BG.r * 0.12, BG.x, BG.y + BG.r * 0.35, BG.x - BG.r * 0.2, BG.y + BG.r * 0.12], '#d8283a', null);
-  if (p.bag.length) { circle(ctx, BG.x + BG.r * 0.7, BG.y - BG.r * 0.7, 6 * s, '#e0443a', '#fff', 1); text(ctx, String(p.bag.length), BG.x + BG.r * 0.7, BG.y - BG.r * 0.7 + 0.5, 8 * s, '#fff', 'center', '600'); }
-  if (game.input.mode === 'keyboard') text(ctx, 'B', BG.x + BG.r + 6 * s, BG.y + BG.r * 0.6, 9 * s, '#f4e6c8', 'center', '600');
-  // ปุ่มต้นพาสซีฟ (ดาว) มีตัวเลขแต้มที่ยังไม่ใช้
-  const TB = L.tree, PS = game.data.passives, ptsLeft = (p.level - 1) * PS.pointsPerLevel - p.passives.filter((id) => PS.nodes[id] && PS.nodes[id].kind !== 'start').length;
-  circle(ctx, TB.x, TB.y, TB.r, 'rgba(14,12,18,0.78)', C.gold, 1.5);
-  const star = []; for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? TB.r * 0.28 : TB.r * 0.62; star.push(TB.x + Math.cos(a) * rr, TB.y + Math.sin(a) * rr); }
-  poly(ctx, star, C.goldHi, null);
-  if (ptsLeft > 0) { circle(ctx, TB.x + TB.r * 0.7, TB.y - TB.r * 0.7, 6 * s, '#3aa85a', '#fff', 1); text(ctx, String(ptsLeft), TB.x + TB.r * 0.7, TB.y - TB.r * 0.7 + 0.5, 8 * s, '#fff', 'center', '600'); }
-  if (game.input.mode === 'keyboard') text(ctx, 'P', TB.x + TB.r + 6 * s, TB.y + TB.r * 0.6, 9 * s, '#f4e6c8', 'center', '600');
+  // จุดแจ้งเตือนบนรูปตัวละคร: พลอยยังไม่ฝัง (แดง) / แต้มพาสซีฟเหลือ (เขียว) — แตะแผงนี้เพื่อเปิดโปรไฟล์
+  const ptsLeft = Math.max(0, pointsLeft(p, game.data.passives));
+  if (p.bag.length) { circle(ctx, fx + fs - 2 * s, fy + 2 * s, 7 * s, '#e0443a', '#fff', 1); text(ctx, String(p.bag.length), fx + fs - 2 * s, fy + 2.5 * s, 8 * s, '#fff', 'center', '600'); }
+  if (ptsLeft > 0) { circle(ctx, fx + fs - 2 * s, fy + fs - 2 * s, 7 * s, '#3aa85a', '#fff', 1); text(ctx, String(ptsLeft), fx + fs - 2 * s, fy + fs - 1.5 * s, 8 * s, '#fff', 'center', '600'); }
+  if (game.input.mode === 'keyboard') text(ctx, 'B', fx + 4 * s, fy + fs - 4 * s, 9 * s, '#f4e6c8', 'center', '600');
   if (game.notice && game.notice.t > 0 && game.mode === 'play') {
     ctx.globalAlpha = Math.min(1, game.notice.t);
     ctx.font = `600 ${12 * s}px ${FONT}`;

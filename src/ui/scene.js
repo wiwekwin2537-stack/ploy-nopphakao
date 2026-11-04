@@ -1,10 +1,11 @@
 // วาดโลก: พื้น → ของแบน → ของ/ตัวละครเรียงตามแกน y → กระสุน/เอฟเฟกต์ → แถบเลือด
 import { createGround } from '../art/ground.js';
 import { createSpriteCache } from '../art/sprites.js';
-import { drawHuman, LOOKS } from '../art/characters.js';
+import { drawHuman } from '../art/characters.js';
+import { heroLook, heroGear } from './herolook.js';
 import { itemName } from '../systems/items.js';
 import { drawMonster } from '../art/monsters.js';
-import { C, shadow, circle, poly, rrect, shade } from '../art/draw.js';
+import { C, shadow, circle, poly, rrect } from '../art/draw.js';
 import { gemInfo, gemType } from '../systems/gems.js';
 import { SHOT_COLORS } from '../systems/combat.js';
 import { tutorialTarget } from '../systems/tutorial.js';
@@ -24,31 +25,6 @@ export function createScene(game) {
       ground.zoneId = game.world.zone.id;
     }
   }
-
-  // หน้าตาผู้เล่นเปลี่ยนตามของที่สวม: สีเสื้อ หมวก สีใบดาบ
-  const lookCache = { key: '', look: null };
-  function heroLook() {
-    const p = game.player, I = game.data.items, e = p.equip || {};
-    const key = ['head', 'body', 'legs', 'arms', 'amulet'].map((k) => (e[k] ? e[k].base : '')).join('|');
-    if (lookCache.key !== key || !lookCache.look) {
-      const L = { ...LOOKS.hero }, lk = (k) => (e[k] ? I.bases[e[k].base] : null);
-      const b = lk('body'), h = lk('head'), lg = lk('legs'), ar = lk('arms'), nk = lk('amulet');
-      if (b) { L.top = b.color; L.collar = (b.look && b.look.trim) || shade(b.color, 0.08); L.plates = b.look && b.look.plates; L.straps = b.look && b.look.straps; }
-      if (h) { L.hat = (h.look && h.look.hat) || 'band'; L.hatColor = h.color; }
-      if (lg) { L.leg = lg.color; L.leg2 = shade(lg.color, 0.06); L.guard = lg.look && lg.look.guard; }
-      if (ar) L.fore = ar.color;
-      if (nk) L.neck = nk.color;
-      lookCache.key = key; lookCache.look = L;
-    }
-    return lookCache.look;
-  }
-  function heroGlow() {                                    // ประกายตามของที่ดีที่สุดที่สวม (เหมือนเอโดเรีย)
-    const e = game.player.equip || {}, R = game.data.items.rarity;
-    const best = Object.values(e).filter(Boolean).map((it) => it.rarity);
-    return best.includes('red') ? R.red.color : best.includes('purple') ? R.purple.color : null;
-  }
-  function weaponKind() { const w = game.player.equip && game.player.equip.weapon; return w ? ((game.data.items.bases[w.base].look || {}).kind || 'sword') : 'sword'; }
-  function bladeColor() { const w = game.player.equip && game.player.equip.weapon; return w ? game.data.items.bases[w.base].color : '#d8e0e4'; }
 
   function drawDrop(ctx, d) {
     if (d.kind === 'item') {                                       // ของสวมใส่บนพื้น: ห่อผ้าเรืองแสงตามระดับ
@@ -254,7 +230,7 @@ export function createScene(game) {
             drawHuman(ctx, 'hero', gh.x, gh.y, { dir: gh.dir, walk: gh.walk, moving: true, swing: -1, t, dash: true });
           }
           ctx.globalAlpha = 1;
-          drawHuman(ctx, heroLook(), p.x, p.y, { blade: bladeColor(), weapon: weaponKind(), glow: heroGlow(), dir: p.dir, walk: p.walk, amt: p.walkAmt, moving: p.moving, swing: p.swing, combo: p.combo, aim: p.aim, hurt: p.hurt, t, dash: p.dashT > 0, cast: p.castT > 0 });
+          drawHuman(ctx, heroLook(game), p.x, p.y, { ...heroGear(game), dir: p.dir, walk: p.walk, amt: p.walkAmt, moving: p.moving, swing: p.swing, combo: p.combo, aim: p.aim, hurt: p.hurt, t, dash: p.dashT > 0, cast: p.castT > 0 });
         }
       }
       for (const s of game.shots) drawShot(ctx, s);

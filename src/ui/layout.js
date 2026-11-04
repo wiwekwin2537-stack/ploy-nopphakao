@@ -18,7 +18,6 @@ export function computeLayout(w, h) {
     slots: { x: w / 2, y: h - 26 * s, r: 15 * s, gap: 42 * s },
     minimap: { x: w - 52 * s, y: 50 * s, r: 40 * s },
     mute: { x: w - 30 * s, y: 128 * s, r: 15 * s },
-    bag: { x: 26 * s, y: 116 * s, r: 17 * s },
-    tree: { x: 26 * s, y: 156 * s, r: 17 * s },
+    profile: { x: 8 * s, y: 6 * s, w: 188 * s, h: 64 * s },   // แผงสถานะมุมซ้ายบน = ปุ่มโปรไฟล์
   };
 }

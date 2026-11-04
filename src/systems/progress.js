@@ -19,7 +19,7 @@ export function gainXp(game, amount) {
     game.fx.text(p.x, p.y - 50, 'เลเวล ' + p.level + '!', '#ffd24a', true);
     game.fx.burst(p.x, p.y - 16, '#ffd24a', 26, 140, 0.9, 3, 60);
     game.audio.play('level');
-    game.notice = { text: `ได้แต้มพาสซีฟ ${ups} แต้ม! เปิดต้นพาสซีฟ (ปุ่มดาว / P)`, t: 6 };
+    game.notice = { text: `ได้แต้มพาสซีฟ ${ups} แต้ม! แตะรูปตัวละครมุมซ้ายบน → แถบพาสซีฟ (หรือกด P)`, t: 6 };
     game.events.emit('levelUp', { level: p.level });
   }
   return ups;

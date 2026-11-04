@@ -29,8 +29,8 @@ import { createFx } from './art/fx.js';
 import { computeLayout } from './ui/layout.js';
 import { createScene } from './ui/scene.js';
 import { drawHud, drawDialog, drawDeath, drawTitle, titleButtons } from './ui/hud.js';
-import { drawBag, updateBag, bagButtonHit } from './ui/bag.js';
-import { drawTree, updateTree, treeButtonHit, openTree } from './ui/tree.js';
+import { drawBag, updateBag, profileHit, bagLayout } from './ui/bag.js';
+import { drawTree, updateTree, openTree } from './ui/tree.js';
 import { drawShop, updateShop } from './ui/shop.js';
 import { updatePotion, drinkPotion } from './systems/shop.js';
 
@@ -120,16 +120,20 @@ function update(dt) {
     game.deadT += dt;
     if (game.deadT > 1.2 && (input.taps.length || input.pressed.attack || input.pressed.interact || input.pressed.dash)) { respawn(game); writeSave(game); }
   } else if (game.mode === 'tree') {
-    if (updateTree(game, layout, game.camera.viewW, game.camera.viewH)) { game.mode = 'play'; input.setUiMode(false); writeSave(game); }
-  } else if (game.mode === 'play' && (input.pressed.tree || input.taps.some((t) => !t.consumed && treeButtonHit(layout, t)))) {
-    input.taps.forEach((t) => { if (treeButtonHit(layout, t)) t.consumed = true; });
+    const r = updateTree(game, layout, game.camera.viewW, game.camera.viewH);
+    if (r) { game.mode = r === 'back' ? 'bag' : 'play'; input.setUiMode(false); writeSave(game); }
+  } else if (game.mode === 'play' && input.pressed.tree) {
     game.mode = 'tree'; openTree(game); game.audio.play('click');
   } else if (game.mode === 'shop') {
     if (updateShop(game, layout, game.camera.viewW, game.camera.viewH)) { game.mode = 'play'; writeSave(game); }
   } else if (game.mode === 'bag') {
-    if (updateBag(game, layout, game.camera.viewW, game.camera.viewH)) { game.mode = 'play'; game.bagSel = null; writeSave(game); }
-  } else if (game.mode === 'play' && (input.pressed.bag || input.taps.some((t) => !t.consumed && bagButtonHit(layout, t)))) {
-    input.taps.forEach((t) => { if (bagButtonHit(layout, t)) t.consumed = true; });
+    const r = updateBag(game, layout, game.camera.viewW, game.camera.viewH);
+    if (r === 'tree') { game.mode = 'tree'; openTree(game); }
+    else if (r) { game.mode = 'play'; game.bagSel = null; writeSave(game); }
+  } else if (game.mode === 'play' && (input.pressed.bag || input.taps.some((t) => !t.consumed && profileHit(layout, t)))) {
+    const byTap = input.taps.some((t) => !t.consumed && profileHit(layout, t));
+    input.taps.forEach((t) => { if (profileHit(layout, t)) t.consumed = true; });
+    if (byTap) game.bagTab = 'stats';                       // แตะรูปตัวละคร = หน้าตัวละคร · ปุ่ม B = แถบล่าสุด
     game.mode = 'bag'; game.bagGroup = game.bagGroup || 0; game.audio.play('click');
   } else if (game.mode === 'play' && game.hitStop > 0) {
     game.hitStop -= dt;                     // หยุดภาพแวบหนึ่งตอนดาบโดน ให้รู้สึกถึงแรงกระแทก
@@ -196,4 +200,4 @@ game.loopStats = loop.stats;
 loop.start();
 
 // test-hook: เปิดเฉพาะเมื่อมี ?test ใน URL ใช้ในเทสต์อัตโนมัติเท่านั้น
-if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, layout: () => layout }; // test-hook
+if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, layout: () => layout, bagLayout: () => bagLayout(game.camera.viewW, game.camera.viewH, layout.s, game.data.gems) }; // test-hook

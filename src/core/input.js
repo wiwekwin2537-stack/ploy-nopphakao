@@ -5,7 +5,7 @@ const ACTIONS = ['attack', 'dash', 'skill', 'skill2', 'interact', 'pause', 'bag'
 const KEYMAP = {
   KeyW: 'up', ArrowUp: 'up', KeyS: 'down', ArrowDown: 'down',
   KeyA: 'left', ArrowLeft: 'left', KeyD: 'right', ArrowRight: 'right',
-  KeyJ: 'attack', Space: 'dash', ShiftLeft: 'dash', KeyK: 'skill', KeyQ: 'skill', Digit1: 'skill', KeyL: 'skill2', Digit2: 'skill2', KeyB: 'bag', KeyI: 'bag', Tab: 'bag', KeyP: 'tree', KeyT: 'tree', Digit3: 'potion', KeyR: 'potion', KeyH: 'potion',
+  KeyJ: 'attack', Space: 'dash', ShiftLeft: 'dash', KeyK: 'skill', KeyQ: 'skill', Digit1: 'skill', KeyL: 'skill2', Digit2: 'skill2', KeyB: 'bag', KeyI: 'bag', KeyC: 'bag', Tab: 'bag', KeyP: 'tree', KeyT: 'tree', Digit3: 'potion', KeyR: 'potion', KeyH: 'potion',
   KeyE: 'interact', Enter: 'interact', Escape: 'pause',
 };
 

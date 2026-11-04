@@ -17,6 +17,7 @@ function nodeR(n, s) { return (n.kind === 'keystone' ? 17 : n.kind === 'notable'
 function ui(w, h, s) {
   return {
     close: { x: w - 26 * s, y: 24 * s, r: 15 * s },
+    back: { x: w - 150 * s, y: 12 * s, w: 96 * s, h: 26 * s },
     zin: { x: w - 26 * s, y: 64 * s, r: 14 * s },
     zout: { x: w - 26 * s, y: 98 * s, r: 14 * s },
     info: { x: 10 * s, y: h - 86 * s, w: Math.min(w - 20 * s, 460 * s), h: 76 * s },
@@ -80,6 +81,10 @@ export function drawTree(ctx, game, L, w, h) {
   text(ctx, st ? `แต้มเหลือ ${left}` : 'เลือกสายเริ่มต้นก่อน', 120 * s, 25 * s, 12 * s, left > 0 || !st ? '#9af0b0' : C.cream);
   const ps = playerStats(p, game.data);
   text(ctx, `ดาบ ${Math.round(ps.damage)} · พลอย ${Math.round(ps.spellDamage)} · เลือด ${ps.maxHp} · มานา ${ps.maxMp} · คริ ${Math.round(ps.crit * 100)}%`, 20 * s, 54 * s, 10 * s, C.cream, 'left', 'normal');
+  const BK = U.back;                                      // กลับหน้าโปรไฟล์
+  ctx.fillStyle = 'rgba(14,12,18,0.85)'; rrect(ctx, BK.x, BK.y, BK.w, BK.h, 9 * s); ctx.fill();
+  ctx.strokeStyle = C.gold; ctx.lineWidth = 1.2; ctx.stroke();
+  text(ctx, '◀ โปรไฟล์', BK.x + BK.w / 2, BK.y + BK.h / 2 + 0.5, 11 * s, C.goldHi, 'center', '600');
   for (const [k, b] of [['close', U.close], ['zin', U.zin], ['zout', U.zout]]) {
     circle(ctx, b.x, b.y, b.r, k === 'close' ? 'rgba(120,30,20,0.9)' : 'rgba(14,12,18,0.85)', C.gold, 1.5);
     text(ctx, k === 'close' ? '✕' : k === 'zin' ? '+' : '−', b.x, b.y + 1, 14 * s, '#fff', 'center');
@@ -105,7 +110,7 @@ export function drawTree(ctx, game, L, w, h) {
   }
 }
 
-// คืน true ถ้าควรปิด
+// คืน true ถ้าควรปิด หรือ 'back' ถ้ากลับหน้าโปรไฟล์
 export function updateTree(game, L, w, h) {
   const P = game.data.passives, p = game.player, v = game.treeView, s = L.s, inp = game.input;
   if (inp.pressed.tree || inp.pressed.pause || inp.pressed.bag) return true;
@@ -120,6 +125,7 @@ export function updateTree(game, L, w, h) {
     t.consumed = true;
     const hit = (b) => Math.hypot(t.sx - b.x, t.sy - b.y) < b.r * 1.4;
     if (hit(U.close)) return true;
+    if (t.sx >= U.back.x && t.sx <= U.back.x + U.back.w && t.sy >= U.back.y && t.sy <= U.back.y + U.back.h) { game.audio.play('click'); return 'back'; }
     if (hit(U.zin)) { v.z = Math.min(2, v.z * 1.25); continue; }
     if (hit(U.zout)) { v.z = Math.max(0.35, v.z / 1.25); continue; }
     let best = null, bd = 1e9;
@@ -136,5 +142,3 @@ export function updateTree(game, L, w, h) {
   }
   return false;
 }
-
-export function treeButtonHit(L, t) { return Math.hypot(t.sx - L.tree.x, t.sy - L.tree.y) < L.tree.r * 1.4; }
