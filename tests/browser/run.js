@@ -301,9 +301,16 @@ await check('ร้านแม่ค้า: กด E คุย → เปิด
   await page.keyboard.press('Escape'); await page.waitForTimeout(150);
   assert((await state(page)).mode === 'play', 'ปิดร้านไม่ได้');
   await G(page, () => { __ploy.game.player.hp = 20; });
-  await page.keyboard.press('Digit3'); await page.waitForTimeout(150);
+  await page.keyboard.press('Digit1'); await page.waitForTimeout(150);
   const d = await G(page, () => ({ hp: __ploy.game.player.hp, pot: __ploy.game.player.potions }));
   assert(d.pot === 0 && d.hp > 20, 'ดื่มยาไม่ได้ ' + JSON.stringify(d));
+  // คลิกขวดน้ำมนต์ (ขวดที่ 2 ข้างลูกแก้วเลือด) ด้วยเมาส์
+  await G(page, () => { const p = __ploy.game.player; p.mp = 1; p.mpPotions = 1; p.mpPotionCd = 0; });
+  const fl = await G(page, () => __ploy.layout().flasks[1]);
+  await page.mouse.click(fl.x + fl.w / 2, fl.y + fl.h / 2); await page.waitForTimeout(150);
+  const m = await G(page, () => ({ mp: __ploy.game.player.mp, n: __ploy.game.player.mpPotions }));
+  assert(m.n === 0 && m.mp > 1, 'คลิกขวดน้ำมนต์ไม่ได้ ' + JSON.stringify(m));
+  await page.screenshot({ path: SHOTS + '/15b-hud.png' });
   return 'ขายของ ' + (v.items > 0 ? 'ได้' : '(ไม่มีของให้ขาย)');
 });
 

@@ -85,3 +85,16 @@ test('ซื้อศิลาเจาะ/ด้ายสายสิญจน�
   assert.deepEqual([p.currency.jeweller, p.currency.fusing, p.coins], [1, 1, 0]);
   assert.equal(buyItem(g, j), 'poor'); assert.equal(p.currency.jeweller, 1);
 });
+
+test('น้ำมนต์: ซื้อ/ดื่มฟื้นมานา แยกคูลดาวน์กับยาหม้อ เซฟเก่ารุ่น 7 ได้น้ำมนต์ 2 ขวด', () => {
+  const g = makeGame(), p = g.player, P = g.data.shop.manaPotion;
+  enterZone(g, 'field');
+  p.coins = P.price; assert.equal(buyPotion(g, 'mp'), 'ok'); assert.equal(p.mpPotions, 1); assert.equal(p.coins, 0);
+  p.mp = 1; p.hp = 10; p.potions = 1;
+  assert.equal(drinkPotion(g, 'mp'), true); assert.ok(p.mp > 1); assert.equal(p.mpPotions, 0);
+  assert.equal(drinkPotion(g, 'hp'), true, 'ยาหม้อไม่ติดคูลดาวน์ของน้ำมนต์');
+  const s = JSON.parse(JSON.stringify(serialize(g)));
+  const old = { ...s, v: 7 }; delete old.mpPotions;
+  assert.equal(validate(old, g.data).mpPotions, 2);
+  assert.equal(validate({ ...s, mpPotions: 99 }, g.data), null);
+});

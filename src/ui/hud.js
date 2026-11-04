@@ -3,6 +3,7 @@ import { C, kanokFrame, rrect, circle, poly } from '../art/draw.js';
 import { playerStats } from '../systems/stats.js';
 import { xpNeeded } from '../systems/progress.js';
 import { pointsLeft } from '../systems/passives.js';
+import { drawBottomBar } from './hudbar.js';
 import { skillOf } from '../systems/skills.js';
 import { hintText, tutorialTarget } from '../systems/tutorial.js';
 
@@ -31,9 +32,9 @@ function wrap(ctx, str, maxW) {
   return out;
 }
 
-const SKILL_BTN = { skill: 0, skill2: 1, skill3: 2 };   // ปุ่มสกิล → สกิลลำดับที่ (อาวุธก่อน แล้วเสื้อ)
+export const SKILL_BTN = { skill: 0, skill2: 1, skill3: 2 };   // ปุ่มสกิล → สกิลลำดับที่ (อาวุธก่อน แล้วเสื้อ)
 
-function icon(ctx, id, x, y, r, game) {
+export function icon(ctx, id, x, y, r, game) {
   ctx.save(); ctx.translate(x, y);
   if (id === 'attack') {
     ctx.rotate(-0.8);
@@ -121,23 +122,21 @@ function face(ctx, x, y, size) {                      // หน้าตัว�
 
 export function drawHud(ctx, game, L, w, h) {
   const p = game.player, st = playerStats(p, game.data), s = L.s;
-  // แผงสถานะมุมซ้ายบน (กรอบรูปหน้า + หลอดเลือด/มานา + เลเวล)
-  const px = 8 * s, py = 6 * s, pw = 188 * s, ph = 64 * s;
+  // แผงมุมซ้ายบน: รูปตัวละคร + เลเวล + XP (เลือด/มานาอยู่ในลูกแก้วล่างจอแบบ PoE) — แตะเปิดโปรไฟล์
+  const px = 8 * s, py = 6 * s, pw = 188 * s, ph = 50 * s;
   ctx.fillStyle = 'rgba(14,12,18,0.72)'; rrect(ctx, px, py, pw, ph, 9 * s); ctx.fill();
   ctx.strokeStyle = 'rgba(217,166,48,0.35)'; ctx.lineWidth = 1; ctx.stroke();
-  const fs = 44 * s, fx = px + 6 * s, fy = py + 10 * s;
+  const fs = 38 * s, fx = px + 6 * s, fy = py + 6 * s;
   ctx.fillStyle = '#3a5a8a'; rrect(ctx, fx, fy, fs, fs, 6 * s); ctx.fill();
-  ctx.save(); rrect(ctx, fx, fy, fs, fs, 6 * s); ctx.clip(); face(ctx, fx + 6 * s, fy + 8 * s, fs - 12 * s); ctx.restore();
+  ctx.save(); rrect(ctx, fx, fy, fs, fs, 6 * s); ctx.clip(); face(ctx, fx + 5 * s, fy + 7 * s, fs - 10 * s); ctx.restore();
   ctx.strokeStyle = C.gold; ctx.lineWidth = 2 * s; rrect(ctx, fx, fy, fs, fs, 6 * s); ctx.stroke();
   const bx = fx + fs + 7 * s, bw = px + pw - bx - 7 * s;
-  bar(ctx, bx, py + 8 * s, bw, 13 * s, p.hp / st.maxHp, '#d8443a');
-  text(ctx, `${Math.ceil(p.hp)}/${st.maxHp}`, bx + bw / 2, py + 15 * s, 10 * s, '#fff', 'center', '600');
-  bar(ctx, bx, py + 25 * s, bw, 13 * s, p.mp / st.maxMp, '#3f78e0');
-  text(ctx, `${Math.floor(p.mp)}/${st.maxMp}`, bx + bw / 2, py + 32 * s, 10 * s, '#fff', 'center', '600');
+  text(ctx, 'นักล่าพลอย', bx, py + 14 * s, 12 * s, C.cream, 'left', '600');
+  text(ctx, 'Lv.' + p.level, bx + bw, py + 14 * s, 12 * s, C.goldHi, 'right', '600');
   const need = xpNeeded(game.data.balance, p.level);
-  ctx.fillStyle = 'rgba(0,0,0,0.5)'; rrect(ctx, bx, py + 42 * s, bw, 14 * s, 7 * s); ctx.fill();
-  if (isFinite(need)) { ctx.fillStyle = 'rgba(224,180,58,0.35)'; rrect(ctx, bx, py + 42 * s, Math.max(4, bw * p.xp / need), 14 * s, 7 * s); ctx.fill(); }
-  text(ctx, `★ Lv.${p.level}  ${isFinite(need) ? Math.floor(p.xp) + '/' + need : 'สูงสุด'}`, bx + bw / 2, py + 49 * s, 10 * s, C.goldHi, 'center', '600');
+  ctx.fillStyle = 'rgba(0,0,0,0.5)'; rrect(ctx, bx, py + 28 * s, bw, 14 * s, 7 * s); ctx.fill();
+  if (isFinite(need)) { ctx.fillStyle = 'rgba(224,180,58,0.45)'; rrect(ctx, bx, py + 28 * s, Math.max(4, bw * p.xp / need), 14 * s, 7 * s); ctx.fill(); }
+  text(ctx, isFinite(need) ? `XP ${Math.floor(p.xp)}/${need}` : 'เลเวลสูงสุด', bx + bw / 2, py + 35 * s, 9.5 * s, C.goldHi, 'center', '600');
   // เบี้ย
   const cy = py + ph + 14 * s;
   ctx.fillStyle = 'rgba(14,12,18,0.72)'; rrect(ctx, px, cy - 11 * s, 64 * s, 22 * s, 11 * s); ctx.fill();
@@ -209,26 +208,20 @@ export function drawHud(ctx, game, L, w, h) {
       ctx.restore();
     }
   }
-  // จอยเดิน (เส้นประ) — แสดงเสมอแบบเอโดเรีย
-  const j = game.input.joystick, home = L.joyHome;
-  const jx = j ? j.x : home.x, jy = j ? j.y : home.y;
-  ctx.save(); ctx.setLineDash([6 * s, 5 * s]); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,0.45)';
-  ctx.beginPath(); ctx.arc(jx, jy, L.joyR, 0, PHI); ctx.stroke(); ctx.restore();
-  if (j) circle(ctx, jx + j.dx * L.joyR, jy + j.dy * L.joyR, L.joyR * 0.42, 'rgba(255,255,255,0.35)', 'rgba(255,255,255,0.7)', 2);
-  else text(ctx, 'ลากเพื่อเดิน', jx, jy, 11 * s, 'rgba(255,255,255,0.7)', 'center', 'normal');
-  // ช่องสกิลกลางล่าง 1–4
-  const SL = L.slots;
-  for (let i = 0; i < 4; i++) {
-    const sx = SL.x + (i - 1.5) * SL.gap, sy = SL.y;
-    ctx.fillStyle = 'rgba(14,12,18,0.7)'; rrect(ctx, sx - SL.r - 3 * s, sy - SL.r - 3 * s, (SL.r + 3 * s) * 2, (SL.r + 3 * s) * 2, 8 * s); ctx.fill();
-    circle(ctx, sx, sy, SL.r, 'rgba(0,0,0,0.35)', 'rgba(217,166,48,0.6)', 1.5);
-    const si = [0, 1, -1, 2][i], ssk = si >= 0 ? skillOf(game, si) : null;        // ช่อง 1,2,4 = สกิล · ช่อง 3 = ยาหม้อ
-    if (ssk) { icon(ctx, ['skill', 'skill2', '', 'skill3'][i], sx, sy, SL.r * 0.9, game); if (p.skillCd[si] > 0) { ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.arc(sx, sy, SL.r, -Math.PI / 2, -Math.PI / 2 + PHI * p.skillCd[si] / ssk.cooldown); ctx.fill(); } }
-    if (i === 2) potionIcon(ctx, sx, sy, SL.r, p, game.data.shop.potion, s);
-    text(ctx, String(i + 1), sx - SL.r - 1 * s, sy - SL.r + 3 * s, 9 * s, '#f4e6c8', 'center', '600');
+  // จอยเดิน (เส้นประ) — เฉพาะจอสัมผัส
+  if (L.touch) {
+    const j = game.input.joystick, home = L.joyHome;
+    const jx = j ? j.x : home.x, jy = j ? j.y : home.y;
+    ctx.save(); ctx.setLineDash([6 * s, 5 * s]); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+    ctx.beginPath(); ctx.arc(jx, jy, L.joyR, 0, PHI); ctx.stroke(); ctx.restore();
+    if (j) circle(ctx, jx + j.dx * L.joyR, jy + j.dy * L.joyR, L.joyR * 0.42, 'rgba(255,255,255,0.35)', 'rgba(255,255,255,0.7)', 2);
+    else text(ctx, 'ลากเพื่อเดิน', jx, jy, 11 * s, 'rgba(255,255,255,0.7)', 'center', 'normal');
   }
+  // แถบล่างแบบ PoE: ลูกแก้วเลือด/มานา ขวดยา แถบสกิล
+  drawBottomBar(ctx, game, L, st);
   // ปุ่มขวาล่าง
   for (const b of L.buttons) {
+    if (b.flask || b.bar) continue;                         // วาดใน hudbar.js
     if (b.onlyNear && !game.nearNpc) continue;
     if (b.locked) { lockButton(ctx, b, s); continue; }
     const gi = SKILL_BTN[b.id] ?? -1, bsk = gi >= 0 ? skillOf(game, gi) : null;
@@ -242,17 +235,6 @@ export function drawHud(ctx, game, L, w, h) {
   }
   if (game.nearNpc && game.mode === 'play' && game.input.mode !== 'touch') text(ctx, `กด ${game.input.mode === 'pad' ? 'Y' : 'E'} เพื่อคุยกับ ${game.nearNpc.name}`, w / 2, h - 58 * s, 13 * s, C.goldHi, 'center');
   if (game.debug) text(ctx, `FPS ${game.loopStats.fps} · ${game.loopStats.frameMs}ms · มอน ${game.mobs.length} · ฟอง ${game.fx.count}`, 10, h - 12, 11, '#9f9', 'left', 'normal');
-}
-
-// ยาหม้อ: หม้อดินเผาน้ำสีเขียว + จำนวนขวด
-export function potionIcon(ctx, x, y, r, p, P, s) {
-  ctx.globalAlpha = p.potions > 0 ? 1 : 0.35;
-  circle(ctx, x, y + r * 0.15, r * 0.55, '#8a4e2c', C.ink, 1.2);
-  ctx.fillStyle = '#5a2e18'; ctx.fillRect(x - r * 0.28, y - r * 0.6, r * 0.56, r * 0.3);
-  circle(ctx, x, y + r * 0.1, r * 0.3, '#5ad86a', null);
-  ctx.globalAlpha = 1;
-  if (p.potionCd > 0) { ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.beginPath(); ctx.moveTo(x, y); ctx.arc(x, y, r, -Math.PI / 2, -Math.PI / 2 + PHI * p.potionCd / P.cooldown); ctx.fill(); }
-  text(ctx, String(p.potions), x + r * 0.75, y + r * 0.7, 9 * s, p.potions ? '#fff' : '#ff8a7a', 'center', '600');
 }
 
 function lockButton(ctx, b, s) {

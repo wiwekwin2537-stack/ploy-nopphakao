@@ -8,11 +8,15 @@ export function sellPrice(S, it) {
   return Math.max(1, Math.round((S.sell[it.rarity] || 1) * (1 + (it.ilvl || 1) * S.sell.perLevel)));
 }
 
-export function buyPotion(game) {
-  const p = game.player, P = game.data.shop.potion;
-  if (p.potions >= P.max) return 'full';
+// ขวดยา 2 ชนิด: 'hp' = ยาหม้อ (เลือด) · 'mp' = น้ำมนต์ (มานา)
+export const FLASK = { hp: { data: 'potion', count: 'potions', cd: 'potionCd', stat: 'maxHp', cur: 'hp', col: '#7dff8a', full: 'เลือดเต็มอยู่แล้ว' },
+  mp: { data: 'manaPotion', count: 'mpPotions', cd: 'mpPotionCd', stat: 'maxMp', cur: 'mp', col: '#8ab4ff', full: 'มานาเต็มอยู่แล้ว' } };
+
+export function buyPotion(game, kind = 'hp') {
+  const p = game.player, F = FLASK[kind], P = game.data.shop[F.data];
+  if (p[F.count] >= P.max) return 'full';
   if (p.coins < P.price) return 'poor';
-  p.coins -= P.price; p.potions++;
+  p.coins -= P.price; p[F.count]++;
   game.events.emit('shopChanged', { kind: 'potion' });
   return 'ok';
 }
@@ -47,16 +51,16 @@ export function sellItem(game, uid) {
   return price;
 }
 
-export function drinkPotion(game) {
-  const p = game.player, P = game.data.shop.potion;
-  if (p.dead || p.potions <= 0 || (p.potionCd || 0) > 0) return false;
-  const max = playerStats(p, game.data).maxHp;
-  if (p.hp >= max) { game.notice = { text: 'เลือดเต็มอยู่แล้ว', t: 1.5 }; return false; }
-  p.potions--; p.potionCd = P.cooldown;
+export function drinkPotion(game, kind = 'hp') {
+  const p = game.player, F = FLASK[kind], P = game.data.shop[F.data];
+  if (p.dead || p[F.count] <= 0 || (p[F.cd] || 0) > 0) return false;
+  const max = playerStats(p, game.data)[F.stat];
+  if (p[F.cur] >= max) { game.notice = { text: F.full, t: 1.5 }; return false; }
+  p[F.count]--; p[F.cd] = P.cooldown;
   const heal = Math.round(max * P.heal);
-  p.hp = Math.min(max, p.hp + heal);
-  game.fx.text(p.x, p.y - 60, '+' + heal, '#7dff8a', true);
-  game.fx.burst(p.x, p.y - 20, '#7dff8a', 14, 80, 0.6, 3);
+  p[F.cur] = Math.min(max, p[F.cur] + heal);
+  game.fx.text(p.x, p.y - 60, '+' + heal, F.col, true);
+  game.fx.burst(p.x, p.y - 20, F.col, 14, 80, 0.6, 3);
   game.audio.play('gem');
   game.events.emit('potionUsed', {});
   return true;
@@ -65,5 +69,7 @@ export function drinkPotion(game) {
 export function updatePotion(game, dt) {
   const p = game.player;
   p.potionCd = Math.max(0, (p.potionCd || 0) - dt);
-  if (game.input.pressed.potion) drinkPotion(game);
+  p.mpPotionCd = Math.max(0, (p.mpPotionCd || 0) - dt);
+  if (game.input.pressed.potion) drinkPotion(game, 'hp');
+  if (game.input.pressed.manapot) drinkPotion(game, 'mp');
 }

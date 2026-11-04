@@ -1,11 +1,11 @@
 // อินพุตทุกแบบรวมที่เดียว: คีย์บอร์ด เมาส์ จอสัมผัส และจอยเกม
 // getLayout() มาจาก ui/layout.js บอกตำแหน่งจอยสัมผัสและปุ่มบนจอ
-const ACTIONS = ['attack', 'dash', 'skill', 'skill2', 'skill3', 'interact', 'pause', 'bag', 'tree', 'potion'];
+const ACTIONS = ['attack', 'dash', 'skill', 'skill2', 'skill3', 'interact', 'pause', 'bag', 'tree', 'potion', 'manapot'];
 
 const KEYMAP = {
   KeyW: 'up', ArrowUp: 'up', KeyS: 'down', ArrowDown: 'down',
   KeyA: 'left', ArrowLeft: 'left', KeyD: 'right', ArrowRight: 'right',
-  KeyJ: 'attack', Space: 'dash', ShiftLeft: 'dash', KeyK: 'skill', KeyQ: 'skill', Digit1: 'skill', KeyL: 'skill2', Digit2: 'skill2', KeyU: 'skill3', Digit4: 'skill3', KeyB: 'bag', KeyI: 'bag', KeyC: 'bag', Tab: 'bag', KeyP: 'tree', KeyT: 'tree', Digit3: 'potion', KeyR: 'potion', KeyH: 'potion',
+  KeyJ: 'attack', Space: 'dash', ShiftLeft: 'dash', KeyK: 'skill', KeyQ: 'skill', KeyL: 'skill2', KeyU: 'skill3', Digit1: 'potion', Digit2: 'manapot', KeyB: 'bag', KeyI: 'bag', KeyC: 'bag', Tab: 'bag', KeyP: 'tree', KeyT: 'tree', KeyR: 'potion', KeyH: 'potion', KeyM: 'manapot',
   KeyE: 'interact', Enter: 'interact', Escape: 'pause',
 };
 
@@ -43,7 +43,7 @@ export function createInput(target, getLayout) {
     const L = getLayout();
     if (!L) return null;
     for (const b of L.buttons) {
-      if (b.locked) continue;
+      if (b.locked || (b.onlyNear && !(getLayout().near))) continue;
       if ((x - b.x) ** 2 + (y - b.y) ** 2 <= (b.r * 1.15) ** 2) return b.id;
     }
     return null;

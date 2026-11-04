@@ -2,7 +2,7 @@
 import { validTree } from './passives.js';
 import { validItems, emptyEquip } from './items.js';
 
-export const SAVE_VERSION = 7;
+export const SAVE_VERSION = 8;
 const KEY = 'ploy.save';
 
 // ตัวแปลงเซฟรุ่นเก่า → รุ่นใหม่ (เพิ่มที่นี่เมื่อเปลี่ยนรูปแบบเซฟ)
@@ -45,6 +45,8 @@ const MIGRATIONS = {
     const { sockets: _s, ...rest } = d;
     return { ...rest, v: 7, bag, equip, items, currency: { jeweller: 1, fusing: 1 } };
   },
+  // v7 → v8: ขวดน้ำมนต์ (มานา) แถมให้ 2 ขวด
+  7: (d) => ({ ...d, v: 8, mpPotions: 2 }),
 };
 
 export function serialize(game) {
@@ -52,7 +54,7 @@ export function serialize(game) {
   return {
     v: SAVE_VERSION, savedAt: Date.now(),
     zone: at ? at.zone : z.id, x: Math.round(at ? at.x * 32 : p.x), y: Math.round(at ? at.y * 32 : p.y),
-    level: p.level, xp: p.xp, coins: p.coins, potions: p.potions, hp: Math.round(p.hp), mp: Math.round(p.mp),
+    level: p.level, xp: p.xp, coins: p.coins, potions: p.potions, mpPotions: p.mpPotions, hp: Math.round(p.hp), mp: Math.round(p.mp),
     items: JSON.parse(JSON.stringify(p.items)), equip: JSON.parse(JSON.stringify(p.equip)), nextUid: p.nextUid,
     passives: p.passives.slice(), bag: p.bag.slice(), currency: { ...p.currency }, flags: { ...game.flags },
   };
@@ -66,6 +68,7 @@ export function validate(s, data) {
   const num = (v, lo, hi) => typeof v === 'number' && isFinite(v) && v >= lo && v <= hi;
   if (!zones[d.zone] || !num(d.level, 1, 999) || !num(d.xp, 0, 1e9) || !num(d.coins, 0, 1e12)) return null;
   if (!Number.isInteger(d.potions) || !num(d.potions, 0, data.shop ? data.shop.potion.max : 99)) return null;
+  if (!Number.isInteger(d.mpPotions) || !num(d.mpPotions, 0, data.shop ? data.shop.manaPotion.max : 99)) return null;
   if (!num(d.x, 0, 1e6) || !num(d.y, 0, 1e6) || !d.flags || typeof d.flags !== 'object') return null;
   const known = (g) => !gemsData || !!(gemsData.main[g] || gemsData.support[g]);
   if (!Array.isArray(d.bag) || !d.bag.every((g) => typeof g === 'string' && known(g)) || d.bag.length > 500) return null;

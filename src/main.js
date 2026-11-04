@@ -33,7 +33,7 @@ import { drawBag, updateBag, profileHit, bagLayout } from './ui/bag.js';
 import { drawTree, updateTree, openTree } from './ui/tree.js';
 import { drawShop, updateShop } from './ui/shop.js';
 import { gemLayout } from './ui/gemtab.js';
-import { updatePotion, drinkPotion } from './systems/shop.js';
+import { updatePotion } from './systems/shop.js';
 
 // สองชั้น: โลกวาดความละเอียดต่ำแล้วขยายแบบพิกเซล (สไตล์เอโดเรีย) · หน้าจอซ้อน/ตัวหนังสือวาดคมเต็มความละเอียด
 const PIXEL = 0.62;
@@ -42,6 +42,7 @@ const wctx = worldCanvas.getContext('2d');
 const canvas = document.getElementById('hud');
 const ctx = canvas.getContext('2d');
 const params = new URLSearchParams(location.search);
+let layoutKey = '';
 let layout = computeLayout(canvas.clientWidth || innerWidth, canvas.clientHeight || innerHeight);
 
 const game = {
@@ -71,7 +72,7 @@ function continueGame() {
   const s = readSave(game.data);
   if (!s) return startNew(false);
   const p = game.player = createPlayer(game.data);
-  Object.assign(p, { level: s.level, xp: s.xp, coins: s.coins, bag: s.bag.slice(), currency: { ...p.currency, ...s.currency }, passives: s.passives.slice(), items: s.items, equip: { ...p.equip, ...s.equip }, nextUid: s.nextUid, potions: s.potions, hp: s.hp, mp: s.mp });
+  Object.assign(p, { level: s.level, xp: s.xp, coins: s.coins, bag: s.bag.slice(), currency: { ...p.currency, ...s.currency }, passives: s.passives.slice(), items: s.items, equip: { ...p.equip, ...s.equip }, nextUid: s.nextUid, potions: s.potions, mpPotions: s.mpPotions, hp: s.hp, mp: s.mp });
   game.flags = { ...s.flags };
   game.mode = 'play';
   enterZone(game, s.zone, s.x, s.y);
@@ -79,13 +80,15 @@ function continueGame() {
   if (game.dialog) game.mode = 'dialog';
 }
 
-function potionSlot(L) { return { x: L.slots.x + 0.5 * L.slots.gap, y: L.slots.y, r: L.slots.r }; }   // ช่อง 3 = ยาหม้อ
 function hitCircle(t, c) { return (t.sx - c.x) ** 2 + (t.sy - c.y) ** 2 <= (c.r * 1.3) ** 2; }
 
 function update(dt) {
   game.time += dt;
   const input = game.input;
   input.beginFrame();
+  const lk = input.mode === 'touch' ? 't' : 'k';          // สลับจอสัมผัส ↔ คีย์บอร์ด: จัดปุ่มใหม่
+  if (lk !== layoutKey) { layoutKey = lk; layout = computeLayout(game.camera.viewW || innerWidth, game.camera.viewH || innerHeight, lk === 't'); }
+  layout.near = !!game.nearNpc;
   game.audio.update();
   if (game.toast) game.toast.t -= dt;
   if (game.notice) game.notice.t -= dt;
@@ -131,7 +134,6 @@ function update(dt) {
   } else if (game.mode === 'play') {
     updateNpcs(game);
     if (game.mode === 'play') {
-      for (const t of input.taps) if (!t.consumed && hitCircle(t, potionSlot(layout))) { t.consumed = true; drinkPotion(game); }
       updatePotion(game, dt);
       updateSkillTimers(game, dt);
       updatePlayer(game, dt);
@@ -180,7 +182,7 @@ function resize() {
   canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
   worldCanvas.width = Math.max(1, Math.round(w * PIXEL)); worldCanvas.height = Math.max(1, Math.round(h * PIXEL));
   game.camera.resize(w, h);
-  layout = computeLayout(w, h);
+  layout = computeLayout(w, h, game.input && game.input.mode === 'touch'); layoutKey = '';
 }
 addEventListener('resize', resize);
 resize();

@@ -10,7 +10,7 @@ export function createPlayer(data) {
     x: 0, y: 0, radius: 10, level: 1, xp: 0, coins: 0, hp: 1, mp: 1,
     bag: [], currency: { jeweller: 0, fusing: 0 }, dir: 0, aim: 0, walk: 0, moving: false,
     attackCd: 0, swing: -1, combo: 0, comboT: 0, pendingHit: null, dashCd: 0, dashT: 0, dashVx: 0, dashVy: 0, skillCd: Array(gemsData.skillButtons).fill(0), castT: 0,
-    passives: [], items: [], equip: emptyEquip(), nextUid: 0, potions: 0, potionCd: 0, invuln: 0, hurt: 0, dead: false, combatTimer: 0, moveTarget: null, targetMob: null, movedDist: 0,
+    passives: [], items: [], equip: emptyEquip(), nextUid: 0, potions: 0, potionCd: 0, mpPotions: 0, mpPotionCd: 0, invuln: 0, hurt: 0, dead: false, combatTimer: 0, moveTarget: null, targetMob: null, movedDist: 0,
   };
   const s = playerStats(p, data);
   p.hp = s.maxHp; p.mp = s.maxMp;
@@ -24,6 +24,7 @@ export function giveStarterGear(p, data) {
   p.equip.body = mk('cotton_shirt', { sockets: 2, links: [false], gems: [null, null] });
   p.equip.head = mk('cloth_band');
   p.potions = data.shop ? data.shop.potion.starter : 0;
+  p.mpPotions = data.shop ? data.shop.manaPotion.starter : 0;
   p.currency = { jeweller: 1, fusing: 1 };
 }
 
