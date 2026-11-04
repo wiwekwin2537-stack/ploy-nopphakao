@@ -6,10 +6,13 @@ import { mkdirSync } from 'node:fs';
 const SHOTS = process.env.SHOTS || 'tests/browser/shots';
 mkdirSync(SHOTS, { recursive: true });
 const results = [];
+let currentPage = null;
 async function check(name, fn) {
   const t0 = Date.now();
   try { const note = await fn(); results.push({ ok: true, name, note, ms: Date.now() - t0 }); }
   catch (e) { results.push({ ok: false, name, note: e.message, ms: Date.now() - t0 }); }
+  // ปิดหน้าต่างที่ค้าง เพื่อไม่ให้ข้อที่พังลามไปข้ออื่น
+  if (currentPage) await currentPage.evaluate(() => { const g = globalThis.__ploy && __ploy.game; if (g && (g.mode === 'bag' || g.mode === 'tree')) { g.mode = 'play'; g.input.setUiMode(false); } }).catch(() => {});
 }
 const assert = (c, msg) => { if (!c) throw new Error(msg); };
 const state = (page) => G(page, () => { const g = __ploy.game, p = g.player; return { mode: g.mode, step: g.flags.tutStep, zone: g.world.zone.id, x: p.x, y: p.y, hp: p.hp, lv: p.level, xp: p.xp, coins: p.coins, gems: p.sockets.flat().filter(Boolean), pas: p.passives.join(','), gear: Object.values(p.equip).filter(Boolean).map((q) => q.uid).join(','), bagN: p.items.length, mobs: g.mobs.length, done: !!g.flags.tutorialDone }; });
@@ -36,6 +39,7 @@ async function killTutorialMob(page, type) {
 }
 
 const { browser, page, errors } = await openGame({ w: 844, h: 390 });
+currentPage = page;
 await G(page, () => localStorage.clear());
 await page.reload();
 await wait(page, () => globalThis.__ploy && __ploy.loop.stats.frames > 2);
@@ -158,7 +162,8 @@ await check('พลอยเสริม: เก็บจากพื้น → 
   await wait(page, () => __ploy.game.mode === 'bag', null, 2000);
   const cell = await G(page, () => { const g = __ploy.game, L = __ploy.layout(), w = g.camera.viewW, h = g.camera.viewH, s = L.s, G2 = g.data.gems;
     const pw = Math.min(w - 20, 720 * s), ph = Math.min(h - 16, 360 * s), x = w / 2 - pw / 2, y = h / 2 - ph / 2, c = Math.min(46 * s, (pw * 0.5 - 24 * s) / 6);
-    return { x: x + pw * 0.5 + 6 * s + c / 2, y: y + 52 * s + c / 2 }; });
+    const i = g.player.bag.indexOf('multi');                  // หาเม็ดที่เพิ่งเก็บ (ในกระเป๋าอาจมีพลอยที่ดรอประหว่างฟาร์มอยู่ก่อน)
+    return { x: x + pw * 0.5 + 6 * s + (i % 6) * c + c / 2, y: y + 52 * s + Math.floor(i / 6) * c + c / 2 }; });
   await page.mouse.click(cell.x, cell.y); await page.waitForTimeout(120);
   await page.mouse.click(cell.x, cell.y); await page.waitForTimeout(120);
   await page.screenshot({ path: SHOTS + '/10b-bag.png' });
