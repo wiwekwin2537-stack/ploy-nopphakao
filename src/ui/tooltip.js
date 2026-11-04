@@ -1,7 +1,7 @@
 // กล่องรายละเอียดแบบ PoE (แตะของ/พลอย/ของเชื่อม 1 ครั้งแล้วขึ้น): ชื่อสีตามระดับ · ค่าพื้นฐาน · ค่าสุ่มทีละบรรทัด
 // · ช่องพลอยบนของ · เทียบกับของที่สวม · ราคาขาย — ใช้ร่วมกันทุกหน้าต่าง (ชุด พลอย ร้านค้า)
 import { C, rrect, circle } from '../art/draw.js';
-import { uiText as text } from './hud.js';
+import { uiText as text, wrapLines } from './hud.js';
 import { itemName, itemStats, longestLink } from '../systems/items.js';
 import { gemInfo, gemType, computeSkill, supportLines } from '../systems/gems.js';
 import { gemSprite } from '../art/gems.js';
@@ -16,17 +16,10 @@ function statText(P, k, v) { return (P.statNames[k] || k + ' {}').replace('{}', 
 // วาดกล่องจากรายการบรรทัด [{t, col, size, weight, gap, draw(ctx,x,y,w)}] วางใกล้ (ax,ay) ไม่ล้นจอ
 function tipBox(ctx, lines0, ax, ay, s, W, H, border) {
   const w = 236 * s, pad = 10 * s, lines = [];
-  for (const l of lines0) {                                      // ตัดบรรทัดยาว (ภาษาไทยไม่มีช่องว่าง ตัดทีละตัวอักษร)
+  for (const l of lines0) {                                      // ตัดบรรทัดยาว (ตัดตามคำภาษาไทย ไม่ตัดกลางคำ)
     if (!l.t) { lines.push(l); continue; }
     ctx.font = `${l.weight || 'normal'} ${(l.size || 10) * s}px ${FONT}`;
-    let rest = l.t;
-    while (ctx.measureText(rest).width > w - pad * 2) {
-      let n = rest.length;
-      while (n > 1 && ctx.measureText(rest.slice(0, n)).width > w - pad * 2) n--;
-      const sp = rest.lastIndexOf(' ', n); if (sp > n * 0.6) n = sp;
-      lines.push({ ...l, t: rest.slice(0, n) }); rest = rest.slice(n).trimStart();
-    }
-    lines.push({ ...l, t: rest });
+    for (const t of wrapLines(ctx, l.t, w - pad * 2)) lines.push({ ...l, t });
   }
   let h = pad * 2;
   for (const l of lines) h += l.h || (l.size || 10) * s * 1.45;

@@ -59,6 +59,12 @@ export function currencyIcon(ctx, kind, x, y, r) {
     ctx.fillStyle = '#c8d0e0'; ctx.beginPath(); ctx.moveTo(x, y - r); ctx.quadraticCurveTo(x + r * 0.9, y + r * 0.2, x, y + r * 0.8); ctx.quadraticCurveTo(x - r * 0.9, y + r * 0.2, x, y - r); ctx.fill();
     ctx.strokeStyle = C.ink; ctx.lineWidth = 1; ctx.stroke(); circle(ctx, x - r * 0.25, y, r * 0.18, '#ffffff', null); return;
   }
+  if (kind === 'exalt') {                                      // มณีโชติ: เพชรทองส่องแสงแปดแฉก
+    ctx.fillStyle = 'rgba(255,233,160,0.35)'; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+    poly(ctx, [x, y - r * 0.85, x + r * 0.6, y - r * 0.2, x, y + r * 0.85, x - r * 0.6, y - r * 0.2], '#ffe9a0', C.ink, 1);
+    poly(ctx, [x, y - r * 0.85, x + r * 0.6, y - r * 0.2, x, y - r * 0.05], '#fff8dc', null);
+    return;
+  }
   if (kind === 'kali') {                                       // เถ้ากาลี: กองเถ้าม่วงมีประกายไฟ
     poly(ctx, [x - r, y + r * 0.6, x - r * 0.3, y - r * 0.4, x + r * 0.2, y - r * 0.1, x + r, y + r * 0.6], '#5a2a7a', C.ink, 1);
     circle(ctx, x, y - r * 0.5, r * 0.2, '#ff7a3a', null); return;

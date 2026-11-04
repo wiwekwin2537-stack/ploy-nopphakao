@@ -9,6 +9,7 @@ import gems from '../data/gems.json' with { type: 'json' };
 import passives from '../data/passives.json' with { type: 'json' };
 import items from '../data/items.json' with { type: 'json' };
 import shop from '../data/shop.json' with { type: 'json' };
+import quests from '../data/quests.json' with { type: 'json' };
 import { createEvents } from './core/events.js';
 import { createLoop } from './core/loop.js';
 import { createInput } from './core/input.js';
@@ -52,7 +53,7 @@ let layoutKey = '';
 let layout = computeLayout(canvas.clientWidth || innerWidth, canvas.clientHeight || innerHeight);
 
 const game = {
-  data: { balance, monsters, zones, dialogue, gems, passives, items, shop },
+  data: { balance, monsters, zones, dialogue, gems, passives, items, shop, quests },
   events: createEvents(), camera: createCamera(), audio: createAudio(), fx: createFx(), rng: createRng(Date.now() & 0xffff),
   flags: {}, mobs: [], shots: [], drops: [], hazards: [], later: [], spawnTimers: [],
   mode: 'title', dialog: null, time: 0, hitStop: 0, toast: null, debug: params.has('debug'),

@@ -115,3 +115,26 @@ test('เล่นแร่แปรธาตุ: ทองคำเปลว �
   assert.deepEqual(p.currency, { gild: 0, alch: 0, kali: 1 });
   assert.ok(validItems(I, p.items, p.equip, p.nextUid, g.data.gems));
 });
+
+test('มณีโชติ: เขียว 1 ค่า → 2 ค่า · ม่วง → แดง ค่าที่ 4 · ค่าเดิมไม่เปลี่ยน · ใช้ไม่ได้ไม่เสียของ', async () => {
+  const { craftItem } = await import('../../src/systems/items.js');
+  const g = makeGame(), I = g.data.items, p = g.player, rng = g.rng;
+  p.currency = { exalt: 4 };
+  const mk = (rarity, n) => { const it = { uid: ++p.nextUid, base: 'iron_sword', rarity, ilvl: 20, mods: [], rareName: rarity === 'purple' ? 'ทดสอบ' : null, sockets: 0, links: [], gems: [] };
+    const ids = Object.keys(I.affixes).filter((k) => I.affixes[k].slots.includes('weapon'));
+    const pre = ids.filter((k) => I.affixes[k].type === 'prefix'), suf = ids.filter((k) => I.affixes[k].type === 'suffix');
+    for (const id of [pre[0], suf[0], pre[1]].slice(0, n)) it.mods.push({ id, tier: 0, value: I.affixes[id].tiers[0][1] });
+    return it; };
+  const white = mk('normal', 0);
+  assert.equal(craftItem(I, rng, p, 'exalt', white), null); assert.equal(p.currency.exalt, 4);
+  const green = mk('green', 1), keep = JSON.stringify(green.mods[0]);
+  assert.ok(craftItem(I, rng, p, 'exalt', green)); assert.equal(green.mods.length, 2); assert.equal(JSON.stringify(green.mods[0]), keep);
+  assert.equal(craftItem(I, rng, p, 'exalt', green), null, 'เขียว 2 ค่าแล้วเต็ม');
+  const purple = mk('purple', 3);
+  assert.ok(craftItem(I, rng, p, 'exalt', purple)); assert.equal(purple.rarity, 'red'); assert.equal(purple.mods.length, 4);
+  const types = purple.mods.map((m) => I.affixes[m.id].type);
+  assert.ok(types.filter((t) => t === 'prefix').length <= 2 && types.filter((t) => t === 'suffix').length <= 2, 'ไม่เกิน 2 หน้า 2 หลัง');
+  assert.equal(new Set(purple.mods.map((m) => m.id)).size, 4, 'ค่าไม่ซ้ำ');
+  assert.equal(craftItem(I, rng, p, 'exalt', purple), null, 'แดงเต็มแล้ว');
+  assert.equal(p.currency.exalt, 2);
+});

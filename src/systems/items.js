@@ -54,6 +54,7 @@ function rollMods(I, rng, baseId, ilvl, rarity) {
 // · kali เถ้ากาลี = สุ่มค่าของม่วง/แดงใหม่ทั้งหมด · uid ช่องพลอยไม่เปลี่ยน · ใช้ไม่ได้ = null (ไม่เสียของ)
 export function craftItem(I, rng, p, kind, it) {
   if (!it || !I.currency[kind] || !(p.currency && p.currency[kind] > 0)) return null;
+  if (kind === 'exalt') return exaltItem(I, rng, p, it);
   const need = { gild: ['normal'], alch: ['normal'], kali: ['purple', 'red'] }[kind];
   if (!need || !need.includes(it.rarity)) return null;
   const rarity = kind === 'gild' ? 'green' : kind === 'alch' ? 'purple' : it.rarity;
@@ -64,6 +65,21 @@ export function craftItem(I, rng, p, kind, it) {
   }
   Object.assign(it, { rarity, mods: r.mods, rareName: r.rareName });
   p.currency[kind]--;
+  return itemName(I, it);
+}
+
+// มณีโชติ: เพิ่มค่าสุ่ม 1 ค่า (เขียว 1 ค่า → 2 ค่า · ม่วง → แดง ค่าที่ 4) — ค่าเดิมไม่เปลี่ยน
+function exaltItem(I, rng, p, it) {
+  const n = it.mods.length, toRed = it.rarity === 'purple';
+  if (!(toRed || (it.rarity === 'green' && n < I.rarity.green.affixes[1]))) return null;
+  const base = I.bases[it.base], count = (t) => it.mods.filter((m) => I.affixes[m.id].type === t).length;
+  const pool = Object.entries(I.affixes).filter(([aid, a]) => a.slots.includes(base.slot) && pickTier(a, it.ilvl)
+    && !it.mods.some((m) => m.id === aid) && count(a.type) < 2);
+  if (!pool.length) return null;
+  const [aid, a] = rng.pick(pool), { tier, ti } = pickTier(a, it.ilvl);
+  it.mods.push({ id: aid, tier: ti, value: rng.int(tier[1], tier[2]) });
+  if (toRed) it.rarity = 'red';
+  p.currency.exalt--;
   return itemName(I, it);
 }
 

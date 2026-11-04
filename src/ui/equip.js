@@ -9,7 +9,7 @@ import { currencyIcon } from './gemtab.js';
 import { drawCurrencyTip } from './tooltip.js';
 
 const COLS = 6;
-const CRAFT = ['gild', 'alch', 'kali'];
+const CRAFT = ['gild', 'alch', 'kali', 'exalt'];
 
 export function equipLayout(B, I) {
   const s = B.s, slots = {};
@@ -20,7 +20,8 @@ export function equipLayout(B, I) {
   const gx = B.x + 175 * s, gy = B.y + 52 * s, cell = Math.min(44 * s, (B.x + B.w - gx - 14 * s) / COLS);
   const info = { x: B.x + 14 * s, y: B.y + B.h - 78 * s, w: B.w - 28 * s, h: 66 * s };
   const del = { x: info.x + info.w - 70 * s, y: info.y + info.h - 26 * s, w: 60 * s, h: 20 * s };
-  const craft = CRAFT.map((kind, i) => ({ kind, x: info.x + 10 * s + i * 104 * s, y: info.y + info.h - 26 * s, w: 98 * s, h: 20 * s }));   // ปุ่มเล่นแร่แปรธาตุ
+  const cw = Math.min(98 * s, (info.w - 90 * s) / CRAFT.length - 6 * s);
+  const craft = CRAFT.map((kind, i) => ({ kind, x: info.x + 10 * s + i * (cw + 6 * s), y: info.y + info.h - 26 * s, w: cw, h: 20 * s }));   // ปุ่มเล่นแร่แปรธาตุ
   return { slots, grid: { x: gx, y: gy, cell, rows: Math.max(1, Math.floor((info.y - gy - 4 * s) / cell)) }, info, del, craft };
 }
 
@@ -102,7 +103,7 @@ export function updateEquip(game, B, t) {
     if (!it) { say('เลือกของที่จะใช้ก่อน (แตะของ 1 ครั้ง)'); return; }
     if (!(p.currency[cb.kind] > 0)) { say(`ไม่มี${nm}`); return; }
     const r = craftItem(I, game.rng, p, cb.kind, it);
-    if (!r) { say(cb.kind === 'kali' ? 'เถ้ากาลีใช้ได้กับของสีม่วงหรือแดงเท่านั้น' : `${nm}ใช้ได้กับของสีขาว (ทั่วไป) เท่านั้น`); return; }
+    if (!r) { say({ kali: 'เถ้ากาลีใช้ได้กับของสีม่วงหรือแดงเท่านั้น', exalt: 'มณีโชติใช้ได้กับของสีเขียวที่มีค่าเดียว หรือของสีม่วง' }[cb.kind] || `${nm}ใช้ได้กับของสีขาว (ทั่วไป) เท่านั้น`); return; }
     game.audio.play('level'); say('ได้: ' + r, I.rarity[it.rarity].color); game.craftSel = null;
     game.events.emit('gearChanged', {}); game.events.emit('currencyUsed', { kind: cb.kind });
     return;

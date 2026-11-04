@@ -26,6 +26,10 @@
    "price": 20
   },
   {
+   "currency": "exalt",
+   "price": 400
+  },
+  {
    "base": "iron_sword",
    "price": 120
   },

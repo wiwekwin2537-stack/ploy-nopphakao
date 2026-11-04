@@ -6,6 +6,7 @@ import { pointsLeft } from '../systems/passives.js';
 import { drawBottomBar } from './hudbar.js';
 import { skillSprite } from '../art/skills.js';
 import { skillOf } from '../systems/skills.js';
+import { currentQuest } from '../systems/quests.js';
 import { hintText, tutorialTarget } from '../systems/tutorial.js';
 
 const FONT = 'Kanit, sans-serif';
@@ -149,6 +150,7 @@ export function drawHud(ctx, game, L, w, h) {
   ctx.fillStyle = 'rgba(14,12,18,0.72)'; rrect(ctx, px, cy - 11 * s, 64 * s, 22 * s, 11 * s); ctx.fill();
   circle(ctx, px + 12 * s, cy, 7 * s, C.gold, '#8a6a10', 1.5); circle(ctx, px + 12 * s, cy, 2.5 * s, '#a87a1a', null);
   text(ctx, String(p.coins), px + 24 * s, cy + 1, 12 * s, C.goldHi, 'left', '600');
+  drawQuest(ctx, game, px, cy + 18 * s, s);
   // ชื่อพื้นที่กลางบน
   ctx.font = `600 ${13 * s}px ${FONT}`;
   const zn = game.world.zone.name, zw = ctx.measureText(zn).width + 28 * s;
@@ -328,4 +330,36 @@ export function drawTitle(ctx, game, L, w, h) {
     text(ctx, b.label, b.x + b.w / 2, b.y + b.h / 2 + 1, (b.small ? 13 : 18) * s, b.small ? C.cream : C.goldHi, 'center', b.small ? 'normal' : 'bold');
   }
   text(ctx, 'รุ่นทดสอบ ขั้นที่ 1', w - 10, h - 12, 10 * s, 'rgba(244,230,200,0.6)', 'right', 'normal');
+}
+
+// เป้าหมายเนื้อเรื่อง (ใต้เบี้ย มุมซ้ายบน): หัวข้อทอง + คำอธิบายตัดบรรทัด
+function drawQuest(ctx, game, x, y, s) {
+  const q = currentQuest(game);
+  if (!q || game.mode !== 'play') return;
+  const w = 200 * s, fs = 9.5 * s, lines = [];
+  ctx.font = `normal ${fs}px ${FONT}`;
+  lines.push(...wrapLines(ctx, q.text, w - 16 * s).slice(0, 4));
+  const h = 24 * s + lines.length * fs * 1.4;
+  ctx.fillStyle = 'rgba(14,12,18,0.6)'; rrect(ctx, x, y, w, h, 7 * s); ctx.fill();
+  ctx.fillStyle = q.here ? '#7dff8a' : C.gold; ctx.fillRect(x, y + 4 * s, 3 * s, h - 8 * s);
+  text(ctx, `◆ ${q.title}${q.until ? ` (${q.step}/${q.total - 1})` : ''}`, x + 9 * s, y + 11 * s, 10.5 * s, C.goldHi, 'left', '600');
+  lines.forEach((l, i) => text(ctx, l, x + 9 * s, y + 24 * s + i * fs * 1.4, fs, 'rgba(244,230,200,0.85)', 'left', 'normal'));
+}
+
+// ตัดบรรทัดตามคำภาษาไทย (Intl.Segmenter) ไม่ตัดกลางคำ · ใช้ฟอนต์ที่ตั้งไว้ใน ctx
+const SEG = typeof Intl !== 'undefined' && Intl.Segmenter ? new Intl.Segmenter('th', { granularity: 'word' }) : null;
+export function wrapLines(ctx, str, maxW) {
+  const words = SEG ? [...SEG.segment(str)].map((x) => x.segment) : str.split(/(?<= )/);
+  const out = [];
+  let cur = '';
+  for (const wd of words) {
+    if (cur && ctx.measureText(cur + wd).width > maxW) { out.push(cur.trimEnd()); cur = wd.trimStart(); }
+    else cur += wd;
+    while (ctx.measureText(cur).width > maxW && cur.length > 1) {   // คำเดียวยาวเกินบรรทัด: ตัดทีละตัวอักษร
+      let n = cur.length; while (n > 1 && ctx.measureText(cur.slice(0, n)).width > maxW) n--;
+      out.push(cur.slice(0, n)); cur = cur.slice(n);
+    }
+  }
+  if (cur.trim()) out.push(cur.trimEnd());
+  return out;
 }
