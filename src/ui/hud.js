@@ -102,7 +102,7 @@ function miniMap(zone) {
   const S = 140 / Math.max(zone.W, zone.H);
   const c = document.createElement('canvas'); c.width = Math.ceil(zone.W * S); c.height = Math.ceil(zone.H * S);
   const g = c.getContext('2d');
-  g.fillStyle = { forest: '#3e5e2c', town: '#6f8f45', field: '#7d9c4a', dungeon: '#141016' }[zone.def.ground] || '#6f8f45'; g.fillRect(0, 0, c.width, c.height);
+  g.fillStyle = { forest: '#3e5e2c', town: '#6f8f45', field: '#7d9c4a', dungeon: '#141016', snow: '#cfdbe6' }[zone.def.ground] || '#6f8f45'; g.fillRect(0, 0, c.width, c.height);
   const R = (r, col) => { g.fillStyle = col; g.fillRect(r.x * S, r.y * S, Math.max(1, r.w * S), Math.max(1, r.h * S)); };
   zone.paddies.forEach((r) => R(r, '#5f8e7c'));
   zone.roads.forEach((r) => R(r, zone.def.ground === 'town' ? '#c4ae86' : zone.def.ground === 'dungeon' ? '#6e665e' : '#b98a55'));

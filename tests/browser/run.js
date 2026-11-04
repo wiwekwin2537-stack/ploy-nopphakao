@@ -370,6 +370,20 @@ await check('ป่าหิมพานต์: หลังล้มยัก�
   return types;
 });
 
+await check('เขาไกรลาส: หลังล้มพญาคชสีห์ เดินผ่านม่านปลายป่า → ขึ้นเขาหิมะ → มอนใหม่ครบ', async () => {
+  await G(page, () => { const g = __ploy.game; g.flags.khotchasi_kingSlain = true; __ploy.enterZone(g, 'himmapan', 65 * 32, 34.5 * 32); g.player.invuln = 999; g.mobs.length = 0; });
+  await page.waitForTimeout(300);
+  await hold(page, 'KeyD', 1600);
+  const s = await state(page);
+  assert(s.zone === 'kailash', 'เดินขึ้นเขาไม่ได้: ' + s.zone);
+  await G(page, () => { const g = __ploy.game; g.player.x = 20 * 32; g.player.y = 13.5 * 32; });
+  await page.waitForTimeout(900);
+  await page.screenshot({ path: SHOTS + '/18-kailash.png' });
+  const types = await G(page, () => [...new Set(__ploy.game.mobs.map((m) => m.type))].join(','));
+  assert(['kumbhan', 'kinnorn', 'garuda_chick'].every((t) => types.includes(t)), types);
+  return types;
+});
+
 await check('ความเร็ว: มอน 100 ตัวไล่ล้อม ใช้เวลาคำนวณ+วาดต่อเฟรมไม่เกิน 8ms', async () => {
   await G(page, () => { const g = __ploy.game, p = g.player; const types = ['boar', 'monkey', 'krasue', 'piglet']; for (let i = 0; i < 2000 && g.mobs.length < 100; i++) { const m = __ploy.makeMob(g, types[i % 4], 3, p.x + (Math.random() - 0.5) * 700, p.y + (Math.random() - 0.5) * 400, -1); if (!g.world.blocked(m.x, m.y, m.radius)) g.mobs.push(m); } g.mobs.forEach((m) => { m.aggroed = true; }); p.invuln = 99; });
   await page.waitForTimeout(1500);

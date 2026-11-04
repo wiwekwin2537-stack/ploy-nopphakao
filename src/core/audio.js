@@ -34,6 +34,11 @@ const SONGS = {
     lead: [4, null, 5, 7, 5, null, 4, 2, 4, null, null, 5, 4, 2, 1, null, 2, 4, 2, 1, 0, null, 1, 2, -1, null, 0, null, null, null, null, null],
     voice: 'ranat', bass: [0, null, null, 2, -1, null, null, null], ching: 4, drum: false,
   },
+  mountain: {                                      // เขาไกรลาส: ขลุ่ยสูงโปร่ง ฆ้องห่าง ลมหนาว
+    bpm: 70, sub: 2,
+    lead: [7, null, 9, null, 7, 5, null, null, 4, null, 5, 7, null, null, null, null, 9, null, 7, null, 5, null, 4, 2, 4, null, null, null, null, null, null, null],
+    voice: 'khlui', bass: [0, null, null, null, 2, null, null, null], ching: 8, drum: false,
+  },
   dungeon: {                                       // วัดร้าง: ขลุ่ยต่ำช้า ฆ้องห่าง ๆ วังเวง
     bpm: 58, sub: 2,
     lead: [0, null, null, -1, 0, null, null, null, 2, null, 1, null, 0, null, null, null,

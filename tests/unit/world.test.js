@@ -25,7 +25,7 @@ test('ท่อนไม้ในทางเกวียนกั้นทา�
 });
 
 test('ทุกทางออกเดินไปถึงได้จริงจากจุดเริ่มของพื้นที่ (หาทางแบบตาราง)', () => {
-  const g = makeGame(); g.flags.gotRuby = true; g.flags.yakSlain = true;   // เปิดทุกด่านที่มีธงกั้น (ด่านกั้นมีเทสต์แยก)
+  const g = makeGame(); g.flags.gotRuby = true; g.flags.yakSlain = true; g.flags.khotchasi_kingSlain = true;   // เปิดทุกด่านที่มีธงกั้น (ด่านกั้นมีเทสต์แยก)
   for (const [id, z] of Object.entries(g.data.zones)) {
     g.world.load(id); g.world.refreshFlags();
     for (const e of g.world.zone.exits) {

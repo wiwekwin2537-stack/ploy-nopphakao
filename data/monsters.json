@@ -261,5 +261,64 @@
   "waveThick": 24,
   "summon": "hatsadi",
   "summonCount": 3
+ },
+ "kumbhan": {
+  "name": "กุมภัณฑ์",
+  "hp": 210,
+  "damage": 30,
+  "xp": 60,
+  "speed": 76,
+  "radius": 17,
+  "ai": "melee",
+  "aggro": 260,
+  "attackRange": 28,
+  "attackCooldown": 1.2,
+  "coins": [
+   5,
+   10
+  ],
+  "coinChance": 0.7
+ },
+ "kinnorn": {
+  "name": "กินนร",
+  "hp": 120,
+  "damage": 26,
+  "xp": 55,
+  "speed": 95,
+  "radius": 13,
+  "ai": "caster",
+  "aggro": 320,
+  "keepDistance": 170,
+  "attackRange": 290,
+  "attackCooldown": 1.6,
+  "shotSpeed": 260,
+  "coins": [
+   4,
+   9
+  ],
+  "coinChance": 0.65,
+  "shotKind": "ice",
+  "flying": true
+ },
+ "garuda_chick": {
+  "name": "ครุฑน้อย",
+  "hp": 150,
+  "damage": 28,
+  "xp": 62,
+  "speed": 120,
+  "radius": 15,
+  "ai": "charger",
+  "aggro": 300,
+  "attackRange": 26,
+  "attackCooldown": 1.0,
+  "chargeSpeed": 520,
+  "chargeWindup": 0.7,
+  "chargeTime": 0.6,
+  "chargeCooldown": 3,
+  "coins": [
+   5,
+   10
+  ],
+  "coinChance": 0.7
  }
 }

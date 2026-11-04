@@ -9,12 +9,15 @@ const SHAPES = {
   marquise: () => [[32, 4], [44, 20], [46, 32], [44, 44], [32, 60], [20, 44], [18, 32], [20, 20]],
   hexagon: () => Array.from({ length: 6 }, (_, i) => { const a = i / 6 * Math.PI * 2; return [32 + Math.cos(a) * 25, 32 + Math.sin(a) * 25]; }),
   kite: () => [[32, 4], [52, 26], [32, 60], [12, 26]],
+  cushion: () => [[18, 8], [46, 8], [56, 18], [56, 46], [46, 56], [18, 56], [8, 46], [8, 18]].map(([x, y]) => [32 + (x - 32) * 0.95, 32 + (y - 32) * 0.95]).map(([x, y], i) => (i % 2 ? [x - 2, y] : [x, y])),
+  shield: () => [[12, 10], [52, 10], [52, 34], [32, 58], [12, 34]],
 };
 const LOOK = {
   ruby: { shape: 'round', sym: 'flame' }, sapphire: { shape: 'octagon', sym: 'snow' }, emerald: { shape: 'pear', sym: 'drop' },
   multi: { shape: 'trillion', sym: 'three' }, pierce: { shape: 'marquise', sym: 'arrow' }, area: { shape: 'hexagon', sym: 'ring' }, haste: { shape: 'kite', sym: 'bolt' },
+  topaz: { shape: 'cushion', sym: 'zap' }, power: { shape: 'shield', sym: 'plus' },
 };
-const SUPPORT_TINT = { multi: ['#fffbe8', '#e0d8b0', '#8a8060'], pierce: ['#ffffff', '#b8c8d8', '#5a6a80'], area: ['#ffe0a0', '#f09030', '#7a3a08'], haste: ['#f0d8ff', '#b070e8', '#4a1a7a'] };
+const SUPPORT_TINT = { multi: ['#fffbe8', '#e0d8b0', '#8a8060'], pierce: ['#ffffff', '#b8c8d8', '#5a6a80'], area: ['#ffe0a0', '#f09030', '#7a3a08'], haste: ['#f0d8ff', '#b070e8', '#4a1a7a'], power: ['#ffc0b0', '#d8302a', '#5a0a0a'] };
 
 function hexToRgb(h) { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
 function mix(a, b, k) { const A = hexToRgb(a), B = hexToRgb(b); return `rgb(${A.map((v, i) => Math.round(v + (B[i] - v) * k)).join(',')})`; }
@@ -27,6 +30,8 @@ function symbol(g, kind, col) {
   else if (kind === 'three') { for (const [x, y] of [[32, 26], [26, 40], [38, 40]]) { g.beginPath(); g.arc(x, y, 3, 0, 7); g.fill(); } }
   else if (kind === 'arrow') { g.beginPath(); g.moveTo(32, 46); g.lineTo(32, 18); g.stroke(); g.beginPath(); g.moveTo(26, 25); g.lineTo(32, 16); g.lineTo(38, 25); g.stroke(); }
   else if (kind === 'ring') { g.beginPath(); g.arc(32, 32, 9, 0, 7); g.stroke(); g.beginPath(); g.arc(32, 32, 3, 0, 7); g.fill(); }
+  else if (kind === 'zap') { g.lineWidth = 2.6; g.beginPath(); g.moveTo(22, 20); g.lineTo(30, 30); g.lineTo(26, 32); g.lineTo(36, 44); g.lineTo(34, 34); g.lineTo(40, 32); g.lineTo(32, 20); g.stroke(); }
+  else if (kind === 'plus') { g.lineWidth = 4; g.beginPath(); g.moveTo(32, 20); g.lineTo(32, 44); g.moveTo(21, 31); g.lineTo(43, 31); g.stroke(); }
   else if (kind === 'bolt') { g.beginPath(); g.moveTo(35, 18); g.lineTo(26, 34); g.lineTo(32, 34); g.lineTo(29, 46); g.lineTo(39, 29); g.lineTo(33, 29); g.closePath(); g.fill(); }
   g.restore();
 }

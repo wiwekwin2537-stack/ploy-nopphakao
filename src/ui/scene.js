@@ -81,6 +81,13 @@ export function createScene(game) {
 
   function drawShot(ctx, s) {
     const sc = SHOT_COLORS[s.kind] || SHOT_COLORS.ghost, col = [sc[2] + '99', sc[0], sc[1]];
+    if (s.kind === 'bolt') {                                         // สายฟ้าบุษราคัม: เส้นหยักเรืองทอง
+      ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(Math.atan2(s.vy, s.vx));
+      ctx.strokeStyle = 'rgba(255,210,60,0.55)'; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(-18, 0); ctx.lineTo(8, 0); ctx.stroke();
+      ctx.strokeStyle = '#fffbe0'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-18, 0);
+      for (let i = 1; i <= 5; i++) ctx.lineTo(-18 + i * 5, (i % 2 ? -3 : 3) * Math.sin(game.time * 40 + i));
+      ctx.stroke(); ctx.restore(); return;
+    }
     if (s.kind === 'ice') {                                          // หอกน้ำแข็ง: แท่งแหลมตามทิศ
       ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(Math.atan2(s.vy, s.vx));
       poly(ctx, [12, 0, -6, -4, -10, 0, -6, 4], '#cfe8ff', '#3a6ab8', 1.2); ctx.fillStyle = '#ffffff'; ctx.fillRect(-4, -1, 12, 1.5);

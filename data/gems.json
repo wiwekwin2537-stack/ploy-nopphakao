@@ -48,6 +48,22 @@
    "splash": 0,
    "poison": 1.8,
    "poisonTime": 3
+  },
+  "topaz": {
+   "name": "บุษราคัม",
+   "skill": "สายฟ้าบุษราคัม",
+   "desc": "ยิงสายฟ้าเร็วมาก ทะลุมอน 2 ตัว คริติคอลแรง",
+   "color": "#f2c230",
+   "hi": "#fff6a0",
+   "kind": "bolt",
+   "mp": 9,
+   "cooldown": 0.5,
+   "damageMult": 1.5,
+   "speed": 720,
+   "life": 0.6,
+   "radius": 5,
+   "splash": 0,
+   "pierce": 2
   }
  },
  "support": {
@@ -80,6 +96,13 @@
    "cooldownMult": 0.65,
    "mpMult": 1.2,
    "damage": 1
+  },
+  "power": {
+   "name": "พลอยเสริมทวีคูณ",
+   "desc": "ดาเมจ ×1.4 แต่ใช้มานาเพิ่ม 40%",
+   "color": "#c8302a",
+   "damage": 1.4,
+   "mpMult": 1.4
   }
  },
  "drops": [
@@ -112,6 +135,16 @@
    "gem": "haste",
    "chance": 0.01,
    "minLevel": 2
+  },
+  {
+   "gem": "topaz",
+   "chance": 0.012,
+   "minLevel": 12
+  },
+  {
+   "gem": "power",
+   "chance": 0.01,
+   "minLevel": 10
   }
  ],
  "skillButtons": 3

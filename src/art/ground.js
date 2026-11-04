@@ -9,6 +9,7 @@ const BASE = {
   town: ['#86a653', '#7fa04e', '#8cad58'],
   field: ['#8fae55', '#86a64f', '#97b55c'],
   dungeon: ['#2a2430', '#262029', '#2e2734'],
+  snow: ['#e8eef4', '#dfe7ef', '#eef3f8'],
 };
 
 // ดันเจี้ยนวัดร้าง: นอกห้อง = กำแพงศิลาแลง (ด้านบนมืด มีหน้ากำแพงอิฐเมื่อติดพื้น) ในห้อง = พื้นหินแผ่นแตกร้าว
@@ -58,14 +59,19 @@ export function createGround(zone, scale) {
   const map = classify(zone);
   const cache = new Map();
   const base = BASE[zone.def.ground] || BASE.field;
-  const isTown = zone.def.ground === 'town';
+  const isTown = zone.def.ground === 'town' || zone.def.ground === 'snow';   // ทางหิน
   const at = (tx, ty) => (tx < 0 || ty < 0 || tx >= map.cols || ty >= map.rows ? -1 : map.t[ty * map.cols + tx]);
 
   function drawTile(g, tx, ty, ox, oy) {
     const v = at(tx, ty), x = tx * T - ox, y = ty * T - oy;
     const h = hash2(tx, ty, 7);
     if (zone.def.ground === 'dungeon') { dungeonTile(g, x, y, v, h, tx, ty, at); return; }
-    if (v === 0) {
+    if (v === 0 && zone.def.ground === 'snow') {                     // หิมะ: ขาวอมฟ้า มีประกายและรอยเงา
+      g.fillStyle = base[Math.floor(h * 3)]; g.fillRect(x, y, T, T);
+      g.fillStyle = 'rgba(140,170,210,0.25)'; g.fillRect(x + h * 18, y + hash2(tx, ty, 3) * 24, 10, 3);
+      if (h > 0.6) { g.fillStyle = '#ffffff'; g.fillRect(x + hash2(tx, ty, 5) * 28, y + hash2(tx, ty, 6) * 28, 2, 2); }
+      if (h < 0.15) { g.fillStyle = 'rgba(90,110,90,0.5)'; g.fillRect(x + 8, y + 12, 3, 2); }
+    } else if (v === 0) {
       g.fillStyle = base[Math.floor(h * 3)]; g.fillRect(x, y, T, T);
       for (let i = 0; i < 5; i++) {                                   // ใบหญ้า
         const hx = hash2(tx, ty, i * 3 + 1), hy = hash2(tx, ty, i * 3 + 2);
