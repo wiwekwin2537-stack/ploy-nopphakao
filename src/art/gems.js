@@ -18,6 +18,7 @@ const LOOK = {
   ruby: { shape: 'round', sym: 'flame' }, sapphire: { shape: 'octagon', sym: 'snow' }, emerald: { shape: 'pear', sym: 'drop' },
   multi: { shape: 'trillion', sym: 'three' }, pierce: { shape: 'marquise', sym: 'arrow' }, area: { shape: 'hexagon', sym: 'ring' }, haste: { shape: 'kite', sym: 'bolt' },
   topaz: { shape: 'cushion', sym: 'zap' }, power: { shape: 'shield', sym: 'plus' }, purity: { shape: 'round', sym: 'ring' }, cateye: { shape: 'round', sym: null }, moonstone: { shape: 'round', sym: null },
+  garnet: { sym: 'plus' }, jade: { sym: 'bolt' }, zircon: { sym: 'ring' },
 };
 
 function hexToRgb(h) { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
@@ -44,7 +45,12 @@ function paintSkillGem(g, info) {
   sp.addColorStop(0, info.hi || '#ffffff'); sp.addColorStop(0.35, info.color); sp.addColorStop(1, mix(info.color, '#000000', 0.7));
   g.fillStyle = sp; g.beginPath(); g.arc(32, 32, 26, 0, Math.PI * 2); g.fill(); g.restore();
   g.save(); g.beginPath(); g.arc(32, 32, 22, 0, Math.PI * 2); g.clip();
-  g.globalAlpha = 0.95; g.drawImage(skillSprite(info.kind, 64, false), 8, 8, 48, 48); g.restore();
+  if (info.aura) {                                              // พลอยออร่า: วงรัศมีซ้อน 3 ชั้น + สัญลักษณ์กลาง
+    g.strokeStyle = info.hi; g.lineWidth = 2;
+    for (const r of [7, 13, 19]) { g.globalAlpha = 1 - r / 26; g.setLineDash([4, 3]); g.beginPath(); g.arc(32, 32, r, 0, Math.PI * 2); g.stroke(); }
+    g.setLineDash([]); g.globalAlpha = 1; symbol(g, (LOOK[info.id] || {}).sym || 'ring', '#ffffff');
+  } else { g.globalAlpha = 0.95; g.drawImage(skillSprite(info.kind, 64, false), 8, 8, 48, 48); }
+  g.restore();
   g.strokeStyle = '#dfe6ea'; g.lineWidth = 3; g.beginPath(); g.arc(32, 32, 27, 0, Math.PI * 2); g.stroke();
   g.strokeStyle = 'rgba(20,10,10,0.8)'; g.lineWidth = 1.2; g.beginPath(); g.arc(32, 32, 28.8, 0, Math.PI * 2); g.stroke();
   g.fillStyle = 'rgba(255,255,255,0.55)'; g.beginPath(); g.ellipse(23, 17, 9, 5, -0.6, 0, Math.PI * 2); g.fill();
@@ -52,7 +58,7 @@ function paintSkillGem(g, info) {
 
 function paintGem(g, G, id) {
   const main = !!G.main[id], info = G.main[id] || G.support[id], look = LOOK[id] || { shape: 'round', sym: null };
-  if (main) { paintSkillGem(g, info); return; }
+  if (main) { paintSkillGem(g, { ...info, id }); return; }
   const [hi, mid, lo] = [mix(info.color, '#ffffff', 0.55), info.color, mix(info.color, '#000000', 0.55)];   // สีตามสีช่อง (แดง/เขียว/น้ำเงิน/ขาว) แบบ PoE
   if (!main) {                                                  // พลอยเสริม: กรอบทองรองรับ
     g.fillStyle = '#6a4a10'; g.beginPath(); g.arc(32, 32, 29, 0, 7); g.fill();

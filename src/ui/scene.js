@@ -9,7 +9,7 @@ import { gemSprite } from '../art/gems.js';
 import { itemName } from '../systems/items.js';
 import { drawMonster } from '../art/monsters.js';
 import { C, shadow, circle, poly, rrect } from '../art/draw.js';
-import { gemInfo } from '../systems/gems.js';
+import { gemInfo, aurasOf } from '../systems/gems.js';
 import { SHOT_COLORS } from '../systems/combat.js';
 import { tutorialTarget } from '../systems/tutorial.js';
 
@@ -262,6 +262,7 @@ export function createScene(game) {
             drawHuman(ctx, 'hero', gh.x, gh.y, { dir: gh.dir, walk: gh.walk, moving: true, swing: -1, t, dash: true });
           }
           ctx.globalAlpha = 1;
+          drawAuraRings(ctx, game, p, t);
           drawHuman(ctx, heroLook(game), p.x, p.y, { ...heroGear(game), dir: p.dir, walk: p.walk, amt: p.walkAmt, moving: p.moving, swing: p.swing, combo: p.combo, aim: p.aim, hurt: p.hurt, t, dash: p.dashT > 0, cast: p.castT > 0 });
         }
       }
@@ -277,4 +278,16 @@ export function createScene(game) {
       overlay(ctx);
     },
   };
+}
+
+// วงออร่าใต้เท้าผู้เล่น (สีตามพลอยออร่าที่ฝัง หมุนช้าๆ)
+function drawAuraRings(ctx, game, p, t) {
+  const list = aurasOf(game.data.gems, p);
+  list.forEach((a, i) => {
+    const r = 20 + i * 5, rot = t * (0.8 + i * 0.3) * (i % 2 ? -1 : 1);
+    ctx.save(); ctx.translate(p.x, p.y); ctx.scale(1, 0.42);
+    ctx.globalAlpha = 0.18 + 0.08 * Math.sin(t * 3 + i); ctx.fillStyle = a.ring; ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 0.75; ctx.strokeStyle = a.ring; ctx.lineWidth = 1.6; ctx.setLineDash([6, 4]); ctx.lineDashOffset = rot * 10;
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+  });
 }

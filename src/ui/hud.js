@@ -136,7 +136,9 @@ export function drawHud(ctx, game, L, w, h) {
   const bx = fx + fs + 7 * s, bw = px + pw - bx - 7 * s;
   bar(ctx, bx, py + 8 * s, bw, 13 * s, p.hp / st.maxHp, '#d8443a');
   text(ctx, `${Math.ceil(p.hp)}/${st.maxHp}`, bx + bw / 2, py + 15 * s, 10 * s, '#fff', 'center', '600');
-  bar(ctx, bx, py + 25 * s, bw, 13 * s, p.mp / st.maxMp, '#3f78e0');
+  const resK = st.mpReserved ? st.mpReserved / (st.maxMp + st.mpReserved) : 0, mw = bw * (1 - resK);   // ส่วนที่ออร่าจองไว้ = แถบมืดท้ายหลอด
+  bar(ctx, bx, py + 25 * s, mw, 13 * s, p.mp / st.maxMp, '#3f78e0');
+  if (resK) { ctx.fillStyle = 'rgba(40,50,90,0.85)'; rrect(ctx, bx + mw, py + 25 * s, bw - mw, 13 * s, 3 * s); ctx.fill(); }
   text(ctx, `${Math.floor(p.mp)}/${st.maxMp}`, bx + bw / 2, py + 32 * s, 10 * s, '#fff', 'center', '600');
   const need = xpNeeded(game.data.balance, p.level);
   ctx.fillStyle = 'rgba(0,0,0,0.5)'; rrect(ctx, bx, py + 42 * s, bw, 14 * s, 7 * s); ctx.fill();

@@ -30,7 +30,7 @@ export function drawProfileStats(ctx, game, B) {
   const rx = bx + bw + 14 * s, rw = B.x + B.w - rx - 14 * s, colW = rw / 2;
   const rows = [
     ['เลือด', `${Math.ceil(p.hp)} / ${st.maxHp}`, '#ff8a7a'],
-    ['มานา', `${Math.floor(p.mp)} / ${st.maxMp}`, '#8ab4ff'],
+    ['มานา', `${Math.floor(p.mp)} / ${st.maxMp}${st.mpReserved ? ` (จอง ${st.mpReserved})` : ''}`, '#8ab4ff'],
     ['ดาเมจดาบ', String(Math.round(st.damage)), C.cream],
     ['ดาเมจพลอย', String(Math.round(st.spellDamage)), C.cream],
     ['ฟันต่อวินาที', (1 / st.attackCooldown).toFixed(2), C.cream],
@@ -55,6 +55,7 @@ export function drawProfileStats(ctx, game, B) {
   let y = by + Math.ceil(rows.length / 2) * rh + 10 * s;
   const skills = skillsOf(D.gems, p).slice(0, 3).map((sk, i) => `${i + 1}. ${sk.name}${sk.supports.length ? ' +' + sk.supports.length : ''}`);
   text(ctx, 'สกิล — ' + (skills.length ? skills.join(' · ') : 'ยังไม่มี (ฝังพลอยสกิลในช่องอาวุธ/เสื้อ)'), rx, y, 10 * s, C.cream, 'left', 'normal'); y += 18 * s;
+  if (st.auras.length) { text(ctx, 'ออร่า — ' + st.auras.join(' · '), rx, y, 10 * s, '#9ac0ff', 'left', '600'); y += 18 * s; }
   const ks = p.passives.filter((id) => PS.nodes[id] && PS.nodes[id].kind === 'keystone').map((id) => PS.nodes[id].name);
   if (ks.length) { text(ctx, 'คีย์สโตน — ' + ks.join(' · '), rx, y, 10 * s, '#ffb070', 'left', '600'); y += 18 * s; }
   const left = pointsLeft(p, PS);

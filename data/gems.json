@@ -142,6 +142,76 @@
    "arc": 2.1,
    "slow": 0.45,
    "slowTime": 2
+  },
+  "garnet": {
+   "name": "โกเมน",
+   "skill": "ออร่าโทสะ",
+   "desc": "ออร่า: ฝังไว้แล้วมีผลตลอดเวลา ไม่ต้องกดใช้ จองมานาสูงสุดบางส่วนไว้",
+   "kind": "aura",
+   "socket": "r",
+   "color": "#d8283a",
+   "hi": "#ff9a9a",
+   "aura": {
+    "stats": {
+     "dmgMelee": 20,
+     "dmgFlat": 4
+    },
+    "reserve": 0.25,
+    "ring": "#ff5a4a"
+   },
+   "mp": 0,
+   "cooldown": 0,
+   "damageMult": 0,
+   "speed": 0,
+   "life": 0,
+   "radius": 0
+  },
+  "jade": {
+   "name": "หยก",
+   "skill": "ออร่าลมเร็ว",
+   "desc": "ออร่า: ฝังไว้แล้วมีผลตลอดเวลา ไม่ต้องกดใช้ จองมานาสูงสุดบางส่วนไว้",
+   "kind": "aura",
+   "socket": "g",
+   "color": "#2ab84a",
+   "hi": "#a8ffb0",
+   "aura": {
+    "stats": {
+     "moveInc": 10,
+     "atkSpeedInc": 8,
+     "crit": 2
+    },
+    "reserve": 0.25,
+    "ring": "#5ae07a"
+   },
+   "mp": 0,
+   "cooldown": 0,
+   "damageMult": 0,
+   "speed": 0,
+   "life": 0,
+   "radius": 0
+  },
+  "zircon": {
+   "name": "เพทาย",
+   "skill": "ออร่าสมาธิ",
+   "desc": "ออร่า: ฝังไว้แล้วมีผลตลอดเวลา ไม่ต้องกดใช้ จองมานาสูงสุดบางส่วนไว้",
+   "kind": "aura",
+   "socket": "b",
+   "color": "#2a5fd8",
+   "hi": "#9ac0ff",
+   "aura": {
+    "stats": {
+     "dmgSpell": 20,
+     "castSpeedInc": 8
+    },
+    "reserve": 0.3,
+    "ring": "#6a9aff"
+   },
+   "mp": 0,
+   "cooldown": 0,
+   "damageMult": 0,
+   "speed": 0,
+   "life": 0,
+   "radius": 0
   }
  },
  "support": {
@@ -261,6 +331,21 @@
    "gem": "moonstone",
    "chance": 0.01,
    "minLevel": 3
+  },
+  {
+   "gem": "garnet",
+   "chance": 0.006,
+   "minLevel": 5
+  },
+  {
+   "gem": "jade",
+   "chance": 0.006,
+   "minLevel": 5
+  },
+  {
+   "gem": "zircon",
+   "chance": 0.006,
+   "minLevel": 5
   }
  ],
  "skillButtons": 3,

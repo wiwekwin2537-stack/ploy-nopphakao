@@ -49,6 +49,16 @@ export function computeSkill(G, mainId, supportIds = []) {
   return sk;
 }
 
+// ออร่าที่ฝังอยู่ในของที่สวม (มีผลตลอด) — ใช้ใน stats.js
+export function aurasOf(G, p) {
+  const out = [];
+  for (const slot of SOCKET_SLOTS) {
+    const it = p.equip && p.equip[slot];
+    for (const id of (it && it.gems) || []) if (id && G.main[id] && G.main[id].aura) out.push({ id, ...G.main[id].aura, name: G.main[id].skill });
+  }
+  return out;
+}
+
 // ผลของพลอยเสริม (สร้างจากตัวเลขใน data/gems.json — ข้อความตรงกับค่าจริงเสมอ)
 export function supportLines(G, id) {
   const s = G.support[id], out = [];
@@ -75,7 +85,7 @@ export function skillsOf(G, p) {
     for (const grp of linkGroups(it)) {
       const ids = grp.map((i) => it.gems[i]).filter(Boolean);
       const sup = ids.filter((id) => G.support[id]);
-      grp.forEach((i) => { const sk = computeSkill(G, it.gems[i], sup); if (sk) list.push({ ...sk, slot, socket: i, linked: grp.length }); });
+      grp.forEach((i) => { if (G.main[it.gems[i]] && G.main[it.gems[i]].aura) return; const sk = computeSkill(G, it.gems[i], sup); if (sk) list.push({ ...sk, slot, socket: i, linked: grp.length }); });   // ออร่าไม่ใช่สกิลกด
     }
   }
   cache.set(p, { key, list });

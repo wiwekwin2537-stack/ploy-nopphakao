@@ -205,3 +205,28 @@ test('ไพฑูรย์ (แนวตรง) โดนเฉพาะตั�
   const [front, behind] = run('moonstone', 'b', [[60, 5], [-70, 0]]);
   assert.ok(front.hp < 9999 && front.slowT > 0, 'ข้างหน้าต้องโดนและช้า'); assert.equal(behind.hp, 9999, 'ข้างหลังต้องไม่โดน');
 });
+
+test('ออร่า: ฝังแล้วได้ค่าเสริมตลอด จองมานา ไม่ขึ้นปุ่มสกิล · ถอดแล้วค่ากลับเหมือนเดิม', async () => {
+  const { playerStats } = await import('../../src/systems/stats.js');
+  const g = makeGame(), G = g.data.gems, p = g.player;
+  gear(p, ['ruby', null, null]);
+  const before = playerStats(p, g.data);
+  p.equip.weapon.gems[1] = 'garnet';
+  const after = playerStats(p, g.data);
+  assert.ok(after.damage > before.damage, 'โกเมนเพิ่มดาเมจดาบ');
+  assert.equal(after.mpReserved, Math.round((after.maxMp + after.mpReserved) * G.main.garnet.aura.reserve));
+  assert.ok(after.maxMp < before.maxMp, 'มานาที่ใช้ได้ลดลง');
+  assert.deepEqual(skillsOf(G, p).map((k) => k.gem), ['ruby'], 'ออร่าไม่อยู่บนปุ่มสกิล');
+  p.equip.body.gems[0] = 'zircon';
+  const both = playerStats(p, g.data);
+  assert.ok(both.spellDamage > after.spellDamage);
+  assert.deepEqual(both.auras.length, 2);
+  p.equip.weapon.gems[1] = null; p.equip.body.gems[0] = null;
+  const back = playerStats(p, g.data);
+  assert.equal(back.maxMp, before.maxMp); assert.equal(back.damage, before.damage); assert.equal(back.mpReserved, 0);
+  for (const id of ['garnet', 'jade', 'zircon']) {          // ข้อมูลออร่าครบ ใช้ชื่อค่าที่มีจริง
+    const a = G.main[id].aura;
+    assert.ok(a.reserve > 0 && a.reserve < 1 && a.ring);
+    for (const k of Object.keys(a.stats)) assert.ok(g.data.passives.statNames[k], `${id}: ${k}`);
+  }
+});

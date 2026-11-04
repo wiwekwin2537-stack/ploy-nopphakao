@@ -103,15 +103,27 @@ export function skillLines(sk) {
   return out;
 }
 
+// ผลของออร่า (สร้างจากตัวเลขใน data/gems.json)
+export function auraLines(P, a) {
+  const out = Object.entries(a.stats).map(([k, v]) => statText(P, k, v));
+  out.push(`จองมานาสูงสุด ${Math.round(a.reserve * 100)}%`);
+  return out;
+}
+
 export function drawGemTip(ctx, game, id, ax, ay, opt = {}) {
   const G = game.data.gems, s = opt.s || 1, info = gemInfo(G, id), main = gemType(G, id) === 'main', lines = [];
   lines.push({ h: 40 * s, draw: (c, x, y, w) => c.drawImage(gemSprite(G, id, 80), x + w / 2 - 18 * s, y, 36 * s, 36 * s) });
   lines.push({ t: info.name, col: info.hi || info.color, size: 12.5, weight: '600', center: true });
-  lines.push({ t: main ? 'พลอยสกิล — ฝังแล้วได้สกิล' : 'พลอยเสริม — เสริมพลอยสกิลที่อยู่ในช่องเชื่อมกัน', col: 'rgba(244,230,200,0.65)', size: 9, center: true });
+  const aura = main && info.aura;
+  lines.push({ t: aura ? 'พลอยออร่า — ฝังแล้วมีผลตลอด ไม่ต้องกด' : main ? 'พลอยสกิล — ฝังแล้วได้สกิล' : 'พลอยเสริม — เสริมพลอยสกิลที่อยู่ในช่องเชื่อมกัน', col: 'rgba(244,230,200,0.65)', size: 9, center: true });
   const sc = G.socketColors[info.socket];
   lines.push({ t: `ลงได้ในช่องสี${sc.name} หรือช่องขาว`, col: sc.color, size: 9.5, center: true, weight: '600' });
   lines.push({ sep: true, h: 8 * s });
-  if (main) {
+  if (aura) {
+    lines.push({ t: `ออร่า: ${info.skill}`, col: C.goldHi, size: 10.5, weight: '600' });
+    for (const l of auraLines(game.data.passives, info.aura)) lines.push({ t: l, size: 10 });
+    lines.push({ t: 'พลอยเสริมที่เชื่อมไว้ไม่มีผลกับออร่า', col: 'rgba(244,230,200,0.6)', size: 9 });
+  } else if (main) {
     const sk = opt.final || computeSkill(G, id);                 // ฝังอยู่ = แสดงผลรวมกับพลอยเสริมที่เชื่อมจริง
     lines.push({ t: `สกิล: ${sk.name}`, col: C.goldHi, size: 10.5, weight: '600' });
     for (const l of skillLines(sk)) lines.push({ t: l, size: 10 });

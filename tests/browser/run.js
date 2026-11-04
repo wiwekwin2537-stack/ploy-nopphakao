@@ -472,6 +472,22 @@ await check('ถ้ำลายแทง: ยืนที่แท่นใน�
   return 'มอน ' + r.mobs;
 });
 
+await check('ออร่า: ฝังโกเมนในช่องอาวุธ → ดาเมจเพิ่ม มานาถูกจอง วงออร่าขึ้นใต้เท้า แถบสกิลไม่มีออร่า', async () => {
+  await G(page, () => {                                  // ให้มีช่องแดง/ขาวว่าง 1 ช่องบนอาวุธ
+    const g = __ploy.game, p = g.player, w = p.equip.weapon;
+    if (!w.sockets) { w.sockets = 1; w.links = []; w.gems = [null]; w.colors = ['r']; }
+    if (!w.gems.some((x, k) => !x && (w.colors[k] === 'r' || w.colors[k] === 'w'))) { const k = w.sockets - 1; if (w.gems[k]) p.bag.push(w.gems[k]); w.gems[k] = null; w.colors[k] = 'r'; }
+    p.bag.push('garnet');
+  });
+  await G(page, () => { const g = __ploy.game, p = g.player, w = p.equip.weapon, i = w.gems.findIndex((x, k) => !x && (w.colors[k] === 'r' || w.colors[k] === 'w')); w.gems[i] = 'garnet'; p.bag.splice(p.bag.indexOf('garnet'), 1); });
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: SHOTS + '/24-aura.png' });
+  const st = await G(page, () => ({ sk: __ploy.skills().map((k) => k.gem), st: __ploy.stats() }));
+  assert(st.st.mpReserved > 0 && st.st.auras.length === 1, JSON.stringify(st.st));
+  assert(!st.sk.includes('garnet'), 'ออร่าหลุดไปอยู่ในปุ่มสกิล');
+  return `จองมานา ${st.st.mpReserved} · สกิล ${st.sk.join(',')}`;
+});
+
 await check('ความเร็ว: มอน 100 ตัวไล่ล้อม ใช้เวลาคำนวณ+วาดต่อเฟรมไม่เกิน 8ms', async () => {
   await G(page, () => { const g = __ploy.game, p = g.player; const types = ['boar', 'monkey', 'krasue', 'piglet']; for (let i = 0; i < 2000 && g.mobs.length < 100; i++) { const m = __ploy.makeMob(g, types[i % 4], 3, p.x + (Math.random() - 0.5) * 700, p.y + (Math.random() - 0.5) * 400, -1); if (!g.world.blocked(m.x, m.y, m.radius)) g.mobs.push(m); } g.mobs.forEach((m) => { m.aggroed = true; }); p.invuln = 99; });
   await page.waitForTimeout(1500);
