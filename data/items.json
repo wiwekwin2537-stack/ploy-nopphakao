@@ -1140,5 +1140,6 @@
    "minLevel": 10,
    "craft": true
   }
- }
+ },
+ "stashSize": 60
 }

@@ -459,6 +459,31 @@ await check('ศาลวาร์ป: เดินถึงศาลในเ�
   assert(s.zone === 'himmapan' && s.mode === 'play', 'วาร์ปไม่ได้: ' + s.zone + ' ' + s.mode);
 });
 
+await check('หีบเก็บของ: เดินไปที่หีบในเวียง → กด E → แตะของ 2 ครั้งเก็บเข้าหีบ → ปิด → โหลดเซฟแล้วยังอยู่ในหีบ', async () => {
+  const uid = await G(page, () => {
+    const g = __ploy.game, a = g.data.zones.town.objects.find((o) => o.type === 'stash'), p = g.player;
+    __ploy.enterZone(g, 'town', (a.x + 0.6) * 32, (a.y + a.h + 0.6) * 32);
+    if (!p.items.length) p.items.push({ uid: ++p.nextUid, base: 'iron_sword', rarity: 'normal', ilvl: 5, mods: [], rareName: null, sockets: 1, links: [], gems: [null], colors: ['r'] });
+    return p.items[0].uid;
+  });
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: SHOTS + '/26a-stash-chest.png' });
+  await page.keyboard.press('KeyE'); await page.waitForTimeout(200);
+  assert((await state(page)).mode === 'stash', 'ไม่เปิดหน้าหีบ: ' + (await state(page)).mode);
+  const L = await G(page, () => __ploy.stashLayout());
+  const c = { x: L.bag.x + L.bag.cell / 2, y: L.bag.y + L.bag.cell / 2 };
+  await page.mouse.click(c.x, c.y); await page.waitForTimeout(150);
+  await page.screenshot({ path: SHOTS + '/26-stash.png' });
+  await page.mouse.click(c.x, c.y); await page.waitForTimeout(150);
+  const inStash = await G(page, (u) => __ploy.game.player.stash.some((it) => it.uid === u), uid);
+  assert(inStash, 'ของไม่เข้าหีบ');
+  await page.mouse.click(L.close.x, L.close.y); await page.waitForTimeout(200);
+  assert((await state(page)).mode === 'play', 'ปิดหีบไม่ได้');
+  const kept = await G(page, (u) => { const g = __ploy.game; __ploy.writeSave(g); g.player.stash = []; __ploy.continueGame(); return __ploy.game.player.stash.some((it) => it.uid === u); }, uid);
+  assert(kept, 'โหลดเซฟแล้วของในหีบหาย');
+  return 'เก็บแล้ว โหลดเซฟแล้วยังอยู่';
+});
+
 await check('ถ้ำลายแทง: ยืนที่แท่นในเวียง → กด E → คลิกขั้น 1 → เข้าถ้ำสุ่ม มอนครบ ลายแทงหมด', async () => {
   await G(page, () => { const g = __ploy.game, a = g.data.zones.town.objects.find((o) => o.type === 'map_altar'); g.player.currency.map1 = 1; __ploy.enterZone(g, 'town', (a.x + 0.7) * 32, (a.y + a.h + 0.6) * 32); });
   await page.waitForTimeout(300);

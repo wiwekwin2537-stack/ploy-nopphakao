@@ -40,6 +40,8 @@ import { drawWarp, updateWarp } from './ui/warp.js';
 import { updateWaypoints } from './systems/waypoint.js';
 import { updateAltar } from './systems/maps.js';
 import { drawMapMenu, updateMapMenu } from './ui/mapmenu.js';
+import { drawStash, updateStash, stashLayout } from './ui/stash.js';
+import { updateStashSpot } from './systems/stash.js';
 import { updatePotion, setupFlasks } from './systems/shop.js';
 
 // สองชั้น: โลกวาดความละเอียดต่ำแล้วขยายแบบพิกเซล (สไตล์เอโดเรีย) · หน้าจอซ้อน/ตัวหนังสือวาดคมเต็มความละเอียด
@@ -79,7 +81,7 @@ function continueGame() {
   const s = readSave(game.data);
   if (!s) return startNew(false);
   const p = game.player = createPlayer(game.data);
-  Object.assign(p, { level: s.level, xp: s.xp, coins: s.coins, bag: s.bag.slice(), currency: { ...p.currency, ...s.currency }, passives: s.passives.slice(), gemXp: { ...s.gemXp }, items: s.items, equip: { ...p.equip, ...s.equip }, nextUid: s.nextUid, potions: s.potions, mpPotions: s.mpPotions, hp: s.hp, mp: s.mp });
+  Object.assign(p, { level: s.level, xp: s.xp, coins: s.coins, bag: s.bag.slice(), currency: { ...p.currency, ...s.currency }, passives: s.passives.slice(), gemXp: { ...s.gemXp }, items: s.items, stash: s.stash || [], equip: { ...p.equip, ...s.equip }, nextUid: s.nextUid, potions: s.potions, mpPotions: s.mpPotions, hp: s.hp, mp: s.mp });
   game.flags = { ...s.flags };
   game.mode = 'play';
   enterZone(game, s.zone, s.x, s.y);
@@ -95,7 +97,7 @@ function update(dt) {
   input.beginFrame();
   const lk = input.mode === 'touch' ? 't' : 'k';          // สลับจอสัมผัส ↔ คีย์บอร์ด: จัดปุ่มใหม่
   if (lk !== layoutKey) { layoutKey = lk; layout = computeLayout(game.camera.viewW || innerWidth, game.camera.viewH || innerHeight, lk === 't'); }
-  layout.near = !!(game.nearNpc || game.nearWaypoint || game.nearAltar);
+  layout.near = !!(game.nearNpc || game.nearWaypoint || game.nearAltar || game.nearStash);
   input.setUiMode(game.mode !== 'play');                   // หน้าต่าง/บทพูด/หน้าแรก: แตะ = กดปุ่ม ไม่ใช่จอยเดิน
   game.audio.update();
   if (game.toast) game.toast.t -= dt;
@@ -126,6 +128,8 @@ function update(dt) {
     if (r) { game.mode = r === 'back' ? 'bag' : 'play'; input.setUiMode(false); writeSave(game); }
   } else if (game.mode === 'play' && input.pressed.tree) {
     game.mode = 'tree'; openTree(game); game.audio.play('click');
+  } else if (game.mode === 'stash') {
+    if (updateStash(game, layout, game.camera.viewW, game.camera.viewH)) { game.mode = 'play'; writeSave(game); }
   } else if (game.mode === 'mapmenu') {
     if (updateMapMenu(game, layout, game.camera.viewW, game.camera.viewH)) game.mode = 'play';
   } else if (game.mode === 'warp') {
@@ -147,6 +151,7 @@ function update(dt) {
     updateNpcs(game);
     updateWaypoints(game);
     updateAltar(game);
+    updateStashSpot(game);
     if (game.mode === 'play') {
       updatePotion(game, dt);
       updateSkillTimers(game, dt);
@@ -188,6 +193,7 @@ function render() {
     if (game.mode === 'shop') drawShop(ctx, game, layout, w, h);
     if (game.mode === 'warp') drawWarp(ctx, game, layout, w, h);
     if (game.mode === 'mapmenu') drawMapMenu(ctx, game, layout, w, h);
+    if (game.mode === 'stash') drawStash(ctx, game, layout, w, h);
   }
 }
 
@@ -209,4 +215,4 @@ game.loopStats = loop.stats;
 loop.start();
 
 // test-hook: เปิดเฉพาะเมื่อมี ?test ใน URL ใช้ในเทสต์อัตโนมัติเท่านั้น
-if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, rollElite, damage: damageMob, skills: () => skillsOf(game.data.gems, game.player), stats: () => playerStats(game.player, game.data), layout: () => layout, bagLayout: () => bagLayout(game.camera.viewW, game.camera.viewH, layout.s), gemLayout: () => gemLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s), game.player) }; // test-hook
+if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, rollElite, damage: damageMob, stashLayout: () => stashLayout(game.camera.viewW, game.camera.viewH, layout.s), skills: () => skillsOf(game.data.gems, game.player), stats: () => playerStats(game.player, game.data), layout: () => layout, bagLayout: () => bagLayout(game.camera.viewW, game.camera.viewH, layout.s), gemLayout: () => gemLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s), game.player) }; // test-hook

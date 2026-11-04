@@ -10,7 +10,7 @@ export function gemInfo(G, id) { return G.main[id] || G.support[id] || null; }
 // สีช่องแบบ PoE: พลอยลงได้เฉพาะช่องสีเดียวกัน · ช่องขาว (w) รับได้ทุกสี
 export function socketFits(G, id, color) { const g = gemInfo(G, id); return !!g && (color === 'w' || !color || g.socket === 'w' || g.socket === color); }   // พลอยขาวลงได้ทุกช่อง
 
-function allItems(p) { return [...Object.values(p.equip || {}).filter(Boolean), ...(p.items || [])]; }
+function allItems(p) { return [...Object.values(p.equip || {}).filter(Boolean), ...(p.items || []), ...(p.stash || [])]; }
 export function ownsGem(p, id) { return p.bag.includes(id) || allItems(p).some((it) => (it.gems || []).includes(id)); }
 
 // กลุ่มช่องที่เชื่อมกัน เช่น links [true,false,true] → [[0,1],[2,3]]

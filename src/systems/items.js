@@ -248,9 +248,9 @@ function validSockets(I, it, G) {
   return it.gems.every((g, i) => g === null || (typeof g === 'string' && (!G || ((G.main[g] || G.support[g]) && socketFits(G, g, it.colors[i])))));
 }
 
-export function validItems(I, items, equip, nextUid, G) {
-  const all = [...(items || []), ...Object.values(equip || {}).filter(Boolean)];
-  if (!Array.isArray(items) || items.length > I.bagSize) return false;
+export function validItems(I, items, equip, nextUid, G, stash = []) {
+  if (!Array.isArray(items) || items.length > I.bagSize || !Array.isArray(stash) || stash.length > I.stashSize) return false;
+  const all = [...items, ...stash, ...Object.values(equip || {}).filter(Boolean)];   // uid ห้ามซ้ำทั้งกระเป๋า หีบ และของที่สวม
   const uids = new Set();
   for (const it of all) {
     if (!it || !I.bases[it.base] || !I.rarity[it.rarity] || !Number.isInteger(it.uid) || it.uid < 1 || it.uid > nextUid || uids.has(it.uid)) return false;

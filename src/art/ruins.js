@@ -112,5 +112,18 @@ export const RUINS = {
     const gl = g.createRadialGradient(cx, -40, 1, cx, -40, 16); gl.addColorStop(0, 'rgba(255,220,140,0.6)'); gl.addColorStop(1, 'rgba(255,220,140,0)');
     g.fillStyle = gl; g.fillRect(cx - 16, -56, 32, 32);
   } },
+  stash: { pad: [10, 40, 10, 4], draw(g, fw, fh) {             // หีบเก็บของ: หีบไม้ลงรักปิดทอง ลายรดน้ำ ฝาโค้ง
+    const cx = fw / 2;
+    shadow(g, cx, -1, fw / 2 + 6, 5, 0.3);
+    box(g, 0, -16, fw, 16, '#5a1a14', C.line, 1.3);                  // ตัวหีบสีรักแดง
+    g.fillStyle = '#2a0c08'; g.beginPath(); g.moveTo(-1, -16); g.quadraticCurveTo(cx, -32, fw + 1, -16); g.closePath(); g.fill();   // ฝาโค้ง
+    g.strokeStyle = C.line; g.lineWidth = 1.3; g.stroke();
+    g.strokeStyle = '#e8b84a'; g.lineWidth = 1.6;                    // ขอบทอง + ลายกนก
+    g.strokeRect(2, -14, fw - 4, 12); g.beginPath(); g.moveTo(2, -17); g.quadraticCurveTo(cx, -30, fw - 2, -17); g.stroke();
+    for (let i = 0; i < 3; i++) { const x = fw * (0.25 + i * 0.25); g.beginPath(); g.moveTo(x - 4, -5); g.quadraticCurveTo(x, -13, x + 4, -5); g.stroke(); }
+    box(g, cx - 3, -19, 6, 7, '#f3d27a', C.line, 1);                 // กุญแจทอง
+    const gl = g.createRadialGradient(cx, -20, 1, cx, -20, 14); gl.addColorStop(0, 'rgba(255,220,140,0.45)'); gl.addColorStop(1, 'rgba(255,220,140,0)');
+    g.fillStyle = gl; g.fillRect(cx - 14, -34, 28, 28);
+  } },
   portal: { hidden: true },                                          // ประตูมิติวาดสดใน scene.js (ขยับได้)
 };
