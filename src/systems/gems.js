@@ -52,8 +52,9 @@ export function computeSkill(G, mainId, supportIds = [], lvOf = () => 1) {
 }
 
 // ออร่าที่ฝังอยู่ในของที่สวม (มีผลตลอด) — ใช้ใน stats.js
-export function aurasOf(G, p) {
+export function aurasOf(G, p, I) {
   const out = [];
+  for (const U of grantsOf(I, p)) if (G.main[U.gem] && G.main[U.gem].aura) out.push({ id: U.gem, ...auraAt(G, U.gem, U.level), name: G.main[U.gem].skill, fromItem: U.name });   // ออร่าจากของยูนีค
   for (const slot of SOCKET_SLOTS) {
     const it = p.equip && p.equip[slot];
     for (const id of (it && it.gems) || []) if (id && G.main[id] && G.main[id].aura) out.push({ id, ...auraAt(G, id, gemLevel(G, p, id)), name: G.main[id].skill });
@@ -106,11 +107,23 @@ export function supportLines(G, id) {
   return out;
 }
 
+// สกิลที่ของยูนีคให้ (grants) จากของที่สวมทุกช่อง — I = data.items (ไม่ส่ง = ไม่มี)
+function grantsOf(I, p) {
+  if (!I || !I.uniques) return [];
+  const out = [];
+  for (const [slot, it] of Object.entries(p.equip || {})) {
+    const U = it && it.rarity === 'unique' && I.uniques[it.unique];
+    if (U && U.grants) out.push({ ...U.grants, name: U.name, slot });
+  }
+  return out;
+}
+
 // สกิลทั้งหมดจากของที่สวม เรียงตาม อาวุธ → เสื้อ และลำดับช่อง (ปุ่มสกิล 1/2/3 = 3 สกิลแรก)
 const cache = new WeakMap();
-export function skillsOf(G, p) {
+export function skillsOf(G, p, I) {
   const lvOf = (id) => gemLevel(G, p, id);
-  const key = SOCKET_SLOTS.map((s) => { const it = p.equip && p.equip[s]; return it ? it.uid + ':' + (it.gems || []).map((g) => g && g + lvOf(g)).join(',') + ':' + (it.links || []).map(Number).join('') : '-'; }).join('|');
+  const gr = grantsOf(I, p);
+  const key = gr.map((g) => g.name).join(',') + '#' + SOCKET_SLOTS.map((s) => { const it = p.equip && p.equip[s]; return it ? it.uid + ':' + (it.gems || []).map((g) => g && g + lvOf(g)).join(',') + ':' + (it.links || []).map(Number).join('') : '-'; }).join('|');
   const hit = cache.get(p);
   if (hit && hit.key === key) return hit.list;
   const list = [];
@@ -123,6 +136,7 @@ export function skillsOf(G, p) {
       grp.forEach((i) => { if (G.main[it.gems[i]] && G.main[it.gems[i]].aura) return; const sk = computeSkill(G, it.gems[i], sup, lvOf); if (sk) list.push({ ...sk, slot, socket: i, linked: grp.length }); });   // ออร่าไม่ใช่สกิลกด
     }
   }
+  for (const g of gr) if (G.main[g.gem] && !G.main[g.gem].aura) list.push({ ...computeSkill(G, g.gem, [], () => g.level), slot: g.slot, socket: -1, linked: 1, fromItem: g.name });   // สกิลจากของยูนีค (ต่อท้าย)
   cache.set(p, { key, list });
   return list;
 }

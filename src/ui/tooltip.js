@@ -59,6 +59,15 @@ export function drawItemTip(ctx, game, it, ax, ay, opt = {}) {
   lines.push({ t: `${I.rarity[it.rarity].name} · ${I.slots[b.slot].name}`, col: 'rgba(244,230,200,0.6)', size: 9, center: true });
   lines.push({ sep: true, h: 8 * s });
   for (const [k, v] of Object.entries(b.stats)) lines.push({ t: statText(P, k, v), col: C.cream, size: 10 });
+  const U = it.rarity === 'unique' ? I.uniques[it.unique] : null;
+  if (U) {                                                        // ยูนีค: ค่าตายตัว + สกิลจากของ + ตำนาน
+    lines.push({ sep: true, h: 8 * s });
+    for (const [k, v] of Object.entries(U.stats)) lines.push({ t: statText(P, k, v), col: MOD_COL, size: 10 });
+    const gname = (id) => G.main[id].skill;
+    if (U.grants) lines.push({ t: G.main[U.grants.gem].aura ? `ให้ออร่า: ${gname(U.grants.gem)} เลเวล ${U.grants.level} (ไม่ต้องฝังพลอย)` : `ให้สกิล: ${gname(U.grants.gem)} เลเวล ${U.grants.level} (ขึ้นที่ปุ่มสกิล)`, col: '#ffb060', size: 10, weight: '600' });
+    if (U.trigger) lines.push({ t: `${U.trigger.on === 'hit' ? 'ฟันโดนมอน' : 'โดนตี'} มีโอกาส ${Math.round(U.trigger.chance * 100)}% ปล่อย${gname(U.trigger.gem)} เลเวล ${U.trigger.level} เอง (ไม่ใช้มานา)`, col: '#ffb060', size: 10, weight: '600' });
+    lines.push({ t: U.lore, col: '#c8783a', size: 9.5 });
+  }
   if (it.mods.length) {
     lines.push({ sep: true, h: 8 * s });
     for (const m of it.mods) { const a = I.affixes[m.id]; lines.push({ t: `${statText(P, a.stat, m.value)}  (${a.word})`, col: MOD_COL, size: 10 }); }
@@ -135,7 +144,7 @@ export function drawGemTip(ctx, game, id, ax, ay, opt = {}) {
 }
 
 export function drawCurrencyTip(ctx, game, kind, ax, ay, opt = {}) {
-  const c = game.data.items.currency[kind], s = opt.s || 1;
+  const c = opt.raw || game.data.items.currency[kind], s = opt.s || 1;   // raw = กล่องแบบเดียวกันสำหรับยา
   const lines = [{ t: c.name, col: c.color, size: 12.5, weight: '600', center: true }, { sep: true, h: 8 * s }, { t: c.desc, col: MOD_COL, size: 9.5 }];
   if (opt.hint) lines.push({ t: opt.hint, col: '#9af0b0', size: 9.5, weight: '600' });
   tipBox(ctx, lines, ax, ay, s, opt.W, opt.H, c.color);

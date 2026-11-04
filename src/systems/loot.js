@@ -1,6 +1,7 @@
 // ของดรอป: เบี้ยและพลอย — เก็บได้ครั้งเดียว แล้วหายจากพื้นทันที
 import { rollGemDrop, ownsGem, gemType, gemInfo, autoSocket } from './gems.js';
 import { rollItem, giveItem, itemName } from './items.js';
+import { makeUnique, rollBossUnique, rollWorldUnique } from './uniques.js';
 
 let nextDropId = 1;
 
@@ -20,6 +21,8 @@ export function setupLoot(game) {
       if (g) spawnDrop(game, { kind: 'gem', gem: g, x: mob.x, y: mob.y });
       const I = game.data.items;
       for (const [k, c] of Object.entries(I.currency)) if (mob.level >= c.minLevel && rng.chance(c.dropChance * (T ? T.currencyMult : 1))) spawnDrop(game, { kind: 'currency', cur: k, x: mob.x, y: mob.y });
+      const wu = rollWorldUnique(I, rng, mob.level);               // ยูนีคจากมอนทั่วไป (หายากมาก)
+      if (wu) spawnDrop(game, { kind: 'item', item: makeUnique(I, rng, wu, mob.level), x: mob.x, y: mob.y - 8 });
       for (let i = 0; T && i < T.items; i++) {                     // มอนพิเศษ: ของแน่นอน (หายาก = อย่างน้อยสีเขียว)
         let it = rollItem(I, rng, mob.level);
         if (it && T.itemRarity && it.rarity === 'normal') it = rollItem(I, rng, mob.level, { rarity: T.itemRarity });
@@ -40,6 +43,8 @@ function bossLoot(game, mob) {
     const it = rollItem(I, rng, mob.level, { rarity: rng.chance(L.redChance) ? 'red' : L.rarity });
     if (it) spawnDrop(game, { kind: 'item', item: it, x: mob.x + (i - 0.5) * 30, y: mob.y });
   }
+  const uid = rollBossUnique(I, rng, mob.type);                 // ของยูนีคประจำตัวบอส
+  if (uid) spawnDrop(game, { kind: 'item', item: makeUnique(I, rng, uid, mob.level), x: mob.x, y: mob.y + 22 });
   const pool = G.drops.filter((d) => mob.level >= d.minLevel).map((d) => d.gem);
   for (let i = 0; i < L.gems && pool.length; i++) spawnDrop(game, { kind: 'gem', gem: rng.pick(pool), x: mob.x, y: mob.y + 10 });
   for (const [k, c] of Object.entries(I.currency)) if (c.bossGift) spawnDrop(game, { kind: 'currency', cur: k, x: mob.x, y: mob.y - 10 });
@@ -110,7 +115,7 @@ export function updateLoot(game, dt) {
         }
         const col = I.rarity[d.item.rarity].color;
         game.fx.text(p.x, p.y - 74, itemName(I, d.item), col, d.item.rarity !== 'normal');
-        game.audio.play(d.item.rarity === 'purple' || d.item.rarity === 'red' ? 'gem' : 'coin');
+        game.audio.play(['purple', 'red', 'unique'].includes(d.item.rarity) ? 'gem' : 'coin');
         if (!game.flags.gearHint) { game.flags.gearHint = true; game.notice = { text: 'ได้ของสวมใส่! แตะรูปตัวละครมุมซ้ายบน → แถบชุด เพื่อสวม', t: 6 }; }
         game.events.emit('itemPicked', { uid: d.item.uid });
       }

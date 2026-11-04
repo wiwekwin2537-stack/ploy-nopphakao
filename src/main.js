@@ -21,7 +21,7 @@ import { createPlayer, updatePlayer, giveStarterGear } from './systems/player.js
 import { updateMonsters, makeMob, rollElite } from './systems/monsters.js';
 import { updateHazards } from './systems/boss.js';
 import { updateShots, damageMob } from './systems/combat.js';
-import { setupLoot, updateLoot } from './systems/loot.js';
+import { setupLoot, updateLoot, spawnDrop } from './systems/loot.js';
 import { setupProgress } from './systems/progress.js';
 import { updateSkillTimers } from './systems/skills.js';
 import { updateNpcs, updateDialog } from './systems/npc.js';
@@ -34,7 +34,7 @@ import { createScene } from './ui/scene.js';
 import { drawHud, drawDialog, drawDeath, drawTitle, titleButtons } from './ui/hud.js';
 import { drawBag, updateBag, profileHit, bagLayout } from './ui/bag.js';
 import { drawTree, updateTree, openTree } from './ui/tree.js';
-import { drawShop, updateShop } from './ui/shop.js';
+import { drawShop, updateShop, shopLayout } from './ui/shop.js';
 import { gemLayout } from './ui/gemtab.js';
 import { drawWarp, updateWarp } from './ui/warp.js';
 import { updateWaypoints } from './systems/waypoint.js';
@@ -46,6 +46,7 @@ import { heroLook, heroGear } from './ui/herolook.js';
 import { itemSprite } from './art/items.js';
 import { updateStashSpot } from './systems/stash.js';
 import { updatePotion, setupFlasks } from './systems/shop.js';
+import { setupUniques, makeUnique } from './systems/uniques.js';
 
 // สองชั้น: โลกวาดความละเอียดต่ำแล้วขยายแบบพิกเซล (สไตล์เอโดเรีย) · หน้าจอซ้อน/ตัวหนังสือวาดคมเต็มความละเอียด
 const PIXEL = 0.62;
@@ -67,7 +68,7 @@ game.world = createWorld(zones, (f) => !!game.flags[f], (type) => game.mobs.some
 game.input = createInput(canvas, () => layout);
 game.player = createPlayer(game.data);
 game.hasSave = !!readSave(game.data);
-setupLoot(game); setupFlasks(game); setupProgress(game); setupAutosave(game); setupTutorial(game); setupDeath(game);
+setupLoot(game); setupFlasks(game); setupUniques(game); setupProgress(game); setupAutosave(game); setupTutorial(game); setupDeath(game);
 game.world.load('road');
 const scene = createScene(game);
 
@@ -218,4 +219,4 @@ game.loopStats = loop.stats;
 loop.start();
 
 // test-hook: เปิดเฉพาะเมื่อมี ?test ใน URL ใช้ในเทสต์อัตโนมัติเท่านั้น
-if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, rollElite, art: { drawHuman, heroLook, heroGear, itemSprite }, damage: damageMob, stashLayout: () => stashLayout(game.camera.viewW, game.camera.viewH, layout.s), skills: () => skillsOf(game.data.gems, game.player), stats: () => playerStats(game.player, game.data), layout: () => layout, bagLayout: () => bagLayout(game.camera.viewW, game.camera.viewH, layout.s), gemLayout: () => gemLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s), game.player) }; // test-hook
+if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, rollElite, makeUnique, spawnDrop, art: { drawHuman, heroLook, heroGear, itemSprite }, damage: damageMob, stashLayout: () => stashLayout(game.camera.viewW, game.camera.viewH, layout.s), shopLayout: () => shopLayout(game.camera.viewW, game.camera.viewH, layout.s), skills: () => skillsOf(game.data.gems, game.player, game.data.items), stats: () => playerStats(game.player, game.data), layout: () => layout, bagLayout: () => bagLayout(game.camera.viewW, game.camera.viewH, layout.s), gemLayout: () => gemLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s), game.player) }; // test-hook

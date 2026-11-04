@@ -3,9 +3,9 @@ import { spawnShot, rollDamage, damageMob } from './combat.js';
 import { playerStats } from './stats.js';
 import { skillsOf } from './gems.js';
 
-export function skillOf(game, i) { return skillsOf(game.data.gems, game.player)[i] || null; }
+export function skillOf(game, i) { return skillsOf(game.data.gems, game.player, game.data.items)[i] || null; }
 
-function pickTarget(game, p) {
+export function pickTarget(game, p) {
   if (p.targetMob && !p.targetMob.dead) return p.targetMob;
   let best = 1e9, target = null;
   for (const m of game.mobs) {
@@ -30,6 +30,14 @@ export function castSkill(game, group) {
   p.aim = ang;
   if (st0.bloodMagic) p.hp = Math.max(1, p.hp - sk.mp); else p.mp -= sk.mp;
   p.skillCd[group] = sk.cooldown * st0.castCdMult; p.castT = 0.22; p.combatTimer = 4;
+  releaseSkill(game, sk, ang);
+  game.events.emit('skillCast', { group, gem: sk.gem });
+  return true;
+}
+
+// ปล่อยสกิลจริง (ไม่หักมานา/คูลดาวน์) — ใช้ทั้งกดปุ่มสกิลและสกิลทำงานเองจากของยูนีค
+export function releaseSkill(game, sk, ang) {
+  const p = game.player, sx = p.x, sy = p.y - 22;
   const st = playerStats(p, game.data);
   if (sk.melee) {                                                // สกิลฟัน (ใช้ดาเมจดาบ): วงรอบตัว / แนวตรง / พัดด้านหน้า — ขนาดขยายด้วยพลอยเสริมระเบิด + พาสซีฟ
     const R = sk.splash * st.areaMult, ca = Math.cos(ang), sa = Math.sin(ang);
@@ -50,8 +58,7 @@ export function castSkill(game, group) {
     else { game.fx.ring(p.x, p.y - 10, R, '#ff6a5a'); game.fx.ring(p.x, p.y - 10, R * 0.7, '#ffd0a0'); for (let i = 0; i < 4; i++) game.fx.slash(p.x, p.y - 14, i * Math.PI / 2, R * 0.8, 1.6, 1); }
     game.camera.shake = Math.max(game.camera.shake, 3);
     game.audio.play('swing');
-    game.events.emit('skillCast', { group, gem: sk.gem });
-    return true;
+    return;
   }
   const dmg = st.spellDamage * sk.damageMult;
   const spread = 0.2;
@@ -64,8 +71,6 @@ export function castSkill(game, group) {
     });
   }
   game.audio.play(sk.kind === 'ice' ? 'ice' : sk.kind === 'poison' ? 'poison' : 'cast');
-  game.events.emit('skillCast', { group, gem: sk.gem });
-  return true;
 }
 
 export function updateSkillTimers(game, dt) {

@@ -39,6 +39,9 @@ AI ทุกตัวต้องใช้สกิล `clean-game-dev` · อ�
 - ขวดเติมจากการฆ่า (แบบ PoE): shop.json killsPerRefill + flaskCharge (ธรรมดา/เวท/หายาก/บอส) · chargeFlasks/setupFlasks ใน shop.js · แถบทองใต้ขวด = แต้มสะสม · บทนำไม่เติม · ยังซื้อที่ร้านได้
 - เลเวลพลอย (แบบ PoE): gems.json "levels" · p.gemXp[ชนิดพลอย] (ชนิดเดียวกันเลเวลเท่ากัน) · เฉพาะพลอยที่ฝังในของที่สวมได้ XP (xpShare ของ XP มอน) · gemLevel/gainGemXp/auraAt ใน gems.js · ป้ายเลขเลเวลบนไอคอนพลอย · เซฟรุ่น 10
 - หีบเก็บของ (Stash แบบ PoE) ในเวียงข้างศาลวาร์ป: 60 ช่อง (items.json stashSize) · systems/stash.js moveItem/updateStashSpot · ui/stash.js (กระเป๋าซ้าย หีบขวา แตะ 1 = ดู แตะซ้ำ = ย้าย) · p.stash เซฟรุ่น 11 · uid ห้ามซ้ำทั้งกระเป๋า/หีบ/ของที่สวม
+- ชุดบนตัวละคร = ภาพเดียวกับไอคอน: หมวก (wornHat ใน characters.js วางภาพไอคอนจริงตามกรอบพิกเซล HAT_FIT) ปลอกแขน (foreArt) · ดูเทียบทุกชิ้น: node tools/preview-gear.js head|body|legs|arms ไฟล์.png
+- ร้านค้าแบบตาราง (แบบ PoE/เอโดเรีย): ซ้ายช่องของขาย (ราคาใต้ไอคอน) ขวากระเป๋าผู้เล่น · แตะ 1 = กล่องรายละเอียด+เทียบ · แตะซ้ำ = ซื้อ/ขาย · shopLayout export
+- ของยูนีคสีส้ม: items.json "uniques" (ฐาน ค่าตายตัว grants/trigger ตำนาน from/world) · systems/uniques.js · สกิลจากของต่อท้ายปุ่มสกิล (กรอบส้ม) ออร่าจากของรวมใน aurasOf · trigger hit/hurt คูลดาวน์ 0.4 วิ ไม่ใช้มานา · releaseSkill แยกจาก castSkill · เล่นแร่แปรธาตุไม่ได้
 - check.js ตรวจด้วยว่าทุก import มี export จริง (เคยมีไฟล์ถูกเขียนว่างแล้วตัวตรวจไม่จับ)
 - ท่าเดิน: ระยะก้าว STRIDE ใน player.js (ยิ่งมากยิ่งก้าวยาว)
 - ยังไม่มี repo บน GitHub ที่ Claude เขียนได้ → ตอนนี้ส่งเกมเป็นหน้าเว็บ artifact

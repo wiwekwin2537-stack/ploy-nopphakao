@@ -311,7 +311,7 @@ await check('ร้านแม่ค้า: กด E คุย → เปิด
   await page.keyboard.press('KeyE'); await page.waitForTimeout(200);
   for (let i = 0; i < 4 && (await state(page)).mode === 'dialog'; i++) { await page.keyboard.press('KeyE'); await page.waitForTimeout(150); }
   assert((await state(page)).mode === 'shop', 'ร้านไม่เปิด: ' + (await state(page)).mode);
-  const pos = await G(page, () => { const L = __ploy.layout(), s = L.s, w = __ploy.game.camera.viewW, h = __ploy.game.camera.viewH; const pw = Math.min(w - 20, 720 * s), ph = Math.min(h - 16, 360 * s), x = w / 2 - pw / 2, y = h / 2 - ph / 2; return { px: x + 60 * s, py: y + 52 * s, gx: x + pw * 0.5 + 6 * s + 20 * s, gy: y + 52 * s + 20 * s }; });
+  const pos = await G(page, () => { const B = __ploy.shopLayout(); return { px: B.shop.x + B.shop.cell / 2, py: B.shop.y + B.shop.cell / 2, gx: B.bag.x + B.bag.cell / 2, gy: B.bag.y + B.bag.cell / 2 }; });   // ช่องแรกร้าน = ยาหม้อ · ช่องแรกกระเป๋า
   await page.mouse.click(pos.px, pos.py); await page.waitForTimeout(120);
   await page.mouse.click(pos.px, pos.py); await page.waitForTimeout(120);
   let v = await G(page, () => ({ pot: __ploy.game.player.potions, coins: __ploy.game.player.coins, items: __ploy.game.player.items.length }));
@@ -530,6 +530,37 @@ await check('มอนพิเศษ: หมูป่าเวท (ฟ้า) �
   assert(items >= 2, 'ของจากตัวหายาก ' + items);
   await G(page, () => { __ploy.game.mobs.length = 0; });
   return 'ของ ' + items + ' ชิ้น';
+});
+
+await check('ยูนีค: ง้าวพิทักษ์วัดร้างตกพื้น (ลำแสงส้ม) → เก็บ → สวม → ได้สกิลฟันพายุที่ปุ่มสกิล → กดใช้ได้', async () => {
+  await G(page, () => {
+    const g = __ploy.game, p = g.player, I = g.data.items;
+    __ploy.enterZone(g, 'field', 34 * 32, 50 * 32); g.mobs.length = 0; g.drops.length = 0; p.level = Math.max(p.level, 8);
+    __ploy.spawnDrop(g, { kind: 'item', item: __ploy.makeUnique(I, g.rng, 'wat_glaive', 10), x: p.x + 50, y: p.y });
+  });
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: SHOTS + '/27-unique-drop.png' });
+  const r = await G(page, () => {
+    const g = __ploy.game, p = g.player, d = g.drops.find((x) => x.kind === 'item');
+    p.x = d.x; p.y = d.y; return true;
+  });
+  await page.waitForTimeout(600);
+  const res = await G(page, () => {
+    const g = __ploy.game, p = g.player, it = p.items.find((x) => x.rarity === 'unique');
+    if (!it) return { got: false };
+    p.items.splice(p.items.indexOf(it), 1); if (p.equip.weapon) p.items.push(p.equip.weapon); p.equip.weapon = it;
+    const sk = __ploy.skills(); return { got: true, idx: sk.findIndex((k) => k.fromItem), gem: (sk.find((k) => k.fromItem) || {}).gem };
+  });
+  assert(r && res.got, 'เก็บยูนีคไม่ได้');
+  assert(res.gem === 'onyx', 'ไม่ได้สกิลจากของ ' + JSON.stringify(res));
+  await G(page, () => { const g = __ploy.game, p = g.player; p.mp = 999; p.skillCd = [0, 0, 0]; g.mobs.push(__ploy.makeMob(g, 'boar', 3, p.x + 30, p.y, -1)); });
+  const key = ['KeyK', 'KeyL', 'KeyU'][res.idx];
+  if (key) { await page.keyboard.press(key); await page.waitForTimeout(250); }
+  await page.screenshot({ path: SHOTS + '/27b-unique-skill.png' });
+  const cd = await G(page, (i) => __ploy.game.player.skillCd[i], res.idx);
+  assert(!key || cd > 0, 'กดสกิลจากของไม่ได้');
+  await G(page, () => { __ploy.game.mobs.length = 0; });
+  return 'สกิลช่อง ' + (res.idx + 1);
 });
 
 await check('ความเร็ว: มอน 100 ตัวไล่ล้อม ใช้เวลาคำนวณ+วาดต่อเฟรมไม่เกิน 8ms', async () => {

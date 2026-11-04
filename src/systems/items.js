@@ -166,6 +166,7 @@ export function longestLink(it) {
 
 export function itemName(I, it) {
   const b = I.bases[it.base];
+  if (it.rarity === 'unique') return I.uniques[it.unique].name;
   if (it.rarity === 'red') return '【' + it.rareName + '】 ' + b.name;
   if (it.rarity === 'purple') return it.rareName + ' · ' + b.name;
   if (it.rarity === 'green') {
@@ -179,6 +180,7 @@ export function itemName(I, it) {
 // ค่ารวมของไอเท็มชิ้นเดียว (ฐาน + ค่าสุ่ม)
 export function itemStats(I, it) {
   const t = { ...I.bases[it.base].stats };
+  if (it.rarity === 'unique') for (const [k, v] of Object.entries(I.uniques[it.unique].stats)) t[k] = (t[k] || 0) + v;   // ค่าตายตัวของยูนีค
   for (const m of it.mods) { const a = I.affixes[m.id]; t[a.stat] = (t[a.stat] || 0) + m.value; }
   return t;
 }
@@ -255,6 +257,7 @@ export function validItems(I, items, equip, nextUid, G, stash = []) {
   for (const it of all) {
     if (!it || !I.bases[it.base] || !I.rarity[it.rarity] || !Number.isInteger(it.uid) || it.uid < 1 || it.uid > nextUid || uids.has(it.uid)) return false;
     uids.add(it.uid);
+    if (it.rarity === 'unique' && (!I.uniques[it.unique] || it.unique === '_doc' || I.uniques[it.unique].base !== it.base)) return false;
     if (!Array.isArray(it.mods) || it.mods.length > I.rarity[it.rarity].affixes[1]) return false;
     if (!validSockets(I, it, G)) return false;
     for (const m of it.mods) {

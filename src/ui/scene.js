@@ -62,7 +62,7 @@ export function createScene(game) {
       ctx.fillStyle = gl; ctx.fillRect(d.x - 28, y - 34, 56, 56);
     }
     if (r === 'purple') lightBeam(ctx, d.x, y - 4, col, 70, t, 8);
-    if (r === 'red') lightBeam(ctx, d.x, y - 4, col, 130 + Math.sin(t * 3) * 10, t, 12);
+    if (r === 'red' || r === 'unique') lightBeam(ctx, d.x, y - 4, col, 130 + Math.sin(t * 3) * 10, t, 12);   // ยูนีค = ลำแสงส้มสูงแบบ PoE
     shadow(ctx, d.x, d.y, 11, 3.5);
     const sz = 26, sp = itemSprite(I, d.item.base, sz * 2.5);
     ctx.save(); ctx.translate(d.x, y - 9 + Math.sin(t * 3) * 1.2);
@@ -290,7 +290,7 @@ export function createScene(game) {
 
 // วงออร่าใต้เท้าผู้เล่น (สีตามพลอยออร่าที่ฝัง หมุนช้าๆ)
 function drawAuraRings(ctx, game, p, t) {
-  const list = aurasOf(game.data.gems, p);
+  const list = aurasOf(game.data.gems, p, game.data.items);
   list.forEach((a, i) => {
     const r = 20 + i * 5, rot = t * (0.8 + i * 0.3) * (i % 2 ? -1 : 1);
     ctx.save(); ctx.translate(p.x, p.y); ctx.scale(1, 0.42);

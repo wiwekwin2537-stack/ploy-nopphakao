@@ -127,7 +127,7 @@ export function drawGemTab(ctx, game, B) {
     text(ctx, `${info.name} ×${have}`, c.x + 26 * s, c.y + c.h / 2 + 0.5, 9 * s, have ? C.cream : 'rgba(244,230,200,0.45)', 'left', '600');
   }
   // สกิลที่ได้
-  const sk = skillsOf(G, p);
+  const sk = skillsOf(G, p, I);
   const ky = GL.cur[0].y + 40 * s;
   text(ctx, 'สกิล:', B.x + 14 * s, ky, 10 * s, C.goldHi, 'left', '600');
   if (!sk.length) text(ctx, 'ฝังพลอยสกิล (เม็ดกลมมีรูปสกิล) ลงช่อง จะได้สกิล', B.x + 50 * s, ky, 10 * s, 'rgba(244,230,200,0.6)', 'left', 'normal');
@@ -158,7 +158,7 @@ export function drawGemTab(ctx, game, B) {
   } else if (game.sockSel) {
     const row = GL.rows.find((r) => r.slot === game.sockSel.slot), it = p.equip[game.sockSel.slot], gid = it && it.gems && it.gems[game.sockSel.idx];
     if (gid) {
-      const so = row.sockets[game.sockSel.idx], final = skillsOf(G, p).find((k) => k.slot === game.sockSel.slot && k.socket === game.sockSel.idx);
+      const so = row.sockets[game.sockSel.idx], final = skillsOf(G, p, I).find((k) => k.slot === game.sockSel.slot && k.socket === game.sockSel.idx);
       game.tipLater = () => drawGemTip(ctx, game, gid, so.x, so.y, { ...o, final, hint: 'แตะช่องนี้อีกครั้งเพื่อถอดเข้ากระเป๋า' });
     }
   } else if (game.curSel) {

@@ -8,7 +8,7 @@ export function enterZone(game, id, x, y) {
   p.x = x ?? z.start.x; p.y = y ?? z.start.y;
   p.moveTarget = null; p.targetMob = null; p.dashT = 0;
   game.shots.length = 0; game.drops.length = 0; if (game.hazards) game.hazards.length = 0; game.fx.clear();
-  game.pendingTalk = null;
+  game.pendingTalk = null; game.notice = null;          // ข้อความของพื้นที่เดิมไม่ค้างมาพื้นที่ใหม่
   spawnZoneMobs(game);
   game.camera.snap(p.x, p.y);
   game.travelLock = 0.6;

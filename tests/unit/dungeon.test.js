@@ -57,7 +57,7 @@ test('ล้มบอสได้ของครั้งเดียว: ไอ
   const kills = count(g, 'bossKilled');
   damageMob(g, yak, 99999); damageMob(g, yak, 99999); damageMob(g, yak, 5);
   assert.equal(kills(), 1);
-  const items = g.drops.filter((d) => d.kind === 'item');
+  const items = g.drops.filter((d) => d.kind === 'item' && d.item.rarity !== 'unique');
   assert.equal(items.length >= 2, true);
   assert.equal(items.filter((d) => d.item.rarity === 'purple' || d.item.rarity === 'red').length >= 2, true);
   assert.ok(g.drops.filter((d) => d.kind === 'gem').length >= 2);

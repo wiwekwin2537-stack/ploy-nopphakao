@@ -35,7 +35,7 @@ test('ล้มท้าวเวสสุวรรณ: ของม่วง/�
   enterZone(g, 'tavatimsa');
   const boss = g.mobs.find((m) => m.type === 'vessavana'), n = g.drops.length;
   damageMob(g, boss, 1e8); damageMob(g, boss, 1e8);
-  assert.equal(g.drops.slice(n).filter((d) => d.kind === 'item').length, 4);
+  assert.equal(g.drops.slice(n).filter((d) => d.kind === 'item' && d.item.rarity !== 'unique').length, 4);
   assert.equal(g.flags.vessavanaSlain, true);
   Object.assign(g.flags, { metChan: true, heardHimmapan: true, heardKailash: true, heardHeaven: true });
   enterZone(g, 'town');

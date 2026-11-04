@@ -54,7 +54,7 @@ test('พญาครุฑราช: อยู่ยอดเขา เดิ�
   const n = g.drops.length;
   damageMob(g, boss, 1e7); damageMob(g, boss, 1e7);
   const got = g.drops.slice(n);
-  assert.equal(got.filter((d) => d.kind === 'item').length, 3);
+  assert.equal(got.filter((d) => d.kind === 'item' && d.item.rarity !== 'unique').length, 3);
   assert.ok(got.filter((d) => d.kind === 'gem').length >= 3);
   assert.equal(g.flags.garuda_kingSlain, true);
 });

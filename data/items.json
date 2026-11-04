@@ -968,6 +968,14 @@
    ],
    "chance": 0.012,
    "named": true
+  },
+  "unique": {
+   "name": "ยูนีค",
+   "color": "#ff8c1a",
+   "affixes": [
+    0,
+    0
+   ]
   }
  },
  "rareNames": {
@@ -1141,5 +1149,115 @@
    "craft": true
   }
  },
- "stashSize": 60
+ "stashSize": 60,
+ "uniques": {
+  "_doc": "ของยูนีคแบบ PoE (สีส้ม): ชื่อ/ค่าตายตัว + บางชิ้นให้สกิล (grants) หรือสกิลทำงานเอง (trigger: hit = ฟันธรรมดาโดน, hurt = โดนตี) · from = บอสที่ดรอป (โอกาส chance) · world = ดรอปจากมอนทั่วไปเลเวล minLevel ขึ้นไป",
+  "wat_glaive": {
+   "name": "ง้าวพิทักษ์วัดร้าง",
+   "base": "brass_glaive",
+   "stats": {
+    "dmgFlat": 8,
+    "hpFlat": 20
+   },
+   "grants": {
+    "gem": "onyx",
+    "level": 5
+   },
+   "lore": "ยักษ์วัดถือง้าวเล่มนี้เฝ้าวัดมาร้อยปี ใครถือก็ฟันเป็นพายุได้",
+   "from": [
+    "yak"
+   ],
+   "chance": 0.35
+  },
+  "khotchasi_tusk": {
+   "name": "งาคชสีห์ทองคำ",
+   "base": "tiger_fang",
+   "stats": {
+    "dmgMelee": 15,
+    "hpFlat": 30
+   },
+   "trigger": {
+    "on": "hit",
+    "chance": 0.12,
+    "gem": "topaz",
+    "level": 6
+   },
+   "lore": "งาที่หักจากพญาคชสีห์ ยังมีฟ้าคำรามอยู่ข้างใน",
+   "from": [
+    "khotchasi_king"
+   ],
+   "chance": 0.35
+  },
+  "garuda_crown": {
+   "name": "มงกุฎพญาครุฑราช",
+   "base": "garuda_helm",
+   "stats": {
+    "moveInc": 10,
+    "crit": 3,
+    "hpFlat": 20
+   },
+   "grants": {
+    "gem": "jade",
+    "level": 5
+   },
+   "lore": "ขนปีกครุฑทองคำร้อยเป็นมงกุฎ สวมแล้วตัวเบาดั่งลม",
+   "from": [
+    "garuda_king"
+   ],
+   "chance": 0.35
+  },
+  "vessavana_sword": {
+   "name": "พระขรรค์ท้าวเวสสุวรรณ",
+   "base": "phra_khan",
+   "stats": {
+    "dmgFlat": 20,
+    "dmgSpell": 20
+   },
+   "grants": {
+    "gem": "diamond",
+    "level": 10
+   },
+   "lore": "อาวุธของจตุโลกบาลทิศเหนือ เปล่งรัศมีขับไล่ภูตผี",
+   "from": [
+    "vessavana"
+   ],
+   "chance": 0.35
+  },
+  "naga_kris": {
+   "name": "กริชนาคราชพ่นพิษ",
+   "base": "silver_kris",
+   "stats": {
+    "crit": 5,
+    "dmgFlat": 3
+   },
+   "trigger": {
+    "on": "hit",
+    "chance": 0.2,
+    "gem": "emerald",
+    "level": 3
+   },
+   "lore": "คมกริชคดดั่งลำตัวนาค ทุกครั้งที่บาดจะมีพิษพ่นออกมา",
+   "world": true,
+   "minLevel": 6,
+   "chance": 0.0015
+  },
+  "tiger_ring": {
+   "name": "แหวนเสือสมิง",
+   "base": "naga_ring",
+   "stats": {
+    "dmgAll": 8,
+    "hpFlat": 15
+   },
+   "trigger": {
+    "on": "hurt",
+    "chance": 0.25,
+    "gem": "sapphire",
+    "level": 4
+   },
+   "lore": "เมื่อเจ้าของถูกทำร้าย วิญญาณเสือสมิงจะพ่นลมหนาวกลับไป",
+   "world": true,
+   "minLevel": 4,
+   "chance": 0.0015
+  }
+ }
 }

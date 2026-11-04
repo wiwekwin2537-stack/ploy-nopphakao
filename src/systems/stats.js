@@ -26,7 +26,7 @@ export function playerStats(p, data) {
   const B = data.balance.player, lv = p.level - 1;
   const { t, ks } = data.passives ? sumPassives(p, data.passives) : { t: {}, ks: new Set() };
   if (data.items) for (const [k, v] of Object.entries(equipTotals(data.items, p))) t[k] = (t[k] || 0) + v;   // ของที่สวมใช้ชื่อค่าเดียวกับพาสซีฟ
-  const auras = data.gems ? aurasOf(data.gems, p) : [];
+  const auras = data.gems ? aurasOf(data.gems, p, data.items) : [];
   let reserve = 0;
   for (const a of auras) { reserve += a.reserve; for (const [k, v] of Object.entries(a.stats)) t[k] = (t[k] || 0) + v; }   // ออร่า: ค่าเสริมตลอดเวลา แลกจองมานา
   reserve = Math.min(0.9, reserve);

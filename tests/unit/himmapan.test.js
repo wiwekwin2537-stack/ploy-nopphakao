@@ -59,7 +59,7 @@ test('พญาคชสีห์ทองคำ: อยู่ปลายป่
   assert.ok(reachable(g.world, g.world.zone.start, (x, y) => Math.hypot(x - king.x, y - king.y) < 80), 'เดินไปหาบอสไม่ถึง');
   const n = g.drops.length;
   damageMob(g, king, 1e6); damageMob(g, king, 1e6);
-  const items = g.drops.slice(n).filter((d) => d.kind === 'item');
+  const items = g.drops.slice(n).filter((d) => d.kind === 'item' && d.item.rarity !== 'unique');
   assert.equal(items.length, 3);
   assert.ok(items.every((d) => d.item.rarity === 'purple' || d.item.rarity === 'red'));
   assert.equal(g.flags.khotchasi_kingSlain, true);

@@ -52,6 +52,7 @@ export function drawBottomBar(ctx, game, L, st) {
     else icon(ctx, b.id, cx, cy, b.w * 0.45, game);
     const cd = gi !== undefined ? (sk ? p.skillCd[gi] / sk.cooldown : 0) : b.id === 'dash' ? p.dashCd / st.dashCooldown : 0;
     if (cd > 0) { ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(b.x, b.y + b.h * (1 - cd), b.w, b.h * cd); }
+    if (sk && sk.fromItem) { ctx.strokeStyle = game.data.items.rarity.unique.color; ctx.lineWidth = 2; ctx.strokeRect(b.x + 1.5, b.y + 1.5, b.w - 3, b.h - 3); }   // สกิลจากของยูนีค = กรอบส้ม
     text(ctx, keys[b.id], b.x + 3 * s, b.y + b.h - 6 * s, 8.5 * s, '#f4e6c8', 'left', '600');
   }
 }
