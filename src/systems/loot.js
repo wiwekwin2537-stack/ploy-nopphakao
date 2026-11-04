@@ -1,5 +1,6 @@
 // ของดรอป: เบี้ยและพลอย — เก็บได้ครั้งเดียว แล้วหายจากพื้นทันที
 import { rollGemDrop, ownsGem, gemType, gemInfo } from './gems.js';
+import { rollItem, giveItem, itemName } from './items.js';
 
 let nextDropId = 1;
 
@@ -16,6 +17,11 @@ export function setupLoot(game) {
     } else if (game.flags.tutorialDone) {
       const g = rollGemDrop(G, rng, mob.level);
       if (g) spawnDrop(game, { kind: 'gem', gem: g, x: mob.x, y: mob.y });
+      const I = game.data.items;
+      if (rng.chance(I.dropChance)) {
+        const it = rollItem(I, rng, mob.level);
+        if (it) spawnDrop(game, { kind: 'item', item: it, x: mob.x, y: mob.y });
+      }
     }
   });
 }
@@ -51,7 +57,7 @@ export function updateLoot(game, dt) {
     if (d.z > 0 || d.vz > 0) { d.z += d.vz * dt; d.vz -= 420 * dt; if (d.z <= 0) { d.z = 0; d.vz = 0; } d.x += d.vx * dt; d.y += d.vy * dt; }
     if (p.dead || d.t < 0.35) continue;
     const dist = Math.hypot(p.x - d.x, p.y - d.y);
-    const magnet = d.kind === 'coin' ? 80 : 40;
+    const magnet = d.kind === 'coin' ? 80 : d.kind === 'item' ? 28 : 40;
     if (dist < magnet) { const k = Math.min(1, dt * 9); d.x += (p.x - d.x) * k; d.y += (p.y - d.y) * k; }
     if (dist < 16) {
       game.drops.splice(i, 1);
@@ -61,6 +67,19 @@ export function updateLoot(game, dt) {
         game.audio.play('coin');
         game.events.emit('coinsPicked', { amount: d.amount });
       } else if (d.kind === 'gem') pickGem(game, d.gem);
+      else if (d.kind === 'item') {
+        const I = game.data.items;
+        if (!giveItem(p, I, d.item)) {                       // กระเป๋าเต็ม: ของยังอยู่ที่พื้น
+          game.drops.push(d); d.t = -1.5;
+          game.notice = { text: 'กระเป๋าเต็ม! เปิดกระเป๋าเพื่อทิ้งหรือสวมของ', t: 4 };
+          continue;
+        }
+        const col = I.rarity[d.item.rarity].color;
+        game.fx.text(p.x, p.y - 74, itemName(I, d.item), col, d.item.rarity !== 'normal');
+        game.audio.play(d.item.rarity === 'rare' ? 'gem' : 'coin');
+        if (!game.flags.gearHint) { game.flags.gearHint = true; game.notice = { text: 'ได้ของสวมใส่! เปิดกระเป๋า แตะแถบ "ชุด" เพื่อสวม', t: 6 }; }
+        game.events.emit('itemPicked', { uid: d.item.uid });
+      }
     }
   }
 }

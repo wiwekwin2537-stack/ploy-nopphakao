@@ -1,9 +1,10 @@
 // วาดโลก: พื้น → ของแบน → ของ/ตัวละครเรียงตามแกน y → กระสุน/เอฟเฟกต์ → แถบเลือด
 import { createGround } from '../art/ground.js';
 import { createSpriteCache } from '../art/sprites.js';
-import { drawHuman } from '../art/characters.js';
+import { drawHuman, LOOKS } from '../art/characters.js';
+import { itemName } from '../systems/items.js';
 import { drawMonster } from '../art/monsters.js';
-import { C, shadow, circle, poly, rrect } from '../art/draw.js';
+import { C, shadow, circle, poly, rrect, shade } from '../art/draw.js';
 import { gemInfo, gemType } from '../systems/gems.js';
 import { SHOT_COLORS } from '../systems/combat.js';
 import { tutorialTarget } from '../systems/tutorial.js';
@@ -24,7 +25,30 @@ export function createScene(game) {
     }
   }
 
+  // หน้าตาผู้เล่นเปลี่ยนตามของที่สวม: สีเสื้อ หมวก สีใบดาบ
+  const lookCache = { key: '', look: null };
+  function heroLook() {
+    const p = game.player, I = game.data.items, e = p.equip || {};
+    const key = (e.body ? e.body.base : '') + '|' + (e.head ? e.head.base : '');
+    if (lookCache.key !== key || !lookCache.look) {
+      const L = { ...LOOKS.hero };
+      if (e.body) { L.top = I.bases[e.body.base].color; L.collar = shade(L.top, 0.08); }
+      if (e.head) { const b = e.head.base; L.hat = b === 'ngob_hat' ? 'ngob' : b === 'silver_crown' ? 'crown' : 'band'; L.hatColor = I.bases[b].color; }
+      lookCache.key = key; lookCache.look = L;
+    }
+    return lookCache.look;
+  }
+  function bladeColor() { const w = game.player.equip && game.player.equip.weapon; return w ? game.data.items.bases[w.base].color : '#d8e0e4'; }
+
   function drawDrop(ctx, d) {
+    if (d.kind === 'item') {                                       // ของสวมใส่บนพื้น: ห่อผ้าเรืองแสงตามระดับ
+      const col = game.data.items.rarity[d.item.rarity].color, y = d.y - d.z, bob = Math.sin(d.t * 3) * 1.5;
+      if (d.item.rarity !== 'normal') { const gl = ctx.createRadialGradient(d.x, y - 8, 1, d.x, y - 8, 22); gl.addColorStop(0, col + '88'); gl.addColorStop(1, col + '00'); ctx.fillStyle = gl; ctx.fillRect(d.x - 22, y - 30, 44, 44); }
+      shadow(ctx, d.x, d.y, 8, 3);
+      ctx.fillStyle = game.data.items.bases[d.item.base].color; ctx.fillRect(d.x - 6, y - 12 + bob, 12, 9);
+      ctx.fillStyle = col; ctx.fillRect(d.x - 7, y - 13 + bob, 14, 2); ctx.fillRect(d.x - 1, y - 15 + bob, 2, 4);
+      return;
+    }
     const y = d.y - d.z;
     if (d.kind === 'coin') {
       shadow(ctx, d.x, d.y, 5, 2);
@@ -107,6 +131,11 @@ export function createScene(game) {
         ctx.strokeText('!', n.x, n.y - 80 + bb); ctx.fillStyle = C.gold; ctx.fillText('!', n.x, n.y - 80 + bb);
       }
     }
+    for (const d of game.drops) {                                   // ป้ายชื่อของบนพื้นแบบ PoE
+      if (d.kind !== 'item' || !vis(d.x, d.y)) continue;
+      const I = game.data.items, col = I.rarity[d.item.rarity].color;
+      plate(ctx, itemName(I, d.item), d.x, d.y - 26, 10, col, col + 'aa');
+    }
     const p = game.player;
     if (!p.dead) plate(ctx, 'นักล่าพลอย', p.x, p.y - 62, 11, '#f4e6c8', 'rgba(217,166,48,0.9)', 'Lv.' + p.level);
     game.fx.drawTexts(ctx);
@@ -160,7 +189,7 @@ export function createScene(game) {
             drawHuman(ctx, 'hero', gh.x, gh.y, { dir: gh.dir, walk: gh.walk, moving: true, swing: -1, t, dash: true });
           }
           ctx.globalAlpha = 1;
-          drawHuman(ctx, 'hero', p.x, p.y, { dir: p.dir, walk: p.walk, amt: p.walkAmt, moving: p.moving, swing: p.swing, combo: p.combo, aim: p.aim, hurt: p.hurt, t, dash: p.dashT > 0, cast: p.castT > 0 });
+          drawHuman(ctx, heroLook(), p.x, p.y, { blade: bladeColor(), dir: p.dir, walk: p.walk, amt: p.walkAmt, moving: p.moving, swing: p.swing, combo: p.combo, aim: p.aim, hurt: p.hurt, t, dash: p.dashT > 0, cast: p.castT > 0 });
         }
       }
       for (const s of game.shots) drawShot(ctx, s);

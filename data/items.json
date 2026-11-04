@@ -1,0 +1,51 @@
+{
+ "slots": {
+  "weapon": { "name": "อาวุธ" },
+  "head": { "name": "หัว" },
+  "body": { "name": "เสื้อ" },
+  "amulet": { "name": "สร้อย" },
+  "ring1": { "name": "แหวน", "kind": "ring" },
+  "ring2": { "name": "แหวน", "kind": "ring" }
+ },
+ "bases": {
+  "bamboo_sword": { "slot": "weapon", "name": "ดาบไม้ไผ่", "req": 1, "stats": { "dmgFlat": 2 }, "color": "#c8b070" },
+  "iron_sword": { "slot": "weapon", "name": "ดาบเหล็กลายไทย", "req": 3, "stats": { "dmgFlat": 5 }, "color": "#d8e0e4" },
+  "silver_kris": { "slot": "weapon", "name": "กริชเงินคดเคี้ยว", "req": 4, "stats": { "dmgFlat": 4, "crit": 3 }, "color": "#eef4ff" },
+  "brass_glaive": { "slot": "weapon", "name": "ง้าวทองเหลือง", "req": 6, "stats": { "dmgFlat": 10, "atkSpeedInc": -6 }, "color": "#e0b040" },
+  "cotton_shirt": { "slot": "body", "name": "เสื้อผ้าฝ้ายย้อมคราม", "req": 1, "stats": { "hpFlat": 10 }, "color": "#3d6296" },
+  "buffalo_vest": { "slot": "body", "name": "เกราะหนังควาย", "req": 3, "stats": { "hpFlat": 24 }, "color": "#6b4423" },
+  "naga_mail": { "slot": "body", "name": "เกราะเกล็ดนาค", "req": 7, "stats": { "hpFlat": 44 }, "color": "#2a8a6a" },
+  "cloth_band": { "slot": "head", "name": "ผ้าคาดหัวลายไทย", "req": 1, "stats": { "hpFlat": 5, "mpFlat": 5 }, "color": "#c8302a" },
+  "ngob_hat": { "slot": "head", "name": "งอบใบลาน", "req": 2, "stats": { "hpFlat": 12 }, "color": "#c9a35a" },
+  "silver_crown": { "slot": "head", "name": "ชฎาเงิน", "req": 6, "stats": { "mpFlat": 20, "dmgSpell": 6 }, "color": "#dfe6ea" },
+  "brass_ring": { "slot": "ring", "name": "แหวนทองเหลือง", "req": 1, "stats": { "mpFlat": 6 }, "color": "#d9a630" },
+  "naga_ring": { "slot": "ring", "name": "แหวนนาคเกี้ยว", "req": 5, "stats": { "crit": 2 }, "color": "#2aa85a" },
+  "takrut": { "slot": "amulet", "name": "ตะกรุดโทน", "req": 1, "stats": { "hpFlat": 8, "mpFlat": 8 }, "color": "#b08a40" },
+  "tiger_fang": { "slot": "amulet", "name": "สร้อยเขี้ยวเสือ", "req": 4, "stats": { "dmgAll": 6 }, "color": "#f0e6d0" }
+ },
+ "affixes": {
+  "sharp": { "type": "prefix", "word": "คมกริบ", "stat": "dmgMelee", "slots": ["weapon", "ring", "amulet"], "tiers": [[1, 6, 12], [4, 13, 22], [7, 23, 34]] },
+  "heavy": { "type": "prefix", "word": "หนักแน่น", "stat": "dmgFlat", "slots": ["weapon"], "tiers": [[1, 1, 3], [4, 4, 7], [7, 8, 12]] },
+  "holy": { "type": "prefix", "word": "ศักดิ์สิทธิ์", "stat": "dmgSpell", "slots": ["weapon", "head", "amulet", "ring"], "tiers": [[1, 6, 12], [4, 13, 22], [7, 23, 34]] },
+  "sturdy": { "type": "prefix", "word": "ทรหด", "stat": "hpFlat", "slots": ["body", "head", "ring", "amulet"], "tiers": [[1, 8, 16], [4, 17, 30], [7, 31, 48]] },
+  "magic": { "type": "prefix", "word": "เปี่ยมมนต์", "stat": "mpFlat", "slots": ["head", "ring", "amulet", "body"], "tiers": [[1, 6, 12], [4, 13, 22], [7, 23, 34]] },
+  "swift": { "type": "prefix", "word": "ว่องไว", "stat": "atkSpeedInc", "slots": ["weapon", "ring"], "tiers": [[2, 4, 7], [5, 8, 12]] },
+  "tiger": { "type": "suffix", "word": "แห่งพญาเสือ", "stat": "crit", "slots": ["weapon", "ring", "amulet", "head"], "tiers": [[1, 1, 2], [4, 3, 4], [7, 5, 7]] },
+  "hawk": { "type": "suffix", "word": "แห่งเหยี่ยวทอง", "stat": "critMult", "slots": ["weapon", "amulet"], "tiers": [[3, 10, 18], [6, 19, 30]] },
+  "wind": { "type": "suffix", "word": "แห่งลมกรด", "stat": "moveInc", "slots": ["body", "ring"], "tiers": [[2, 3, 6], [5, 7, 10]] },
+  "hermit": { "type": "suffix", "word": "แห่งฤๅษี", "stat": "mpRegenInc", "slots": ["head", "ring", "amulet", "body"], "tiers": [[1, 10, 20], [4, 21, 35], [7, 36, 50]] },
+  "giant": { "type": "suffix", "word": "แห่งยักษ์วัด", "stat": "lifeOnHit", "slots": ["weapon", "ring", "body"], "tiers": [[2, 1, 2], [5, 3, 4]] },
+  "flame": { "type": "suffix", "word": "แห่งเพลิงกาฬ", "stat": "areaInc", "slots": ["weapon", "head", "amulet"], "tiers": [[2, 8, 14], [5, 15, 24]] },
+  "eagle": { "type": "suffix", "word": "แห่งครุฑ", "stat": "projSpeedInc", "slots": ["weapon", "head", "ring"], "tiers": [[1, 8, 14], [4, 15, 24]] },
+  "elephant": { "type": "suffix", "word": "แห่งคชสาร", "stat": "hpInc", "slots": ["body", "amulet"], "tiers": [[3, 4, 7], [6, 8, 12]] },
+  "rhythm": { "type": "suffix", "word": "แห่งจังหวะมนต์", "stat": "castSpeedInc", "slots": ["head", "amulet", "ring"], "tiers": [[2, 4, 7], [5, 8, 12]] }
+ },
+ "rarity": {
+  "normal": { "name": "ธรรมดา", "color": "#e8e4dc", "affixes": [0, 0] },
+  "magic": { "name": "เวทมนต์", "color": "#7aa8ff", "affixes": [1, 2], "chance": 0.3 },
+  "rare": { "name": "หายาก", "color": "#f2d04a", "affixes": [3, 4], "chance": 0.08 }
+ },
+ "rareNames": { "first": ["เขี้ยว", "เงา", "หัวใจ", "เปลว", "ลม", "เกล็ด", "วิญญาณ", "ตรา"], "second": ["พญาเสือ", "นาคราช", "ราชสีห์", "ครุฑ", "กินรี", "หิมพานต์", "อสุรา", "ไพร"] },
+ "dropChance": 0.08,
+ "bagSize": 30
+}

@@ -5,6 +5,7 @@ import zones from '../data/zones.json' with { type: 'json' };
 import dialogue from '../data/dialogue.json' with { type: 'json' };
 import gems from '../data/gems.json' with { type: 'json' };
 import passives from '../data/passives.json' with { type: 'json' };
+import items from '../data/items.json' with { type: 'json' };
 import { createEvents } from './core/events.js';
 import { createLoop } from './core/loop.js';
 import { createInput } from './core/input.js';
@@ -39,7 +40,7 @@ const params = new URLSearchParams(location.search);
 let layout = computeLayout(canvas.clientWidth || innerWidth, canvas.clientHeight || innerHeight);
 
 const game = {
-  data: { balance, monsters, zones, dialogue, gems, passives },
+  data: { balance, monsters, zones, dialogue, gems, passives, items },
   events: createEvents(), camera: createCamera(), audio: createAudio(), fx: createFx(), rng: createRng(Date.now() & 0xffff),
   flags: {}, mobs: [], shots: [], drops: [], later: [], spawnTimers: [],
   mode: 'title', dialog: null, time: 0, hitStop: 0, toast: null, debug: params.has('debug'),
@@ -56,15 +57,25 @@ function startNew(skip) {
   clearSave();
   game.flags = {};
   game.player = createPlayer(game.data);
+  giveStarterGear(game);
   if (skip) { skipTutorial(game); enterZone(game, 'town', 20.5 * 32, 17.5 * 32); } else enterZone(game, 'road');
   game.mode = game.dialog ? 'dialog' : 'play';
   writeSave(game);
 }
+// ของเริ่มต้น: ดาบไม้ไผ่ + ผ้าคาดหัว (ธรรมดา) สวมให้เลย
+function giveStarterGear(game) {
+  const p = game.player, I = game.data.items;
+  for (const [base, slot] of [['bamboo_sword', 'weapon'], ['cloth_band', 'head']]) {
+    p.equip[slot] = { uid: ++p.nextUid, base, rarity: 'normal', ilvl: 1, mods: [], rareName: null };
+  }
+  return I;
+}
+
 function continueGame() {
   const s = readSave(game.data);
   if (!s) return startNew(false);
   const p = game.player = createPlayer(game.data);
-  Object.assign(p, { level: s.level, xp: s.xp, coins: s.coins, bag: s.bag.slice(), sockets: s.sockets.map((r) => r.slice()), passives: s.passives.slice(), hp: s.hp, mp: s.mp });
+  Object.assign(p, { level: s.level, xp: s.xp, coins: s.coins, bag: s.bag.slice(), sockets: s.sockets.map((r) => r.slice()), passives: s.passives.slice(), items: s.items, equip: { ...p.equip, ...s.equip }, nextUid: s.nextUid, hp: s.hp, mp: s.mp });
   game.flags = { ...s.flags };
   game.mode = 'play';
   enterZone(game, s.zone, s.x, s.y);

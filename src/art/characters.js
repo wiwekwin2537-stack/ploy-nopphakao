@@ -33,11 +33,13 @@ export function swingPose(swing, combo, aim) {
   return { ang, ext: 0, strike, start: start - ds * 0.3 };
 }
 
+let BLADE = '#d8e0e4';   // สีใบดาบตามอาวุธที่สวม (ตั้งต่อการวาดหนึ่งครั้ง)
+
 function sword(ctx, x, y, ang, len = 19) {
   ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
   ctx.fillStyle = '#5a2f1a'; ctx.fillRect(-5, -1.5, 5, 3);
   ctx.fillStyle = C.gold; ctx.fillRect(-1, -4, 3, 8);
-  ctx.fillStyle = '#d8e0e4'; ctx.fillRect(2, -2, len - 2, 4);
+  ctx.fillStyle = BLADE; ctx.fillRect(2, -2, len - 2, 4);
   ctx.fillStyle = '#ffffff'; ctx.fillRect(2, -2, len - 2, 1.4);
   ctx.fillStyle = '#b8c2c8'; ctx.fillRect(len, -1.5, 3, 3);
   ctx.restore();
@@ -63,7 +65,14 @@ function head(ctx, L, d, f, x, y, t, side) {
     else if (side) { R(hair, x - 7, y - 15, 14, 6); R(hair, x - 7 + (f < 0 ? 6 : 0), y - 15, 8, 11); }
     else R(hair, x - 7, y - 15, 14, 6);
   }
-  if (L.hat === 'band') {
+  if (L.hat === 'ngob') {                                  // งอบใบลาน: หมวกกรวยกว้าง
+    R('#9e7b3c', x - 12, y - 14, 24, 3); R(L.hatColor || '#c9a35a', x - 10, y - 17, 20, 4); R(L.hatColor || '#c9a35a', x - 6, y - 21, 12, 4); R('#e0c078', x - 3, y - 24, 6, 3);
+    R('rgba(0,0,0,0.25)', x - 10, y - 14, 20, 1);
+  } else if (L.hat === 'crown') {                          // ชฎาเงิน
+    R(hair, x - 7, y - 19, 14, 4);
+    R(L.hatColor || '#dfe6ea', x - 7, y - 17, 14, 4); R('#c8d0d8', x - 5, y - 22, 10, 5); R(L.hatColor || '#dfe6ea', x - 3, y - 27, 6, 5); R('#ffffff', x - 1, y - 32, 2, 5);
+    R(C.gold, x - 7, y - 15, 14, 1.5);
+  } else if (L.hat === 'band') {
     R(hair, x - 7, y - 19, 4, 5); R(hair, x - 2, y - 20, 4, 6); R(hair, x + 3, y - 19, 4, 5);
     R('#c8302a', x - 7, y - 14, 14, 3);
     if (d !== 0) { const w = Math.sin(t * 9) * 1.5; R('#c8302a', x + (side ? -f * 9 : 5), y - 13 + w * 0.4, 5, 2); R('#a8201a', x + (side ? -f * 12 : 8), y - 12 + w, 4, 2); }
@@ -82,6 +91,7 @@ function head(ctx, L, d, f, x, y, t, side) {
 
 export function drawHuman(ctx, look, X, Y, o) {
   const L = typeof look === 'string' ? LOOKS[look] : look;
+  BLADE = o.blade || '#d8e0e4';
   const d = o.dir ?? 0, side = d === 2 || d === 3, f = d === 2 ? -1 : 1;
   const k = o.amt ?? (o.moving ? 1 : 0), ph = (o.walk || 0) * Math.PI * 2, t = o.t || 0;
   const swinging = o.swing >= 0 && L.weapon === 'sword';

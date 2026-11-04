@@ -12,7 +12,7 @@ async function check(name, fn) {
   catch (e) { results.push({ ok: false, name, note: e.message, ms: Date.now() - t0 }); }
 }
 const assert = (c, msg) => { if (!c) throw new Error(msg); };
-const state = (page) => G(page, () => { const g = __ploy.game, p = g.player; return { mode: g.mode, step: g.flags.tutStep, zone: g.world.zone.id, x: p.x, y: p.y, hp: p.hp, lv: p.level, xp: p.xp, coins: p.coins, gems: p.sockets.flat().filter(Boolean), pas: p.passives.join(','), mobs: g.mobs.length, done: !!g.flags.tutorialDone }; });
+const state = (page) => G(page, () => { const g = __ploy.game, p = g.player; return { mode: g.mode, step: g.flags.tutStep, zone: g.world.zone.id, x: p.x, y: p.y, hp: p.hp, lv: p.level, xp: p.xp, coins: p.coins, gems: p.sockets.flat().filter(Boolean), pas: p.passives.join(','), gear: Object.values(p.equip).filter(Boolean).map((q) => q.uid).join(','), bagN: p.items.length, mobs: g.mobs.length, done: !!g.flags.tutorialDone }; });
 const wait = (page, fn, arg, ms = 8000) => page.waitForFunction(fn, arg, { timeout: ms });
 async function closeDialogs(page) {
   for (let i = 0; i < 20; i++) {
@@ -198,6 +198,30 @@ await check('ต้นพาสซีฟ: กด P → แตะนักรบ�
   return 'เลเวล ' + dmg0;
 });
 
+await check('ของสวมใส่: เก็บดาบหายากจากพื้น → แถบชุด → แตะสองครั้งสวม → ดาเมจเพิ่ม สีดาบเปลี่ยน', async () => {
+  await G(page, () => { const g = __ploy.game, p = g.player; p.level = Math.max(p.level, 4);
+    g.drops.push({ id: 9002, kind: 'item', x: p.x + 14, y: p.y, t: 1, z: 0, vz: 0, vx: 0, vy: 0, item: { uid: 0, base: 'silver_kris', rarity: 'rare', ilvl: 4, mods: [{ id: 'heavy', tier: 1, value: 6 }, { id: 'tiger', tier: 1, value: 3 }, { id: 'sharp', tier: 1, value: 15 }], rareName: 'เขี้ยวพญาเสือ' } }); });
+  await wait(page, () => __ploy.game.player.items.some((x) => x.base === 'silver_kris'), null, 3000);
+  await page.screenshot({ path: SHOTS + '/10d-loot.png' });
+  const d0 = await G(page, () => Math.round(__ploy.game.player.equip.weapon ? 1 : 0));
+  await page.keyboard.press('KeyB'); await wait(page, () => __ploy.game.mode === 'bag', null, 2000);
+  const pos = await G(page, () => { const g = __ploy.game, L = __ploy.layout(), w = g.camera.viewW, h = g.camera.viewH, s = L.s;
+    const pw = Math.min(w - 20, 720 * s), ph = Math.min(h - 16, 360 * s), x = w / 2 - pw / 2, y = h / 2 - ph / 2;
+    const gx = x + 175 * s, gy = y + 52 * s, info = y + ph - 78 * s, cell = Math.min(44 * s, (x + pw - gx - 14 * s) / 6);
+    const i = g.player.items.findIndex((q) => q.base === 'silver_kris');
+    return { tab: { x: x + 176 * s + 35 * s, y: y + 20 * s }, item: { x: gx + (i % 6) * cell + cell / 2, y: gy + Math.floor(i / 6) * cell + cell / 2 } }; });
+  await page.mouse.click(pos.tab.x, pos.tab.y); await page.waitForTimeout(80);
+  const before = await G(page, () => __ploy.game.player.equip.weapon && __ploy.game.player.equip.weapon.base);
+  await page.mouse.click(pos.item.x, pos.item.y); await page.waitForTimeout(80);
+  await page.screenshot({ path: SHOTS + '/10e-gear.png' });
+  await page.mouse.click(pos.item.x, pos.item.y); await page.waitForTimeout(80);
+  const after = await G(page, () => ({ w: __ploy.game.player.equip.weapon.base, back: __ploy.game.player.items.some((q) => q.base === 'bamboo_sword') }));
+  assert(after.w === 'silver_kris', 'สวมไม่ได้ ' + JSON.stringify(after));
+  assert(before !== 'bamboo_sword' || after.back, 'ดาบเก่าต้องกลับเข้ากระเป๋า');
+  await page.keyboard.press('KeyB'); await page.waitForTimeout(100);
+  return 'เดิม ' + before + ' → ' + after.w + ' ' + d0;
+});
+
 await check('เซฟแล้วรีเฟรชหน้า → กด "เล่นต่อ" ได้ของเดิมครบ', async () => {
   await G(page, () => __ploy.writeSave(__ploy.game));
   const before = await state(page);
@@ -207,7 +231,7 @@ await check('เซฟแล้วรีเฟรชหน้า → กด "เ
   await page.waitForTimeout(300);
   const after = await state(page);
   assert(after.mode === 'play', 'โหมด ' + after.mode);
-  for (const k of ['zone', 'lv', 'xp', 'coins', 'done', 'pas']) assert(before[k] === after[k], `${k}: ${before[k]} → ${after[k]}`);
+  for (const k of ['zone', 'lv', 'xp', 'coins', 'done', 'pas', 'gear', 'bagN']) assert(before[k] === after[k], `${k}: ${before[k]} → ${after[k]}`);
   assert(after.gems.includes('ruby') && after.gems.includes('multi'), 'พลอยที่ฝังหายหลังโหลด');
 });
 

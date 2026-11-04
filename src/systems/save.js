@@ -1,7 +1,8 @@
 // เซฟ/โหลด — มีที่เขียนเซฟที่เดียวคือไฟล์นี้ มีเลขเวอร์ชันเซฟ
 import { validTree } from './passives.js';
+import { validItems, emptyEquip } from './items.js';
 
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 const KEY = 'ploy.save';
 
 // ตัวแปลงเซฟรุ่นเก่า → รุ่นใหม่ (เพิ่มที่นี่เมื่อเปลี่ยนรูปแบบเซฟ)
@@ -15,6 +16,8 @@ const MIGRATIONS = {
   },
   // v2 → v3: เพิ่มต้นพาสซีฟ (ว่าง)
   2: (d) => ({ ...d, v: 3, passives: [] }),
+  // v3 → v4: เพิ่มไอเท็ม (กระเป๋าของ + ช่องสวมใส่)
+  3: (d) => ({ ...d, v: 4, items: [], equip: emptyEquip(), nextUid: 0 }),
 };
 
 export function serialize(game) {
@@ -23,6 +26,7 @@ export function serialize(game) {
     v: SAVE_VERSION, savedAt: Date.now(),
     zone: game.world.zone.id, x: Math.round(p.x), y: Math.round(p.y),
     level: p.level, xp: p.xp, coins: p.coins, hp: Math.round(p.hp), mp: Math.round(p.mp),
+    items: JSON.parse(JSON.stringify(p.items)), equip: JSON.parse(JSON.stringify(p.equip)), nextUid: p.nextUid,
     passives: p.passives.slice(), bag: p.bag.slice(), sockets: p.sockets.map((r) => r.slice()), flags: { ...game.flags },
   };
 }
@@ -40,6 +44,7 @@ export function validate(s, data) {
   if (!Array.isArray(d.sockets) || !d.sockets.every((r) => Array.isArray(r) && r.every((g) => g === null || known(g)))) return null;
   if (gemsData && d.sockets.some((r) => (r[0] && !gemsData.main[r[0]]) || r.slice(1).some((g) => g && !gemsData.support[g]))) return null;
   if (data.passives && !validTree(data.passives, d.passives, d.level)) return null;
+  if (data.items && (!Number.isInteger(d.nextUid) || !validItems(data.items, d.items, d.equip, d.nextUid))) return null;
   return d;
 }
 
@@ -58,7 +63,7 @@ export function clearSave() { try { localStorage.removeItem(KEY); } catch { /* �
 
 export function setupAutosave(game) {
   const save = () => { if (game.mode !== 'title') writeSave(game); };
-  ['zoneChanged', 'levelUp', 'gemPicked', 'metChan', 'gemsChanged', 'passivesChanged'].forEach((e) => game.events.on(e, save));
+  ['zoneChanged', 'levelUp', 'gemPicked', 'metChan', 'gemsChanged', 'passivesChanged', 'itemPicked', 'gearChanged'].forEach((e) => game.events.on(e, save));
   game.autosaveT = 0;
 }
 

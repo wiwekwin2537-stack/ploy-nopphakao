@@ -87,7 +87,7 @@ for a, b, nm, nst, sst in HYB:
 
 data = {"pointsPerLevel": 1, "nodes": nodes,
         "classes": {k: {"name": v["name"], "desc": v["desc"]} for k, v in CLASSES.items()},
-        "statNames": {"dmgMelee": "ดาเมจดาบ +{}%", "dmgSpell": "ดาเมจพลอย +{}%", "dmgAll": "ดาเมจทั้งหมด +{}%", "hpFlat": "เลือด +{}", "hpInc": "เลือดสูงสุด +{}%",
+        "statNames": {"dmgFlat": "ดาเมจดาบ +{}", "dmgMelee": "ดาเมจดาบ +{}%", "dmgSpell": "ดาเมจพลอย +{}%", "dmgAll": "ดาเมจทั้งหมด +{}%", "hpFlat": "เลือด +{}", "hpInc": "เลือดสูงสุด +{}%",
                       "mpFlat": "มานา +{}", "mpInc": "มานาสูงสุด +{}%", "mpRegenInc": "ฟื้นมานา +{}%", "moveInc": "ความเร็วเดิน +{}%", "atkSpeedInc": "ความเร็วฟัน +{}%",
                       "castSpeedInc": "ความเร็วร่าย +{}%", "crit": "โอกาสคริติคอล +{}%", "critMult": "แรงคริติคอล +{}%", "lifeOnHit": "ฟันโดนฟื้นเลือด {}",
                       "dashCdInc": "คูลดาวน์หลบ {}%", "areaInc": "วงระเบิด +{}%", "projSpeedInc": "ความเร็วกระสุน +{}%"}}

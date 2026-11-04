@@ -1,6 +1,7 @@
 // หน้ากระเป๋าพลอย: เลือกชุดสกิล → แตะพลอยในกระเป๋าเพื่อฝัง · แตะช่องที่ฝังแล้วเพื่อถอด
 import { C, kanokFrame, rrect, circle, poly } from '../art/draw.js';
 import { uiText as text } from './hud.js';
+import { drawEquip, updateEquip } from './equip.js';
 import { gemInfo, gemType, socketGem, unsocketGem, computeSkill } from '../systems/gems.js';
 
 const FONT = 'Kanit, sans-serif';
@@ -17,7 +18,8 @@ export function bagLayout(w, h, s, G) {
   }
   const gx = x + pw * 0.5 + 6 * s, gy = y + 52 * s, cell = Math.min(46 * s, (pw * 0.5 - 24 * s) / COLS);
   const close = { x: x + pw - 20 * s, y: y + 20 * s, r: 14 * s };
-  return { x, y, w: pw, h: ph, rows, grid: { x: gx, y: gy, cell }, close, s };
+  const tabs = [{ id: 'gems', label: 'พลอย', x: x + 100 * s, y: y + 8 * s, w: 70 * s, h: 24 * s }, { id: 'gear', label: 'ชุด', x: x + 176 * s, y: y + 8 * s, w: 70 * s, h: 24 * s }];
+  return { x, y, w: pw, h: ph, rows, grid: { x: gx, y: gy, cell }, close, tabs, s };
 }
 
 function gemIcon(ctx, G, id, x, y, r, dim) {
@@ -38,9 +40,17 @@ export function drawBag(ctx, game, L, w, h) {
   const G = game.data.gems, p = game.player, B = bagLayout(w, h, L.s, G), s = B.s;
   ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(0, 0, w, h);
   kanokFrame(ctx, B.x, B.y, B.w, B.h, 12);
-  text(ctx, 'กระเป๋าพลอย', B.x + 20 * s, B.y + 20 * s, 16 * s, C.goldHi);
+  text(ctx, 'กระเป๋า', B.x + 20 * s, B.y + 20 * s, 16 * s, C.goldHi);
+  const tab = game.bagTab || 'gems';
+  for (const tb of B.tabs) {
+    const on = tb.id === tab;
+    ctx.fillStyle = on ? 'rgba(217,166,48,0.35)' : 'rgba(0,0,0,0.35)'; rrect(ctx, tb.x, tb.y, tb.w, tb.h, 8 * s); ctx.fill();
+    ctx.strokeStyle = on ? C.goldHi : 'rgba(184,154,88,0.5)'; ctx.lineWidth = 1.2; ctx.stroke();
+    text(ctx, tb.label, tb.x + tb.w / 2, tb.y + tb.h / 2 + 0.5, 11 * s, on ? C.goldHi : C.cream, 'center');
+  }
   circle(ctx, B.close.x, B.close.y, B.close.r, 'rgba(120,30,20,0.9)', C.gold, 1.5);
   text(ctx, '✕', B.close.x, B.close.y + 1, 13 * s, '#fff', 'center');
+  if (tab === 'gear') { drawEquip(ctx, game, B); return; }
   const sel = game.bagGroup || 0;
   for (const row of B.rows) {
     const on = row.group === sel;
@@ -101,6 +111,9 @@ export function updateBag(game, L, w, h) {
     t.consumed = true;
     if (Math.hypot(t.sx - B.close.x, t.sy - B.close.y) < B.close.r * 1.4) return true;
     if (t.sx < B.x || t.sx > B.x + B.w || t.sy < B.y || t.sy > B.y + B.h) return true;   // แตะนอกกรอบ = ปิด
+    const tb = B.tabs.find((q) => t.sx >= q.x && t.sx <= q.x + q.w && t.sy >= q.y && t.sy <= q.y + q.h);
+    if (tb) { game.bagTab = tb.id; game.audio.play('click'); continue; }
+    if ((game.bagTab || 'gems') === 'gear') { updateEquip(game, B, t); continue; }
     for (const row of B.rows) {
       for (const so of row.sockets) {
         if (Math.hypot(t.sx - so.x, t.sy - so.y) < so.r * 1.2) {
