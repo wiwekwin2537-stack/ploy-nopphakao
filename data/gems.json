@@ -247,6 +247,25 @@
    "socket": "g",
    "color": "#9ad83a",
    "hi": "#e0ffa8"
+  },
+  "amethyst": {
+   "name": "อเมทิสต์",
+   "skill": "วูบหายตัวฟัน",
+   "desc": "หายตัววูบไปโผล่ข้างศัตรูใกล้ๆ แล้วฟันทันที โดนทุกตัวรอบจุดที่โผล่ กดรัวได้เพราะคูลดาวน์สั้น กระโดดไปตัวใหม่ทุกครั้ง ใช้ดาเมจอาวุธ (ต้องถืออาวุธประชิด: ดาบ กริช ง้าว)",
+   "kind": "flicker",
+   "mp": 7,
+   "cooldown": 0.3,
+   "damageMult": 1.6,
+   "speed": 0,
+   "life": 0,
+   "radius": 0,
+   "splash": 56,
+   "range": 360,
+   "socket": "g",
+   "color": "#8a3ad8",
+   "hi": "#d8b0ff",
+   "melee": true,
+   "shape": "flicker"
   }
  },
  "support": {
@@ -391,6 +410,11 @@
    "gem": "peridot",
    "chance": 0.008,
    "minLevel": 3
+  },
+  {
+   "gem": "amethyst",
+   "chance": 0.008,
+   "minLevel": 8
   }
  ],
  "skillButtons": 3,

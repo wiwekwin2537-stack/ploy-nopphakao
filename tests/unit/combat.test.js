@@ -131,3 +131,25 @@ test('ธนู/หน้าไม้: ตีธรรมดายิงลู�
   p.equip.weapon = { ...p.equip.weapon, base: 'bamboo_bow', gems: ['peridot', null, null] };
   assert.ok(castSkill(g, 0)); assert.equal(g.shots.length, 3, 'ศรกระจาย 3 ดอก');
 });
+
+test('วูบหายตัวฟัน (Flicker Strike แบบ PoE): วาร์ปไปข้างศัตรูแล้วฟันวงรอบ · กดรัวกระโดดไปตัวใหม่ · ไม่ทะลุกำแพง · ถือธนูหรือไม่มีศัตรูในระยะ = ใช้ไม่ได้ไม่เสียมานา', async () => {
+  const { castSkill } = await import('../../src/systems/skills.js');
+  const { giveStarterGear } = await import('../../src/systems/player.js');
+  const g = makeGame(); giveStarterGear(g.player, g.data, 'duelist'); g.flags.tutorialDone = true;
+  const p = g.player; p.level = 10;
+  enterZone(g, 'tavatimsa'); g.mobs.length = 0; p.x = 14 * 32; p.y = 20 * 32;   // ลานโล่งกลางดาวดึงส์
+  p.equip.weapon.gems = ['amethyst', null, null]; p.mp = 100;
+  assert.equal(castSkill(g, 0), false, 'ไม่มีศัตรูในระยะ'); assert.equal(p.mp, 100, 'ไม่เสียมานา');
+  const a = makeMob(g, 'boar', 1, p.x + 220, p.y, -1), b = makeMob(g, 'boar', 1, p.x + 300, p.y + 50, -1);
+  a.hp = a.maxHp = b.hp = b.maxHp = 1e6; g.mobs.push(a, b);
+  const x0 = p.x;
+  assert.ok(castSkill(g, 0));
+  assert.ok(p.x > x0 + 150, 'วาร์ปไปถึงศัตรู'); assert.ok(Math.hypot(p.x - a.x, p.y - a.y) < 60, 'โผล่ข้างตัวแรก (ใกล้สุด)');
+  assert.ok(a.hp < a.maxHp, 'ฟันโดนตัวที่วาร์ปไปหา');
+  assert.equal(g.world.blocked(p.x, p.y, p.radius), false, 'ไม่โผล่ในกำแพง');
+  p.skillCd[0] = 0; assert.ok(castSkill(g, 0));
+  assert.ok(Math.hypot(p.x - b.x, p.y - b.y) < 60, 'กดซ้ำกระโดดไปตัวใหม่');
+  p.skillCd[0] = 0; p.mp = 100;
+  p.equip.weapon = { ...p.equip.weapon, base: 'bamboo_bow' };
+  assert.equal(castSkill(g, 0), false, 'ถือธนูใช้ไม่ได้'); assert.equal(p.mp, 100);
+});

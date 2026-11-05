@@ -30,6 +30,6 @@ test('มอนพิเศษ: ฟื้นตัวไวฟื้นเลื
   g.events.emit('mobKilled', { mob: m });
   const items = g.drops.filter((d) => d.kind === 'item');
   assert.ok(items.length >= E.tiers.rare.items, 'ได้ของตามจำนวน');
-  assert.ok(items.slice(-E.tiers.rare.items).every((d) => d.item.rarity !== 'normal'));
+  assert.ok(items.filter((d) => d.item.rarity !== 'normal').length >= E.tiers.rare.items, 'ของแน่นอนอย่างน้อยสีเขียว (ของสุ่มธรรมดาอาจตกเพิ่มได้)');
   assert.ok(g.drops.some((d) => d.kind === 'coin'), 'ได้เบี้ยแน่นอน');
 });

@@ -33,13 +33,31 @@ export function pickTarget(game, p) {
   return target;
 }
 
+// วูบหายตัวฟัน (Flicker Strike แบบ PoE): หาศัตรูในระยะที่มองเห็นได้ — เลือกตัวที่ยังไม่ได้วูบไปล่าสุดก่อน เพื่อให้กดรัวแล้วกระโดดไปเรื่อยๆ
+export function flickerTarget(game, sk) {
+  const p = game.player; let best = null, bd = 1e9;
+  for (const m of game.mobs) {
+    if (m.dead) continue;
+    const d = Math.hypot(m.x - p.x, m.y - p.y);
+    if (d > sk.range || !game.world.lineClear(p.x, p.y - 10, m.x, m.y - 10)) continue;
+    const score = d + (m === p.flickLast ? 600 : 0);
+    if (score < bd) { bd = score; best = m; }
+  }
+  return best;
+}
+const MELEE_ONLY = new Set(['sword', 'kris', 'glaive']);
+
 export function castSkill(game, group) {
   const p = game.player, sk = skillOf(game, group);
   if (!sk || p.skillCd[group] > 0 || p.dashT > 0) return false;
   if (sk.arrow && !RANGED.has(weaponKind(game))) { if (!p._noMpWarn) { game.fx.text(p.x, p.y - 70, 'ต้องถือธนูหรือหน้าไม้', '#ffb070'); p._noMpWarn = 0.8; } return false; }
+  if (sk.shape === 'flicker') {
+    const warn = !MELEE_ONLY.has(weaponKind(game)) ? 'ต้องถืออาวุธประชิด (ดาบ กริช ง้าว)' : !flickerTarget(game, sk) ? 'ไม่มีศัตรูในระยะ' : null;
+    if (warn) { if (!p._noMpWarn) { game.fx.text(p.x, p.y - 70, warn, '#d8b0ff'); p._noMpWarn = 0.8; } return false; }
+  }
   const st0 = playerStats(p, game.data);
   if (st0.bloodMagic ? p.hp <= sk.mp : p.mp < sk.mp) { if (!p._noMpWarn) { game.fx.text(p.x, p.y - 70, 'มานาไม่พอ', '#8fb8ff'); p._noMpWarn = 0.8; } return false; }
-  const target = pickTarget(game, p);
+  const target = sk.shape === 'flicker' ? flickerTarget(game, sk) : pickTarget(game, p);
   const sx = p.x, sy = p.y - 22;
   const ang = target ? Math.atan2(target.y - target.height * 0.4 - sy, target.x - sx) : p.aim;
   faceAngle(p, ang);
@@ -58,6 +76,7 @@ export function castSkill(game, group) {
 export function releaseSkill(game, sk, ang) {
   const p = game.player, sx = p.x, sy = p.y - 22;
   const st = playerStats(p, game.data);
+  if (sk.shape === 'flicker') { flicker(game, sk, st); return; }
   if (sk.melee) {                                                // สกิลฟัน (ใช้ดาเมจดาบ): วงรอบตัว / แนวตรง / พัดด้านหน้า — ขนาดขยายด้วยพลอยเสริมระเบิด + พาสซีฟ
     const R = sk.splash * st.areaMult, ca = Math.cos(ang), sa = Math.sin(ang);
     const hit = (m) => {
@@ -90,6 +109,33 @@ export function releaseSkill(game, sk, ang) {
     });
   }
   game.audio.play(sk.kind === 'ice' ? 'ice' : sk.kind === 'poison' ? 'poison' : 'cast');
+}
+
+// วาร์ปไปโผล่ข้างเป้าหมาย (ฝั่งที่ผู้เล่นมา ไม่ติดกำแพง) แล้วฟันวงรอบจุดที่โผล่ · ไม่มีเป้า (เช่นของยูนีคสั่งเอง) = ไม่ทำอะไร
+function flicker(game, sk, st) {
+  const p = game.player, m = flickerTarget(game, sk);
+  if (!m) return;
+  const a0 = Math.atan2(p.y - m.y, p.x - m.x), gap = m.radius + p.radius + 6;
+  let spot = null;
+  for (const da of [0, 0.8, -0.8, 1.6, -1.6, Math.PI]) {
+    const x = m.x + Math.cos(a0 + da) * gap, y = m.y + Math.sin(a0 + da) * gap;
+    if (!game.world.blocked(x, y, p.radius)) { spot = { x, y }; break; }
+  }
+  if (!spot) return;
+  const fx0 = p.x, fy0 = p.y;
+  for (let i = 0; i <= 8; i++) { const k = i / 8; game.fx.burst(fx0 + (spot.x - fx0) * k, fy0 - 18 + (spot.y - fy0) * k, i % 2 ? '#d8b0ff' : '#8a3ad8', 2, 40, 0.35, 2.5); }   // เส้นเงาม่วงจางตามทาง
+  game.fx.burst(fx0, fy0 - 18, '#8a3ad8', 12, 110, 0.4, 3);
+  p.x = spot.x; p.y = spot.y; p.moveTarget = null; p.flickLast = m;
+  const ang = Math.atan2(m.y - p.y, m.x - p.x); faceAngle(p, ang);
+  const R = sk.splash * st.areaMult;
+  for (const o of game.mobs) {
+    if (o.dead || Math.hypot(o.x - m.x, (o.y - m.y) * 1.2) > R + o.radius) continue;
+    const r = rollDamage(st.damage * sk.damageMult, game.rng, st.crit, st.critMult);
+    damageMob(game, o, r.amount, r.crit);
+  }
+  game.fx.slash(p.x, p.y - 14, ang, R + 20, 1.2, 1); game.fx.ring(m.x, m.y - 10, R, '#d8b0ff');
+  game.camera.shake = Math.max(game.camera.shake, 3);
+  game.audio.play('swing');
 }
 
 export function updateSkillTimers(game, dt) {

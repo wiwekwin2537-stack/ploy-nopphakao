@@ -35,7 +35,7 @@ export function computeSkill(G, mainId, supportIds = [], lvOf = () => 1) {
   };
   sk.level = lv; sk.damageMult *= 1 + L.skillDamage * (lv - 1);   // เลเวลพลอยสกิล
   sk.arrow = !!m.arrow;                                           // ศร: ใช้ดาเมจโจมตี ต้องถือธนู/หน้าไม้
-  sk.melee = !!m.melee; sk.shape = m.shape || null; sk.width = m.width || 0; sk.arc = m.arc || 0; sk.unused = [];
+  sk.melee = !!m.melee; sk.shape = m.shape || null; sk.width = m.width || 0; sk.arc = m.arc || 0; sk.range = m.range || 0; sk.unused = [];
   for (const sid of supportIds) {
     const s = sid && G.support[sid];
     if (!s) continue;

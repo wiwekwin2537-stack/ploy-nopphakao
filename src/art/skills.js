@@ -1,5 +1,5 @@
 // รูปสกิล (ไอคอนสี่เหลี่ยมแบบแถบสกิล PoE): ลูกไฟ หอกน้ำแข็ง หมอกพิษ สายฟ้า — ใช้บนปุ่มสกิลและสลักในพลอยสกิล
-const BG = { fire: ['#5a1008', '#1a0402'], ice: ['#0e2a5a', '#040a1a'], poison: ['#0e3a14', '#031006'], bolt: ['#3a2a06', '#100a02'], holy: ['#4a4a5a', '#101018'], slash: ['#4a0a0a', '#120202'], cleave: ['#0a3a14', '#021006'], frost: ['#0a2050', '#020818'], firearrow: ['#5a1a08', '#1a0602'], arrow: ['#2a3a0a', '#0a1002'], aura: ['#2a1a3a', '#0a0612'] };
+const BG = { fire: ['#5a1008', '#1a0402'], ice: ['#0e2a5a', '#040a1a'], poison: ['#0e3a14', '#031006'], bolt: ['#3a2a06', '#100a02'], holy: ['#4a4a5a', '#101018'], slash: ['#4a0a0a', '#120202'], cleave: ['#0a3a14', '#021006'], frost: ['#0a2050', '#020818'], firearrow: ['#5a1a08', '#1a0602'], arrow: ['#2a3a0a', '#0a1002'], aura: ['#2a1a3a', '#0a0612'], flicker: ['#2a0a4a', '#0a0214'] };
 
 function paintSkill(g, kind, plate) {
   if (plate) {                                                   // พื้นหลังไอคอน
@@ -52,6 +52,11 @@ function paintSkill(g, kind, plate) {
     g.fillStyle = 'rgba(140,200,255,0.35)'; g.beginPath(); g.moveTo(14, 50); g.arc(14, 50, 44, -1.5, -0.1); g.closePath(); g.fill();
     g.strokeStyle = '#e8f4ff'; g.lineWidth = 3; g.beginPath(); g.arc(14, 50, 40, -1.45, -0.15); g.stroke();
     for (const [x, y] of [[40, 22], [50, 38], [28, 14]]) { g.fillStyle = '#cfe8ff'; g.beginPath(); g.moveTo(x, y - 6); g.lineTo(x + 3, y); g.lineTo(x, y + 6); g.lineTo(x - 3, y); g.closePath(); g.fill(); }
+  } else if (kind === 'flicker') {                              // วูบหายตัวฟัน: เงาม่วงสามเงาไล่กัน แล้วดาบฟันปลายทาง
+    for (let i = 0; i < 3; i++) { g.fillStyle = `rgba(190,130,255,${0.18 + i * 0.2})`; g.beginPath(); g.ellipse(14 + i * 12, 44 - i * 9, 5, 9, -0.6, 0, Math.PI * 2); g.fill(); }
+    g.strokeStyle = 'rgba(216,176,255,0.8)'; g.lineWidth = 2; g.setLineDash([4, 3]); g.beginPath(); g.moveTo(10, 54); g.lineTo(44, 22); g.stroke(); g.setLineDash([]);
+    g.save(); g.translate(46, 20); g.rotate(-0.8); g.fillStyle = '#f0e8ff'; g.fillRect(-2, -16, 4, 18); g.fillStyle = '#d9a630'; g.fillRect(-6, 2, 12, 3); g.restore();
+    g.strokeStyle = '#ffffff'; g.lineWidth = 2.5; g.beginPath(); g.arc(46, 22, 14, -2.2, 0.3); g.stroke();
   } else if (kind === 'holy') {                                  // รัศมีเพชร: แสงขาววาบเป็นแฉก
     const gl = g.createRadialGradient(32, 32, 2, 32, 32, 26); gl.addColorStop(0, '#ffffff'); gl.addColorStop(0.5, 'rgba(230,230,255,0.6)'); gl.addColorStop(1, 'rgba(200,200,255,0)');
     g.fillStyle = gl; g.beginPath(); g.arc(32, 32, 26, 0, Math.PI * 2); g.fill();
