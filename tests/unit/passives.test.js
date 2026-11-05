@@ -86,3 +86,21 @@ test('วงนอก: โน้ตเด่นวงนอกทุกอัน
   }
   assert.ok(Object.keys(P.nodes).length >= 79);
 });
+
+test('อาชีพผสม (นักดาบ/นักฆ่าเงา/พระธุดงค์) เริ่มกลางทางผสม เดินเข้าได้ทั้งสองสาย', () => {
+  const g = makeGame(), P = g.data.passives;
+  for (const [cid, a, b] of [['duelist', 'warrior', 'ranger'], ['shadow', 'ranger', 'shaman'], ['templar', 'shaman', 'warrior']]) {
+    const C = P.classes[cid];
+    assert.ok(C && g.data.items.bases[C.weapon] && g.data.gems.main[C.gem] && C.look && C.story, cid + ' ข้อมูลครบ');
+    const p = g.player; p.level = 20; p.cls = cid; p.passives = [];
+    assert.equal(allocate(p, P, a), false, 'เลือกจุดเริ่มสายอื่นไม่ได้');
+    assert.ok(allocate(p, P, cid));
+    const mid = `hyb_${a}_${b}1`;
+    assert.ok(allocate(p, P, mid), cid + ' ต่อโน้ตเด่นกลางทางผสม');
+    const side = (x) => [`hyb_${a}_${b}0`, `hyb_${a}_${b}2`].find((h) => P.nodes[h].links.some((l) => l.startsWith(x + '_')));
+    for (const x of [a, b]) {
+      const h = side(x); assert.ok(h && allocate(p, P, h), cid + ' เดินถึงขอบสาย ' + x);
+      const into = P.nodes[h].links.find((l) => l.startsWith(x + '_')); assert.ok(allocate(p, P, into), cid + ' เข้าสาย ' + x);
+    }
+  }
+});

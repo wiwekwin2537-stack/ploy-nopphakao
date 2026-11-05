@@ -672,7 +672,8 @@
    },
    "links": [
     "hyb_warrior_ranger0",
-    "hyb_warrior_ranger2"
+    "hyb_warrior_ranger2",
+    "duelist"
    ]
   },
   "hyb_warrior_ranger2": {
@@ -688,6 +689,17 @@
     "ranger",
     "ranger_b0"
    ]
+  },
+  "duelist": {
+   "x": -320,
+   "y": -185,
+   "kind": "start",
+   "name": "นักดาบ",
+   "stats": {},
+   "links": [
+    "hyb_warrior_ranger1"
+   ],
+   "class": "duelist"
   },
   "hyb_ranger_shaman0": {
    "x": -118,
@@ -714,7 +726,8 @@
    },
    "links": [
     "hyb_ranger_shaman0",
-    "hyb_ranger_shaman2"
+    "hyb_ranger_shaman2",
+    "shadow"
    ]
   },
   "hyb_ranger_shaman2": {
@@ -730,6 +743,17 @@
     "shaman",
     "shaman_b0"
    ]
+  },
+  "shadow": {
+   "x": 0,
+   "y": 370,
+   "kind": "start",
+   "name": "นักฆ่าเงา",
+   "stats": {},
+   "links": [
+    "hyb_ranger_shaman1"
+   ],
+   "class": "shadow"
   },
   "hyb_shaman_warrior0": {
    "x": 288,
@@ -758,7 +782,8 @@
    },
    "links": [
     "hyb_shaman_warrior0",
-    "hyb_shaman_warrior2"
+    "hyb_shaman_warrior2",
+    "templar"
    ]
   },
   "hyb_shaman_warrior2": {
@@ -775,6 +800,17 @@
     "warrior",
     "warrior_b0"
    ]
+  },
+  "templar": {
+   "x": 320,
+   "y": -185,
+   "kind": "start",
+   "name": "พระธุดงค์",
+   "stats": {},
+   "links": [
+    "hyb_shaman_warrior1"
+   ],
+   "class": "templar"
   },
   "warrior_aO0": {
    "x": -383,
@@ -1125,6 +1161,42 @@
     "hair": "#e8e4dc"
    },
    "story": "หมอผีหมู่บ้าน ถือคทาว่านยา ตีธรรมดาเป็นลูกพลังพุ่งไกล ปล่อยลูกไฟทับทิม มานามาก"
+  },
+  "duelist": {
+   "name": "นักดาบ",
+   "desc": "ฟันเร็ว แทงแรง (นักรบ+พราน)",
+   "weapon": "bamboo_kris",
+   "gem": "cateye",
+   "look": {
+    "top": "#7a5a1a",
+    "collar": "#b08a3a",
+    "hair": "#2a1a10"
+   },
+   "story": "นักดาบพเนจรจากลุ่มน้ำ ถือกริช ฟันลมกรดพุ่งเป็นแนว เลือดดีและว่องไว"
+  },
+  "shadow": {
+   "name": "นักฆ่าเงา",
+   "desc": "คริติคอล + พลอย (พราน+หมอผี)",
+   "weapon": "bamboo_kris",
+   "gem": "topaz",
+   "look": {
+    "top": "#1e1e2a",
+    "collar": "#4a3a6a",
+    "hair": "#0e0e14"
+   },
+   "story": "มือสังหารในเงามืด ถือกริชคู่กาย ปล่อยสายฟ้าบุษราคัมจากเงา คริติคอลรุนแรง"
+  },
+  "templar": {
+   "name": "พระธุดงค์",
+   "desc": "ทนทาน + มนต์ (หมอผี+นักรบ)",
+   "weapon": "herb_staff",
+   "gem": "sapphire",
+   "look": {
+    "top": "#c8782a",
+    "collar": "#e0a040",
+    "hair": "#e8d0b0"
+   },
+   "story": "พระธุดงค์ถือไม้เท้า เดินป่ามาหลายพรรษา ปล่อยหอกน้ำแข็งไพลิน ทั้งอึดทั้งมีมนต์"
   }
  },
  "statNames": {

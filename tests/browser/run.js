@@ -63,7 +63,9 @@ await check('หน้าแรก: กดปุ่ม "เริ่มผจญ
   assert((await state(page)).mode === 'create', 'ไม่เข้าหน้าสร้างตัวละคร: ' + (await state(page)).mode);
   // หน้าสร้างตัวละคร (แบบ PoE): เลือกหมอผี (ไม้เท้า + ทับทิม) → ตั้งชื่อ → เริ่ม
   const C = await G(page, () => __ploy.createLayout());
-  await page.mouse.click(C.cards[2].x + C.cards[2].w / 2, C.cards[2].y + 40); await page.waitForTimeout(400);
+  assert(C.cards.length === 6, 'ต้องมี 6 อาชีพ: ' + C.cards.map((c) => c.id));
+  const sh = C.cards.find((c) => c.id === 'shaman');
+  await page.mouse.click(sh.x + sh.w / 2, sh.y + 40); await page.waitForTimeout(400);
   await page.screenshot({ path: SHOTS + '/00-create.png' });
   await page.fill('input', 'ทดสอบหมอผี');
   await page.mouse.click(C.go.x + C.go.w / 2, C.go.y + C.go.h / 2);

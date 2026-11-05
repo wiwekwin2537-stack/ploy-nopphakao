@@ -1,4 +1,4 @@
-// หน้าสร้างตัวละคร (แบบ PoE): เลือกอาชีพ 1 จาก 3 + ตั้งชื่อ → เข้าบทนำ
+// หน้าสร้างตัวละคร (แบบ PoE): เลือกอาชีพ 1 จาก 6 (3 สายหลัก + 3 สายผสม) + ตั้งชื่อ → เข้าบทนำ
 // อาชีพ = อาวุธเริ่มต้น + จุดเริ่มบนต้นพาสซีฟ + พลอยสกิลเม็ดแรก (data/passives.json "classes")
 import { C, kanokFrame, rrect } from '../art/draw.js';
 import { uiText as text, wrapLines } from './hud.js';
@@ -6,14 +6,16 @@ import { drawHuman, LOOKS } from '../art/characters.js';
 import { weaponInHand } from '../art/items.js';
 import { gemSprite } from '../art/gems.js';
 
-export const CLASS_IDS = ['warrior', 'ranger', 'shaman'];
-const CLASS_COL = { warrior: '#e0604a', ranger: '#6ad070', shaman: '#a080f0' };
+// เรียงตามวงต้นพาสซีฟ: สายผสมอยู่ระหว่างสองสายที่มันผสม
+export const CLASS_IDS = ['warrior', 'duelist', 'ranger', 'shadow', 'shaman', 'templar'];
+export const CLASS_COL = { warrior: '#e0604a', duelist: '#e8b040', ranger: '#6ad070', shadow: '#60b8c8', shaman: '#a080f0', templar: '#f08a30' };
 const NAMES = ['ขุนแผน', 'พลายงาม', 'ไกรทอง', 'สุดสาคร', 'แก้วหน้าม้า', 'ศรีธนญชัย', 'นางสิบสอง', 'พระรถ', 'ทองประกาย', 'บุญชู'];
 
 export function createLayout(w, h, s) {
-  const pw = Math.min(w - 16, 760 * s), ph = Math.min(h - 12, 370 * s), x = w / 2 - pw / 2, y = h / 2 - ph / 2;
-  const cw = (pw - 48 * s) / 3, cards = CLASS_IDS.map((id, i) => ({ id, x: x + 16 * s + i * (cw + 8 * s), y: y + 46 * s, w: cw, h: ph - 104 * s }));
-  return { x, y, w: pw, h: ph, s, cards, name: { x: x + 16 * s, y: y + ph - 48 * s, w: pw * 0.42, h: 34 * s }, dice: { x: x + 22 * s + pw * 0.42, y: y + ph - 48 * s, w: 34 * s, h: 34 * s }, go: { x: x + pw - 196 * s, y: y + ph - 50 * s, w: 180 * s, h: 38 * s }, back: { x: x + pw - 20 * s, y: y + 20 * s, r: 14 * s } };
+  const pw = Math.min(w - 16, 780 * s), ph = Math.min(h - 12, 390 * s), x = w / 2 - pw / 2, y = h / 2 - ph / 2;
+  const n = CLASS_IDS.length, gap = 6 * s, cw = (pw - 32 * s - gap * (n - 1)) / n, ch = ph - 186 * s;
+  const cards = CLASS_IDS.map((id, i) => ({ id, x: x + 16 * s + i * (cw + gap), y: y + 42 * s, w: cw, h: ch }));
+  return { x, y, w: pw, h: ph, s, cards, info: { x: x + 16 * s, y: y + 48 * s + ch, w: pw - 32 * s, h: ph - 116 * s - ch }, name: { x: x + 16 * s, y: y + ph - 48 * s, w: pw * 0.42, h: 34 * s }, dice: { x: x + 22 * s + pw * 0.42, y: y + ph - 48 * s, w: 34 * s, h: 34 * s }, go: { x: x + pw - 196 * s, y: y + ph - 50 * s, w: 180 * s, h: 38 * s }, back: { x: x + pw - 20 * s, y: y + 20 * s, r: 14 * s } };
 }
 
 export function openCreate(game, skip) {
@@ -48,21 +50,24 @@ export function drawCreate(ctx, game, L, w, h) {
     ctx.fillStyle = on ? 'rgba(217,166,48,0.22)' : 'rgba(0,0,0,0.35)'; rrect(ctx, c.x, c.y, c.w, c.h, 8 * s); ctx.fill();
     ctx.strokeStyle = on ? '#ffffff' : col; ctx.lineWidth = on ? 2.5 : 1.2; ctx.stroke();
     // ตัวละครใส่ชุด/ถืออาวุธของอาชีพ (ท่าฟันวนเมื่อเลือก)
-    const k = Math.min(2.8, c.h / 105), cx = c.x + c.w / 2, cy = c.y + 22 * s + 52 * k;
+    const k = Math.min(3.4, (c.h - 40 * s) / 62, c.w / 46), cx = c.x + c.w / 2, cy = c.y + c.h - 30 * s - 4 * k;
+    ctx.save(); rrect(ctx, c.x, c.y, c.w, c.h, 8 * s); ctx.clip();   // อาวุธยาว (คทา) ไม่ล้นกรอบการ์ด
     ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(cx, cy, 20 * k, 5 * k, 0, 0, Math.PI * 2); ctx.fill();
     ctx.save(); ctx.translate(cx, cy); ctx.scale(k, k);
     const sw = (game.time * 1.1 + (on ? 0 : 0.8)) % (on ? 1.6 : 3.2);   // ทุกตัวโชว์ท่าฟัน (ตัวที่เลือกฟันถี่กว่า) ให้เห็นอาวุธ
     drawHuman(ctx, { ...LOOKS.hero, ...K.look }, 0, 0, { dir: 0, t: game.time, moving: false, swing: sw <= 1 ? sw : -1, combo: 0, aim: 0.6, weaponArt: weaponInHand(I, K.weapon), weapon: (I.bases[K.weapon].look || {}).kind || 'sword', blade: I.bases[K.weapon].color });
-    ctx.restore();
-    let y = cy + 16 * s;
-    text(ctx, K.name, cx, y, 14 * s, col, 'center', '600'); y += 16 * s;
-    text(ctx, K.desc, cx, y, 9.5 * s, C.cream, 'center', 'normal'); y += 14 * s;
-    const g = G.main[K.gem];
-    ctx.drawImage(gemSprite(G, K.gem, 32), c.x + 10 * s, y - 8 * s, 16 * s, 16 * s);
-    text(ctx, `${I.bases[K.weapon].name} · ${g.skill}`, c.x + 30 * s, y, 9 * s, g.hi || g.color, 'left', '600'); y += 14 * s;
-    ctx.font = `normal ${8.5 * s}px Kanit, sans-serif`;
-    wrapLines(ctx, K.story, c.w - 18 * s).slice(0, 3).forEach((l, i) => text(ctx, l, c.x + 9 * s, y + i * 12 * s, 8.5 * s, 'rgba(244,230,200,0.7)', 'left', 'normal'));
+    ctx.restore(); ctx.restore();
+    text(ctx, K.name, cx, c.y + c.h - 12 * s, 13 * s, col, 'center', '600');
   }
+  // รายละเอียดอาชีพที่เลือก: แนวทาง · อาวุธ + สกิลแรก · เรื่องราว
+  const K = P.classes[cr.cls], g = G.main[K.gem], F = B.info;
+  ctx.fillStyle = 'rgba(0,0,0,0.3)'; rrect(ctx, F.x, F.y, F.w, F.h, 6 * s); ctx.fill();
+  ctx.strokeStyle = CLASS_COL[cr.cls]; ctx.lineWidth = 1; ctx.stroke();
+  text(ctx, `${K.name} — ${K.desc}`, F.x + 10 * s, F.y + 13 * s, 12 * s, CLASS_COL[cr.cls], 'left', '600');
+  ctx.drawImage(gemSprite(G, K.gem, 32), F.x + 10 * s, F.y + 22 * s, 16 * s, 16 * s);
+  text(ctx, `อาวุธ: ${I.bases[K.weapon].name} · สกิลแรก: ${g.skill}`, F.x + 30 * s, F.y + 30 * s, 10 * s, g.hi || g.color, 'left', '600');
+  ctx.font = `normal ${9.5 * s}px Kanit, sans-serif`;
+  wrapLines(ctx, K.story, F.w - 20 * s).slice(0, 2).forEach((l, i) => text(ctx, l, F.x + 10 * s, F.y + 48 * s + i * 13 * s, 9.5 * s, 'rgba(244,230,200,0.8)', 'left', 'normal'));
   // ช่องชื่อ + สุ่มชื่อ + ปุ่มเริ่ม
   const N = B.name, el = nameInput(game);
   text(ctx, 'ชื่อ:', N.x, N.y - 8 * s, 9.5 * s, 'rgba(244,230,200,0.7)', 'left', 'normal');

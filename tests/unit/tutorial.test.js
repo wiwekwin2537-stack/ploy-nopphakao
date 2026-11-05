@@ -14,7 +14,7 @@ function closeDialog(g) {
   for (let i = 0; i < 30 && g.dialog; i++) { g.input.pressed.interact = true; updateDialog(g, 1); g.input.pressed.interact = false; }
 }
 
-for (const cls of ['warrior', 'ranger', 'shaman']) test(`บทนำเล่นได้ครบทุกขั้นตั้งแต่ทางเกวียนถึงพ่อเฒ่าจันทร์ (อาชีพ ${cls})`, () => {
+for (const cls of Object.keys(makeGame().data.passives.classes)) test(`บทนำเล่นได้ครบทุกขั้นตั้งแต่ทางเกวียนถึงพ่อเฒ่าจันทร์ (อาชีพ ${cls})`, () => {
   const g = makeGame(); giveStarterGear(g.player, g.data, cls);
   const G0 = g.data.passives.classes[cls].gem;
   assert.equal(g.player.cls, cls); assert.deepEqual(g.player.passives, [cls], 'จุดเริ่มพาสซีฟตามอาชีพ');

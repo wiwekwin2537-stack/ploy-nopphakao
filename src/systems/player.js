@@ -27,7 +27,9 @@ export function giveStarterGear(p, data, cls = 'warrior') {
   p.cls = C ? cls : 'warrior';
   if (data.passives && data.passives.nodes[p.cls] && !p.passives.includes(p.cls)) p.passives.push(p.cls);
   const mk = (base, extra = {}) => ({ uid: ++p.nextUid, base, rarity: 'normal', ilvl: 1, mods: [], rareName: null, ...extra });
-  p.equip.weapon = mk((C && C.weapon) || 'bamboo_sword', { sockets: 3, links: [true, true], gems: [null, null, null], colors: ['r', 'g', 'g'] });
+  const cols = ['r', 'g', 'g'], gs = data.gems && data.gems.main[(C && C.gem) || 'ruby'];
+  if (gs && gs.socket && gs.socket !== 'w' && !cols.includes(gs.socket)) cols[0] = gs.socket;   // ช่องแรกรับพลอยสกิลของอาชีพได้เสมอ (หมอผี=แดง พระธุดงค์=น้ำเงิน)
+  p.equip.weapon = mk((C && C.weapon) || 'bamboo_sword', { sockets: 3, links: [true, true], gems: [null, null, null], colors: cols });
   p.equip.body = mk('cotton_shirt', { sockets: 2, links: [false], gems: [null, null], colors: ['b', 'g'] });
   p.equip.head = mk('cloth_band');
   p.potions = data.shop ? data.shop.potion.starter : 0;

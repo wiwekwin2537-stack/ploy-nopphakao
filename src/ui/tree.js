@@ -4,7 +4,7 @@ import { uiText as text } from './hud.js';
 import { startOf, pointsLeft, canAllocate, allocate, canRefund, refund, describe } from '../systems/passives.js';
 import { playerStats } from '../systems/stats.js';
 
-const CLASS_COL = { warrior: '#d8443a', ranger: '#4ab85a', shaman: '#4a7ae0' };
+import { CLASS_COL } from './create.js';
 
 function classOfNode(P, id) {
   if (P.nodes[id].class) return P.nodes[id].class;
