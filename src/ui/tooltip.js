@@ -80,6 +80,8 @@ export function drawItemTip(ctx, game, it, ax, ay, opt = {}) {
     lines.push({ sep: true, h: 8 * s });
     for (const m of it.mods) { const a = I.affixes[m.id]; lines.push({ t: `${statText(P, a.stat, m.value)}  (${a.word})`, col: MOD_COL, size: 10 }); }
   }
+  const cr = it.craft && I.bench.recipes.find((r) => r.id === it.craft);
+  if (cr) lines.push({ t: `${statText(P, cr.stat, cr.value)}  (คราฟต์จากโต๊ะช่าง)`, col: '#b8a0ff', size: 10 });
   if (it.sockets) {
     lines.push({ sep: true, h: 8 * s });
     lines.push({ t: `ช่องพลอย ${it.sockets} · เชื่อมยาวสุด ${longestLink(it)}`, col: 'rgba(244,230,200,0.8)', size: 9.5 });

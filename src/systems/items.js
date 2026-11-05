@@ -181,6 +181,8 @@ export function itemStats(I, it) {
   const t = { ...I.bases[it.base].stats };
   if (it.rarity === 'unique') for (const [k, v] of Object.entries(I.uniques[it.unique].stats)) t[k] = (t[k] || 0) + v;   // ค่าตายตัวของยูนีค
   for (const m of it.mods) { const a = I.affixes[m.id]; t[a.stat] = (t[a.stat] || 0) + m.value; }
+  const cr = it.craft && I.bench && I.bench.recipes.find((r) => r.id === it.craft);   // ค่าคราฟต์จากโต๊ะช่าง
+  if (cr) t[cr.stat] = (t[cr.stat] || 0) + cr.value;
   return t;
 }
 
@@ -259,6 +261,7 @@ export function validItems(I, items, equip, nextUid, G, stash = []) {
     if (it.rarity === 'unique' && (!I.uniques[it.unique] || it.unique === '_doc' || I.uniques[it.unique].base !== it.base)) return false;
     if (!Array.isArray(it.mods) || it.mods.length > I.rarity[it.rarity].affixes[1]) return false;
     if (!validSockets(I, it, G)) return false;
+    if (it.craft !== undefined) { const r = I.bench && I.bench.recipes.find((x) => x.id === it.craft); if (!r || it.rarity === 'unique' || !r.slots.includes(I.bases[it.base].slot)) return false; }
     for (const m of it.mods) {
       const a = I.affixes[m.id], tier = a && a.tiers[m.tier];
       if (!tier || !a.slots.includes(I.bases[it.base].slot) || !(m.value >= tier[1] && m.value <= tier[2])) return false;

@@ -20,7 +20,7 @@ export function sumPassives(p, passives) {
 
 export function playerStats(p, data) {
   // กุญแจแคช: รวมค่าสุ่มและพลอยที่ฝัง (เล่นแร่แปรธาตุ/ฝังออร่า ไม่เปลี่ยน uid แต่เปลี่ยนค่า)
-  const sig = (it) => (it ? `${it.uid}:${it.rarity}:${it.mods.map((m) => m.id + m.value).join('.')}:${(it.gems || []).map((g) => g && data.gems ? g + gemLevel(data.gems, p, g) : g).join('.')}` : '0');
+  const sig = (it) => (it ? `${it.uid}:${it.rarity}:${it.mods.map((m) => m.id + m.value).join('.')}:${it.craft || ''}:${(it.gems || []).map((g) => g && data.gems ? g + gemLevel(data.gems, p, g) : g).join('.')}` : '0');
   const key = (p.passives || []).join(',') + '|' + (p.ascend || '') + ':' + (p.ascNodes || []).join(',') + '|' + p.level + '|' + EQUIP_SLOTS.map((s) => sig(p.equip && p.equip[s])).join(',');
   const hit = cache.get(p);
   if (hit && hit.key === key) return hit.st;

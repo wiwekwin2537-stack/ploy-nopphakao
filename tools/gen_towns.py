@@ -48,6 +48,9 @@ named = {
 }
 for zk, s in named.items():
     Z2[zk]['spawns'] = [x for x in Z2[zk]['spawns'] if not x.get('named')] + [s]
+# โต๊ะช่างในเวียงด่านหิน (เมืองหลัก วาดมือ ไม่ได้สร้างจาก town())
+T0 = Z2['town']
+T0['objects'] = [o for o in T0['objects'] if o['type'] != 'craft_bench'] + [{"type": "craft_bench", "x": 35.2, "y": 16.8, "w": 1.6, "h": 0.8, "label": "โต๊ะช่าง"}]
 json.dump(Z2, open('data/zones.json', 'w'), ensure_ascii=False, indent=1)
 print('ok', list(Z2.keys()))
 

@@ -125,5 +125,18 @@ export const RUINS = {
     const gl = g.createRadialGradient(cx, -20, 1, cx, -20, 14); gl.addColorStop(0, 'rgba(255,220,140,0.45)'); gl.addColorStop(1, 'rgba(255,220,140,0)');
     g.fillStyle = gl; g.fillRect(cx - 14, -34, 28, 28);
   } },
+  craft_bench: { pad: [12, 44, 12, 4], draw(g, fw) {           // โต๊ะช่าง: โต๊ะไม้สัก ทั่งเหล็ก ค้อน คีม เตาถ่านคุแดง
+    const cx = fw / 2;
+    shadow(g, cx, -1, fw / 2 + 6, 5, 0.3);
+    box(g, 2, -10, 4, 10, '#4a2e17', C.line, 1); box(g, fw - 6, -10, 4, 10, '#4a2e17', C.line, 1);   // ขาโต๊ะ
+    box(g, -2, -16, fw + 4, 6, '#8a5a32', C.line, 1.3);                                             // พื้นโต๊ะ
+    g.fillStyle = 'rgba(255,255,255,0.12)'; g.fillRect(0, -15, fw, 1.5);
+    poly(g, [cx - 2, -16, cx + 12, -16, cx + 10, -22, cx + 16, -26, cx - 4, -26, cx - 2, -22], '#5a5f6a', C.line, 1.1);   // ทั่ง
+    g.save(); g.translate(cx - 10, -20); g.rotate(-0.5); box(g, -1, -10, 2.5, 12, '#6b4423', C.line, 0.8); box(g, -4, -13, 8, 4, '#8a8a92', C.line, 0.8); g.restore();   // ค้อน
+    box(g, fw - 10, -24, 8, 8, '#3a3a40', C.line, 1);                                               // เตาถ่าน
+    g.fillStyle = '#ff7a2a'; g.fillRect(fw - 8, -21, 4, 3); g.fillStyle = '#ffd24a'; g.fillRect(fw - 7, -20, 2, 1.5);
+    const gl = g.createRadialGradient(fw - 6, -22, 1, fw - 6, -22, 12); gl.addColorStop(0, 'rgba(255,150,60,0.5)'); gl.addColorStop(1, 'rgba(255,150,60,0)');
+    g.fillStyle = gl; g.fillRect(fw - 18, -34, 24, 24);
+  } },
   portal: { hidden: true },                                          // ประตูมิติวาดสดใน scene.js (ขยับได้)
 };

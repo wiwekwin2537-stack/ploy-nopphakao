@@ -241,7 +241,7 @@ export function drawHud(ctx, game, L, w, h) {
   // ปุ่มขวาล่าง
   for (const b of L.buttons) {
     if (b.flask || b.bar) continue;                         // วาดใน hudbar.js
-    if (b.onlyNear && !game.nearNpc && !game.nearWaypoint && !game.nearAltar && !game.nearStash) continue;
+    if (b.onlyNear && !game.nearNpc && !game.nearWaypoint && !game.nearAltar && !game.nearStash && !game.nearBench) continue;
     if (b.locked) { lockButton(ctx, b, s); continue; }
     const gi = SKILL_BTN[b.id] ?? -1, bsk = gi >= 0 ? skillOf(game, gi) : null;
     if (gi >= 0 && !bsk) { lockButton(ctx, b, s); continue; }
@@ -252,7 +252,7 @@ export function drawHud(ctx, game, L, w, h) {
       if (key) text(ctx, key, b.x + b.r * 0.72, b.y + b.r * 0.78, 9 * s, '#f4e6c8', 'center', '600');
     }
   }
-  if ((game.nearNpc || game.nearWaypoint || game.nearAltar || game.nearStash) && game.mode === 'play' && game.input.mode !== 'touch') text(ctx, `กด ${game.input.mode === 'pad' ? 'Y' : 'E'} เพื่อ${game.nearNpc ? 'คุยกับ ' + game.nearNpc.name : game.nearWaypoint ? 'ใช้ศาลวาร์ป' : game.nearAltar ? 'ใช้แท่นลายแทง' : 'เปิดหีบเก็บของ'}`, w / 2, h - 58 * s, 13 * s, C.goldHi, 'center');
+  if ((game.nearNpc || game.nearWaypoint || game.nearAltar || game.nearStash || game.nearBench) && game.mode === 'play' && game.input.mode !== 'touch') text(ctx, `กด ${game.input.mode === 'pad' ? 'Y' : 'E'} เพื่อ${game.nearNpc ? 'คุยกับ ' + game.nearNpc.name : game.nearWaypoint ? 'ใช้ศาลวาร์ป' : game.nearAltar ? 'ใช้แท่นลายแทง' : game.nearStash ? 'เปิดหีบเก็บของ' : 'ใช้โต๊ะช่าง'}`, w / 2, h - 58 * s, 13 * s, C.goldHi, 'center');
   if (game.debug) text(ctx, `FPS ${game.loopStats.fps} · ${game.loopStats.frameMs}ms · มอน ${game.mobs.length} · ฟอง ${game.fx.count}`, 10, h - 12, 11, '#9f9', 'left', 'normal');
 }
 

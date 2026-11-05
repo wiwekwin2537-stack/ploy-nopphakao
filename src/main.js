@@ -52,6 +52,8 @@ import { drawHuman, drawStats } from './art/characters.js';
 import { heroLook, heroGear } from './ui/herolook.js';
 import { itemSprite } from './art/items.js';
 import { updateStashSpot } from './systems/stash.js';
+import { updateBenchSpot } from './systems/bench.js';
+import { drawBench, updateBench, benchLayout } from './ui/bench.js';
 import { updateExplore } from './systems/explore.js';
 import { updatePotion, setupFlasks } from './systems/shop.js';
 import { setupUniques, makeUnique } from './systems/uniques.js';
@@ -114,7 +116,7 @@ function update(dt) {
   input.beginFrame();
   const lk = input.mode === 'touch' ? 't' : 'k';          // สลับจอสัมผัส ↔ คีย์บอร์ด: จัดปุ่มใหม่
   if (lk !== layoutKey) { layoutKey = lk; layout = computeLayout(game.camera.viewW || innerWidth, game.camera.viewH || innerHeight, lk === 't'); }
-  layout.near = !!(game.nearNpc || game.nearWaypoint || game.nearAltar || game.nearStash);
+  layout.near = !!(game.nearNpc || game.nearWaypoint || game.nearAltar || game.nearStash || game.nearBench);
   input.setUiMode(game.mode !== 'play');                   // หน้าต่าง/บทพูด/หน้าแรก: แตะ = กดปุ่ม ไม่ใช่จอยเดิน
   game.audio.update();
   if (game.toast) game.toast.t -= dt;
@@ -166,6 +168,8 @@ function update(dt) {
     game.mode = 'bigmap'; game.audio.play('click');
   } else if (game.mode === 'reward') {
     if (updateReward(game, layout, game.camera.viewW, game.camera.viewH)) { game.mode = 'play'; writeSave(game); }
+  } else if (game.mode === 'bench') {
+    if (updateBench(game, layout, game.camera.viewW, game.camera.viewH)) { game.mode = 'play'; writeSave(game); }
   } else if (game.mode === 'stash') {
     if (updateStash(game, layout, game.camera.viewW, game.camera.viewH)) { game.mode = 'play'; writeSave(game); }
   } else if (game.mode === 'mapmenu') {
@@ -193,6 +197,7 @@ function update(dt) {
     updateWaypoints(game);
     updateAltar(game);
     updateStashSpot(game);
+    updateBenchSpot(game);
     updateExplore(game);
     if (game.mode === 'play') {
       updatePotion(game, dt);
@@ -238,6 +243,7 @@ function render() {
     if (game.mode === 'warp') drawWarp(ctx, game, layout, w, h);
     if (game.mode === 'mapmenu') drawMapMenu(ctx, game, layout, w, h);
     if (game.mode === 'stash') drawStash(ctx, game, layout, w, h);
+    if (game.mode === 'bench') drawBench(ctx, game, layout, w, h);
     if (game.mode === 'reward') drawReward(ctx, game, layout, w, h);
     if (game.mode === 'bigmap') drawBigMap(ctx, game, layout, w, h);
   }
@@ -261,4 +267,4 @@ game.loopStats = loop.stats;
 loop.start();
 
 // test-hook: เปิดเฉพาะเมื่อมี ?test ใน URL ใช้ในเทสต์อัตโนมัติเท่านั้น
-if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, rollElite, makeUnique, spawnDrop, art: { drawHuman, drawStats, heroLook, heroGear, itemSprite, drawMonster }, damage: damageMob, stashLayout: () => stashLayout(game.camera.viewW, game.camera.viewH, layout.s), treeLayout: () => treeLayout(game.camera.viewW, game.camera.viewH, layout.s), ascendLayout: () => ascendLayout(game.camera.viewW, game.camera.viewH, layout.s), openTree: () => { game.mode = 'tree'; openTree(game); }, createLayout: () => createLayout(game.camera.viewW, game.camera.viewH, layout.s), openCreate: (skip) => openCreate(game, skip), rewardLayout: () => rewardLayout(game.camera.viewW, game.camera.viewH, layout.s), shopLayout: () => shopLayout(game.camera.viewW, game.camera.viewH, layout.s), skills: () => skillsOf(game.data.gems, game.player, game.data.items), stats: () => playerStats(game.player, game.data), layout: () => layout, bagLayout: () => bagLayout(game.camera.viewW, game.camera.viewH, layout.s), gemLayout: () => gemLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s), game.player) }; // test-hook
+if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, rollElite, makeUnique, spawnDrop, art: { drawHuman, drawStats, heroLook, heroGear, itemSprite, drawMonster }, damage: damageMob, stashLayout: () => stashLayout(game.camera.viewW, game.camera.viewH, layout.s), benchLayout: () => benchLayout(game.camera.viewW, game.camera.viewH, layout.s), treeLayout: () => treeLayout(game.camera.viewW, game.camera.viewH, layout.s), ascendLayout: () => ascendLayout(game.camera.viewW, game.camera.viewH, layout.s), openTree: () => { game.mode = 'tree'; openTree(game); }, createLayout: () => createLayout(game.camera.viewW, game.camera.viewH, layout.s), openCreate: (skip) => openCreate(game, skip), rewardLayout: () => rewardLayout(game.camera.viewW, game.camera.viewH, layout.s), shopLayout: () => shopLayout(game.camera.viewW, game.camera.viewH, layout.s), skills: () => skillsOf(game.data.gems, game.player, game.data.items), stats: () => playerStats(game.player, game.data), layout: () => layout, bagLayout: () => bagLayout(game.camera.viewW, game.camera.viewH, layout.s), gemLayout: () => gemLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s), game.player) }; // test-hook

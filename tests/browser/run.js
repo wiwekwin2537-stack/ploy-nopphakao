@@ -688,6 +688,31 @@ await check('เลื่อนขั้นอาชีพแบบ PoE: ต้�
   return 'เลือก ' + who.a + ' ลงโหนดได้ ปิดกลับได้';
 });
 
+await check('โต๊ะช่างแบบ PoE: เดินไปโต๊ะในเวียง กด E เปิด → แตะของ → แตะสูตรสองครั้ง = คราฟต์ ได้ค่าเพิ่ม เสียเบี้ย → ✕ ปิด', async () => {
+  await G(page, () => {
+    const g = __ploy.game, b = (__ploy.enterZone(g, 'town'), g.world.zone.objects.find((o) => o.type === 'craft_bench'));
+    g.mobs.length = 0; g.player.x = b.x + b.w / 2; g.player.y = b.y + b.h + 18; g.player.coins = 1000; g.mode = 'play';
+    for (const it of Object.values(g.player.equip)) if (it) delete it.craft;
+  });
+  await page.waitForTimeout(200);
+  await page.keyboard.press('e'); await page.waitForTimeout(200);
+  assert((await state(page)).mode === 'bench', 'ไม่เปิดโต๊ะช่าง: ' + (await state(page)).mode);
+  const B = await G(page, () => __ploy.benchLayout());
+  const order = await G(page, () => Object.entries(__ploy.game.player.equip).filter(([, it]) => it && it.rarity !== 'unique').map(([k]) => k));
+  const i = order.indexOf('body');
+  assert(i >= 0, 'ไม่มีเสื้อ');
+  await page.mouse.click(B.grid.x + (i % B.grid.cols) * B.grid.cell + B.grid.cell / 2, B.grid.y + Math.floor(i / B.grid.cols) * B.grid.cell + B.grid.cell / 2); await page.waitForTimeout(120);
+  const ry = B.list.y + B.list.row / 2;
+  await page.mouse.click(B.list.x + 40, ry); await page.waitForTimeout(120);
+  await page.mouse.click(B.list.x + 40, ry); await page.waitForTimeout(150);
+  const r = await G(page, () => ({ c: __ploy.game.player.equip.body.craft, coins: __ploy.game.player.coins }));
+  assert(r.c === 'b_life' && r.coins === 800, 'คราฟต์ไม่ติด: ' + JSON.stringify(r));
+  await page.screenshot({ path: SHOTS + '/32-bench.png' });
+  await page.mouse.click(B.close.x, B.close.y); await page.waitForTimeout(150);
+  assert((await state(page)).mode === 'play', '✕ ไม่ปิด');
+  return 'คราฟต์เลือด +25 ลงเสื้อ เสีย 200 เบี้ย';
+});
+
 await check('ความเร็ว: มอน 100 ตัวไล่ล้อม ใช้เวลาคำนวณ+วาดต่อเฟรมไม่เกิน 8ms', async () => {
   await G(page, () => { const g = __ploy.game, p = g.player; const types = ['boar', 'monkey', 'krasue', 'piglet']; for (let i = 0; i < 2000 && g.mobs.length < 100; i++) { const m = __ploy.makeMob(g, types[i % 4], 3, p.x + (Math.random() - 0.5) * 700, p.y + (Math.random() - 0.5) * 400, -1); if (!g.world.blocked(m.x, m.y, m.radius)) g.mobs.push(m); } g.mobs.forEach((m) => { m.aggroed = true; }); p.invuln = 99; });
   await page.waitForTimeout(1500);

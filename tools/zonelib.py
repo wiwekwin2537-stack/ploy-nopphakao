@@ -9,6 +9,7 @@ def town(tid, name, ground, music, prev, prev_t, nxt, nxt_t, npcs, deco, scatter
         {"type": "stash", "x": 11, "y": 7.7, "w": 1.2, "h": 0.7, "label": "หีบเก็บของ"},
         {"type": "sala", "x": 17, "y": 3.6, "w": 6, "h": 3, "label": "ศาลา" + npcs[0]["name"]},
         {"type": "stall", "x": 14, "y": 13.6, "w": 4, "h": 2, "label": "ร้าน" + npcs[1]["name"]},
+        {"type": "craft_bench", "x": 21.5, "y": 13.8, "w": 1.6, "h": 0.8, "label": "โต๊ะช่าง"},
     ] + [{"type": "lantern", "x": x, "y": y, "w": 0.4, "h": 0.4} for x, y in [(5, 8.2), (26, 8.2), (5, 13.2), (26, 13.2)]] + deco
     return {
         "name": name, "w": W, "h": H, "ground": ground, "music": music, "safe": True, "seed": seed,

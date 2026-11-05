@@ -1629,5 +1629,205 @@
    ],
    "chance": 0.35
   }
+ },
+ "bench": {
+  "_doc": "โต๊ะช่างแบบ PoE (Crafting Bench) ในทุกเมือง: เลือกเพิ่มค่าที่ต้องการเอง 1 ค่าต่อชิ้น (ค่าคราฟต์ แยกจากค่าสุ่ม ไม่นับช่องค่าสุ่ม) · ใช้ได้กับของทุกสียกเว้นยูนีค · จ่ายเบี้ย (+ศิลา) · สูตรปลดตามธงบอส (unlock: null = ตั้งแต่จบบทนำ) · ลบค่าคราฟต์ = removeCost เบี้ย แล้วคราฟต์ใหม่ได้",
+  "removeCost": 50,
+  "recipes": [
+   {
+    "id": "b_life",
+    "stat": "hpFlat",
+    "value": 25,
+    "slots": [
+     "body",
+     "head",
+     "legs",
+     "arms",
+     "ring",
+     "amulet"
+    ],
+    "cost": {
+     "coins": 200
+    },
+    "unlock": null
+   },
+   {
+    "id": "b_mana",
+    "stat": "mpFlat",
+    "value": 20,
+    "slots": [
+     "head",
+     "ring",
+     "amulet",
+     "body"
+    ],
+    "cost": {
+     "coins": 200
+    },
+    "unlock": null
+   },
+   {
+    "id": "b_melee",
+    "stat": "dmgMelee",
+    "value": 12,
+    "slots": [
+     "weapon",
+     "arms",
+     "ring",
+     "amulet"
+    ],
+    "cost": {
+     "coins": 300
+    },
+    "unlock": "yakSlain"
+   },
+   {
+    "id": "b_spell",
+    "stat": "dmgSpell",
+    "value": 12,
+    "slots": [
+     "weapon",
+     "head",
+     "amulet",
+     "ring"
+    ],
+    "cost": {
+     "coins": 300
+    },
+    "unlock": "yakSlain"
+   },
+   {
+    "id": "b_flat",
+    "stat": "dmgFlat",
+    "value": 6,
+    "slots": [
+     "weapon"
+    ],
+    "cost": {
+     "coins": 400,
+     "currency": {
+      "chroma": 1
+     }
+    },
+    "unlock": "khotchasi_kingSlain"
+   },
+   {
+    "id": "b_crit",
+    "stat": "crit",
+    "value": 3,
+    "slots": [
+     "weapon",
+     "ring",
+     "amulet",
+     "head"
+    ],
+    "cost": {
+     "coins": 500,
+     "currency": {
+      "fusing": 1
+     }
+    },
+    "unlock": "khotchasi_kingSlain"
+   },
+   {
+    "id": "b_speed",
+    "stat": "atkSpeedInc",
+    "value": 8,
+    "slots": [
+     "weapon",
+     "arms",
+     "ring"
+    ],
+    "cost": {
+     "coins": 500,
+     "currency": {
+      "fusing": 1
+     }
+    },
+    "unlock": "garuda_kingSlain"
+   },
+   {
+    "id": "b_move",
+    "stat": "moveInc",
+    "value": 8,
+    "slots": [
+     "legs",
+     "body"
+    ],
+    "cost": {
+     "coins": 600,
+     "currency": {
+      "chroma": 2
+     }
+    },
+    "unlock": "garuda_kingSlain"
+   },
+   {
+    "id": "b_critmult",
+    "stat": "critMult",
+    "value": 20,
+    "slots": [
+     "weapon",
+     "amulet"
+    ],
+    "cost": {
+     "coins": 800,
+     "currency": {
+      "jeweller": 2
+     }
+    },
+    "unlock": "vessavanaSlain"
+   },
+   {
+    "id": "b_cast",
+    "stat": "castSpeedInc",
+    "value": 8,
+    "slots": [
+     "weapon",
+     "head",
+     "amulet"
+    ],
+    "cost": {
+     "coins": 800,
+     "currency": {
+      "jeweller": 2
+     }
+    },
+    "unlock": "vessavanaSlain"
+   },
+   {
+    "id": "b_all",
+    "stat": "dmgAll",
+    "value": 10,
+    "slots": [
+     "weapon",
+     "ring",
+     "amulet"
+    ],
+    "cost": {
+     "coins": 1500,
+     "currency": {
+      "exalt": 1
+     }
+    },
+    "unlock": "naga_kingSlain"
+   },
+   {
+    "id": "b_hpinc",
+    "stat": "hpInc",
+    "value": 8,
+    "slots": [
+     "body",
+     "amulet"
+    ],
+    "cost": {
+     "coins": 1500,
+     "currency": {
+      "exalt": 1
+     }
+    },
+    "unlock": "thotsakanSlain"
+   }
+  ]
  }
 }
