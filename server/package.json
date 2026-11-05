@@ -1,0 +1,9 @@
+{
+  "name": "ploy-nopphakao-server",
+  "private": true,
+  "type": "module",
+  "description": "เซิร์ฟเวอร์ออนไลน์ของพลอยนพเก้า: บัญชี ตัวละคร เซฟออนไลน์ และเห็นผู้เล่นอื่น",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" },
+  "dependencies": { "ws": "^8.18.0" }
+}

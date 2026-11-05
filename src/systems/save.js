@@ -100,10 +100,13 @@ export function validate(s, data) {
   return d;
 }
 
+// เล่นออนไลน์: เก็บสำรองในเครื่องแยกคีย์ตามตัวละคร (ไม่ทับเซฟออฟไลน์) แล้วส่งขึ้นเซิร์ฟเวอร์ผ่าน game.onSaved (net/cloud.js)
 export function writeSave(game) {
   const s = serialize(game);
-  try { localStorage.setItem(KEY, JSON.stringify(s)); } catch { return null; }
+  if (game.mode === 'title' || game.mode === 'login' || game.mode === 'chars') return null;
+  try { localStorage.setItem(game.saveKey || KEY, JSON.stringify(s)); } catch { /* เครื่องเก็บไม่ได้ ยังส่งออนไลน์ได้ */ }
   game.lastSave = s;
+  if (game.onSaved) game.onSaved(s);
   return s;
 }
 
@@ -114,13 +117,13 @@ export function readSave(data) {
 export function clearSave() { try { localStorage.removeItem(KEY); } catch { /* ข้าม */ } }
 
 export function setupAutosave(game) {
-  const save = () => { if (game.mode !== 'title') writeSave(game); };
+  const save = () => writeSave(game);
   ['zoneChanged', 'levelUp', 'gemPicked', 'metChan', 'gemsChanged', 'passivesChanged', 'itemPicked', 'gearChanged', 'bossKilled', 'shopChanged', 'currencyPicked', 'currencyUsed', 'waypointUnlocked', 'gemLevelUp', 'itemMoved', 'questClaimed', 'questProgress'].forEach((e) => game.events.on(e, save));
   game.autosaveT = 0;
 }
 
 export function updateAutosave(game, dt) {
-  if (game.mode === 'title') return;
+  if (game.mode === 'title' || game.mode === 'login' || game.mode === 'chars' || game.mode === 'create') return;
   game.autosaveT += dt;
   if (game.autosaveT >= game.data.balance.autosaveSeconds) { game.autosaveT = 0; writeSave(game); }
 }

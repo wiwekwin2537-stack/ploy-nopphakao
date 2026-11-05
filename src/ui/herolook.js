@@ -3,13 +3,18 @@ import { LOOKS } from '../art/characters.js';
 import { shade } from '../art/draw.js';
 import { weaponInHand, itemSprite, matColor } from '../art/items.js';
 
-const lookCache = { key: '', look: null };
+const lookCache = new Map();                                  // ตามชุดที่ใส่ (ผู้เล่นทุกคนในจอใช้ร่วมกัน)
 
-export function heroLook(game) {
-  const p = game.player, I = game.data.items, e = p.equip || {};
+export function heroLook(game) { return lookOf(game.data, game.player); }
+export function heroGear(game) { return gearOf(game.data, game.player); }
+
+// p = ตัวผู้เล่นใดก็ได้ที่มี cls + equip (ตัวเอง หรือผู้เล่นคนอื่นที่สร้างจากข้อมูลออนไลน์)
+export function lookOf(data, p) {
+  const I = data.items, e = p.equip || {};
   const key = p.cls + '|' + (e.weapon ? e.weapon.base : '') + '|' + ['head', 'body', 'legs', 'arms', 'amulet'].map((k) => (e[k] ? e[k].base : '')).join('|');
-  if (lookCache.key !== key || !lookCache.look) {
-    const CL = game.data.passives.classes[p.cls], L = { ...LOOKS.hero, ...((CL && CL.look) || {}) }, lk = (k) => (e[k] ? I.bases[e[k].base] : null);
+  let look = lookCache.get(key);
+  if (!look) {
+    const CL = data.passives.classes[p.cls], L = { ...LOOKS.hero, ...((CL && CL.look) || {}) }, lk = (k) => (e[k] ? I.bases[e[k].base] : null);
     const b = lk('body'), h = lk('head'), lg = lk('legs'), ar = lk('arms'), nk = lk('amulet');
     // ชุดบนตัวใช้ภาพเดียวกับไอคอนเป็นลายเสื้อ/กางเกง (แบบเอโดเรีย) + สีวัสดุเดียวกัน
     if (b) { L.top = matColor(b); L.collar = (b.look && b.look.trim) || shade(L.top, 0.08); L.plates = null; L.straps = null; L.bodyArt = itemSprite(I, e.body.base, 64); }
@@ -19,14 +24,15 @@ export function heroLook(game) {
     if (nk) L.neck = nk.color;
     const wk = e.weapon && (I.bases[e.weapon.base].look || {}).kind;
     L.weapon = ['staff', 'bow', 'crossbow'].includes(wk) ? 'staff' : 'sword';   // คทา/ธนู/หน้าไม้ = ถือตั้งตรง ไม่สะพายหลัง ไม่เหวี่ยงฟัน
-    lookCache.key = key; lookCache.look = L;
+    if (lookCache.size > 64) lookCache.clear();
+    lookCache.set(key, look = L);
   }
-  return lookCache.look;
+  return look;
 }
 
 // อาวุธ + ประกายตามของที่ดีที่สุดที่สวม (แดง/ม่วง แบบเอโดเรีย)
-export function heroGear(game) {
-  const e = game.player.equip || {}, I = game.data.items, w = e.weapon;
+export function gearOf(data, p) {
+  const e = p.equip || {}, I = data.items, w = e.weapon;
   const rs = Object.values(e).filter(Boolean).map((it) => it.rarity);
   return {
     blade: w ? I.bases[w.base].color : '#d8e0e4',

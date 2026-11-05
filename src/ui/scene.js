@@ -2,7 +2,7 @@
 import { createGround } from '../art/ground.js';
 import { createSpriteCache } from '../art/sprites.js';
 import { drawHuman } from '../art/characters.js';
-import { heroLook, heroGear } from './herolook.js';
+import { heroLook, heroGear, lookOf, gearOf } from './herolook.js';
 import { currencyIcon } from './itemicon.js';
 import { itemSprite } from '../art/items.js';
 import { gemSprite } from '../art/gems.js';
@@ -204,6 +204,7 @@ export function createScene(game) {
         ctx.fillStyle = big ? '#ff8a2a' : m.elite ? game.data.balance.elites.tiers[m.elite].color : '#e0443a'; rrect(ctx, x, y, Math.max(2, w * (m.hp / m.maxHp)), 4, 2); ctx.fill();
       }
     }
+    if (game.others) for (const o of game.others.values()) if (vis(o.x, o.y)) plate(ctx, o.name, o.x, o.y - 58, 10, '#c8ffc0', 'rgba(110,220,120,0.8)', 'Lv.' + o.lv);   // ป้ายชื่อผู้เล่นคนอื่น (สีเขียว ต่างจาก NPC สีฟ้า)
     for (const n of z.npcs) {
       if (!vis(n.x, n.y)) continue;
       plate(ctx, n.name, n.x, n.y - 64, 11, '#a8e0ff', 'rgba(120,190,255,0.7)');
@@ -255,6 +256,7 @@ export function createScene(game) {
       for (const n of z.npcs) list.push({ key: n.y, npc: n });
       for (const mob of game.mobs) if (inView(mob.x, mob.y)) list.push({ key: mob.y + (mob.def.flying ? 30 : 0), mob });
       for (const d of game.drops) if (inView(d.x, d.y)) list.push({ key: d.y - 1, drop: d });
+      if (game.others) for (const o of game.others.values()) if (inView(o.x, o.y)) list.push({ key: o.y, other: o });   // ผู้เล่นออนไลน์คนอื่น
       list.push({ key: game.player.y, player: true });
       list.sort((a, b2) => a.key - b2.key);
       const p = game.player, t = game.time, dtv = Math.min(0.05, Math.max(0, t - lastT)); lastT = t;
@@ -278,6 +280,9 @@ export function createScene(game) {
         } else if (it.npc) {
           const n = it.npc;
           drawHuman(ctx, n.look, n.x, n.y, { dir: n.face ? (n.face < 0 ? 2 : 3) : 0, t: t + n.x, moving: false, swing: -1 });
+        } else if (it.other) {
+          const o = it.other;
+          drawHuman(ctx, lookOf(game.data, o.body), o.x, o.y, { ...gearOf(game.data, o.body), dir: o.dir, walk: o.walk, amt: 1, moving: o.moving, swing: o.swingT, t: t + o.x, cast: o.act === 'c' });
         } else if (it.drop) drawDrop(ctx, it.drop);
         else if (it.player && !(p.dead && game.mode === 'dead' && game.deadT > 0.6)) {
           drawDashFx(ctx, ghosts);                                     // พุ่งหลบ: เส้นลมเร็ว + ฝุ่นฟุ้งที่เท้า (ไม่มีเงาตัวละคร)

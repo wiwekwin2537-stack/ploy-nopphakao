@@ -5,6 +5,7 @@ import { uiText as text, wrapLines } from './hud.js';
 import { drawHuman, LOOKS } from '../art/characters.js';
 import { weaponInHand } from '../art/items.js';
 import { gemSprite } from '../art/gems.js';
+import { drawField, setFieldValue, hideFields } from './textfield.js';
 
 // เรียงตามวงต้นพาสซีฟ: สายผสมอยู่ระหว่างสองสายที่มันผสม
 export const CLASS_IDS = ['warrior', 'duelist', 'ranger', 'shadow', 'shaman', 'templar'];
@@ -22,19 +23,6 @@ export function openCreate(game, skip) {
   game.create = { cls: 'warrior', name: game.rng.pick(NAMES), skip: !!skip };
   game.mode = 'create';
 }
-
-// ช่องพิมพ์ชื่อ: ใช้ช่อง input จริงของเบราว์เซอร์ (มือถือขึ้นแป้นพิมพ์ภาษาไทยได้) วางทับตำแหน่งช่องชื่อ
-let input = null;
-function nameInput(game) {
-  if (input || typeof document === 'undefined') return input;
-  input = document.createElement('input');
-  Object.assign(input, { maxLength: 16, placeholder: 'ชื่อตัวละคร' });
-  Object.assign(input.style, { position: 'fixed', zIndex: 5, background: 'rgba(20,14,10,0.95)', color: '#f4e6c8', border: '1.5px solid #d9a630', borderRadius: '6px', padding: '0 10px', boxSizing: 'border-box', font: '16px Kanit, sans-serif', outline: 'none', display: 'none' });
-  input.addEventListener('input', () => { if (game.create) game.create.name = input.value.slice(0, 16); });
-  document.body.appendChild(input);
-  return input;
-}
-export function hideNameInput() { if (input) { input.style.display = 'none'; input.blur(); } }
 
 export function drawCreate(ctx, game, L, w, h) {
   const B = createLayout(w, h, L.s), s = B.s, P = game.data.passives, G = game.data.gems, I = game.data.items, cr = game.create;
@@ -69,13 +57,11 @@ export function drawCreate(ctx, game, L, w, h) {
   ctx.font = `normal ${9.5 * s}px Kanit, sans-serif`;
   wrapLines(ctx, K.story, F.w - 20 * s).slice(0, 2).forEach((l, i) => text(ctx, l, F.x + 10 * s, F.y + 48 * s + i * 13 * s, 9.5 * s, 'rgba(244,230,200,0.8)', 'left', 'normal'));
   // ช่องชื่อ + สุ่มชื่อ + ปุ่มเริ่ม
-  const N = B.name, el = nameInput(game);
+  const N = B.name;
   text(ctx, 'ชื่อ:', N.x, N.y - 8 * s, 9.5 * s, 'rgba(244,230,200,0.7)', 'left', 'normal');
-  if (el) {
-    const r = ctx.canvas.getBoundingClientRect(), k = r.width / w;
-    Object.assign(el.style, { display: 'block', left: r.left + N.x * k + 'px', top: r.top + N.y * k + 'px', width: N.w * k + 'px', height: N.h * k + 'px' });
-    if (document.activeElement !== el && el.value !== cr.name) el.value = cr.name;
-  } else { ctx.fillStyle = 'rgba(20,14,10,0.95)'; rrect(ctx, N.x, N.y, N.w, N.h, 6 * s); ctx.fill(); text(ctx, cr.name, N.x + 10 * s, N.y + N.h / 2, 13 * s, C.cream, 'left', 'normal'); }
+  drawField(ctx, 'charname', N, w, s, cr.name, { max: 16, placeholder: 'ชื่อตัวละคร', onInput: (v) => { if (game.create) game.create.name = v; } });
+  if (cr.err) text(ctx, cr.err, N.x + N.w + 50 * s, N.y - 8 * s, 10 * s, '#ff8a7a', 'left', '600');                  // เล่นออนไลน์: ชื่อซ้ำ/เซิร์ฟเวอร์ตอบผิด
+  if (cr.busy) text(ctx, 'กำลังสร้างตัวละครบนเซิร์ฟเวอร์…', N.x + N.w + 50 * s, N.y - 8 * s, 10 * s, '#9af0b0', 'left', '600');
   const D = B.dice;
   ctx.fillStyle = 'rgba(60,40,20,0.9)'; rrect(ctx, D.x, D.y, D.w, D.h, 6 * s); ctx.fill(); ctx.strokeStyle = C.gold; ctx.lineWidth = 1.2; ctx.stroke();
   text(ctx, 'สุ่ม', D.x + D.w / 2, D.y + D.h / 2, 10 * s, C.goldHi, 'center', '600');
@@ -92,12 +78,12 @@ export function updateCreate(game, L, w, h) {
   for (const t of game.input.taps) {
     if (t.consumed) continue;
     t.consumed = true;
-    if (Math.hypot(t.sx - B.back.x, t.sy - B.back.y) < B.back.r * 1.4) { hideNameInput(); return 'back'; }
+    if (Math.hypot(t.sx - B.back.x, t.sy - B.back.y) < B.back.r * 1.4) { hideFields(); return 'back'; }
     const c = B.cards.find((q) => inBox(t, q));
     if (c) { if (cr.cls !== c.id) game.audio.play('click'); cr.cls = c.id; continue; }
-    if (inBox(t, B.dice)) { cr.name = game.rng.pick(NAMES); if (input) input.value = cr.name; game.audio.play('click'); continue; }
-    if (inBox(t, B.go) && cr.name.trim()) { hideNameInput(); return 'start'; }
+    if (inBox(t, B.dice)) { cr.name = game.rng.pick(NAMES); setFieldValue('charname', cr.name); game.audio.play('click'); continue; }
+    if (inBox(t, B.go) && cr.name.trim() && !cr.busy) { cr.err = null; return 'start'; }
   }
-  if (game.input.pressed.pause) { hideNameInput(); return 'back'; }
+  if (game.input.pressed.pause) { hideFields(); return 'back'; }
   return null;
 }

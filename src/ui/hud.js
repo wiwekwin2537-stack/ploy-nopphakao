@@ -310,6 +310,7 @@ export function titleButtons(game, w, h, s) {
     out.push({ id: 'new', label: 'เริ่มผจญภัย', x, y: y0, w: bw, h: bh });
     out.push({ id: 'skip', label: 'ข้ามบทนำ', x, y: y0 + bh + 12 * s, w: bw, h: bh * 0.8, small: true });
   }
+  out.push({ id: 'online', label: 'เล่นออนไลน์ (เห็นผู้เล่นอื่น)', x, y: y0 + bh * 1.8 + 24 * s, w: bw, h: bh * 0.8, small: true });   // สมัคร/ล็อกอิน → เลือกตัวละคร
   return out;
 }
 
@@ -346,7 +347,7 @@ export function drawTitle(ctx, game, L, w, h) {
   }
   text(ctx, 'พลอยนพเก้า', w / 2, h * 0.3, Math.min(64 * s, w / 7), C.goldHi, 'center');
   text(ctx, 'ตำนานนักล่าพลอยแห่งป่าหิมพานต์', w / 2, h * 0.3 + 44 * s, 15 * s, C.cream, 'center', 'normal');
-  for (const b of titleButtons(game, w, h, s)) {
+  for (const b of game.mode === 'title' ? titleButtons(game, w, h, s) : []) {   // หน้าล็อกอิน/เลือกตัวละครซ้อนบนหน้าแรก: ไม่วาดปุ่มหน้าแรก
     kanokFrame(ctx, b.x, b.y, b.w, b.h, 10);
     text(ctx, b.label, b.x + b.w / 2, b.y + b.h / 2 + 1, (b.small ? 13 : 18) * s, b.small ? C.cream : C.goldHi, 'center', b.small ? 'normal' : 'bold');
   }

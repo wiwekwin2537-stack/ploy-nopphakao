@@ -27,7 +27,7 @@ import { setupLoot, updateLoot, spawnDrop } from './systems/loot.js';
 import { setupProgress } from './systems/progress.js';
 import { updateSkillTimers } from './systems/skills.js';
 import { updateNpcs, updateDialog } from './systems/npc.js';
-import { setupAutosave, updateAutosave, readSave, writeSave, clearSave } from './systems/save.js';
+import { setupAutosave, updateAutosave, readSave, writeSave, clearSave, validate } from './systems/save.js';
 import { setupTutorial, updateTutorial, skipTutorial } from './systems/tutorial.js';
 import { enterZone, updateTravel, setupDeath, respawn } from './systems/travel.js';
 import { createFx } from './art/fx.js';
@@ -60,6 +60,12 @@ import { updatePotion, setupFlasks } from './systems/shop.js';
 import { setupUniques, makeUnique } from './systems/uniques.js';
 import { setupActs } from './systems/quests.js';
 import { setupAscend } from './systems/ascend.js';
+import { drawLogin, updateLogin, openLogin, loginLayout } from './ui/login.js';
+import { drawChars, updateChars, openChars, charsLayout } from './ui/chars.js';
+import { hideFields } from './ui/textfield.js';
+import { api, session } from './net/online.js';
+import { startCloud, updateCloud, stopCloud, flushCloud } from './net/cloud.js';
+import { startPresence, updatePresence, stopPresence } from './net/presence.js';
 
 // สองชั้น: โลกวาดความละเอียดต่ำแล้วขยายแบบพิกเซล (สไตล์เอโดเรีย) · หน้าจอซ้อน/ตัวหนังสือวาดคมเต็มความละเอียด
 const PIXEL = 0.62;
@@ -87,19 +93,17 @@ const scene = createScene(game);
 
 const inRect = (r, t) => t.sx >= r.x && t.sx <= r.x + r.w && t.sy >= r.y && t.sy <= r.y + r.h;
 
-function startNew(skip, cls = 'warrior', name = 'นักล่าพลอย') {
-  clearSave();
+// ตัวละครใหม่เอี่ยม (ใช้ทั้งออฟไลน์และออนไลน์)
+function freshHero(skip, cls, name) {
   game.flags = {};
   game.player = createPlayer(game.data);
   game.player.name = String(name).trim().slice(0, 16) || 'นักล่าพลอย';
   giveStarterGear(game.player, game.data, cls);
   if (skip) { skipTutorial(game); enterZone(game, 'town', 20.5 * 32, 17.5 * 32); } else enterZone(game, 'road');
   game.mode = game.dialog ? 'dialog' : 'play';
-  writeSave(game);
 }
-function continueGame() {
-  const s = readSave(game.data);
-  if (!s) return startNew(false);
+// โหลดตัวละครจากเซฟ (เซฟในเครื่อง หรือเซฟที่ดึงจากเซิร์ฟเวอร์)
+function applySave(s) {
   const p = game.player = createPlayer(game.data);
   Object.assign(p, { level: s.level, xp: s.xp, coins: s.coins, bag: s.bag.slice(), currency: { ...p.currency, ...s.currency }, passives: s.passives.slice(), gemXp: { ...s.gemXp }, questPoints: s.questPoints || 0, ascend: s.ascend, ascNodes: s.ascNodes.slice(), cls: s.cls, name: s.name, items: s.items, stash: s.stash || [], equip: { ...p.equip, ...s.equip }, nextUid: s.nextUid, potions: s.potions, mpPotions: s.mpPotions, hp: s.hp, mp: s.mp });
   game.flags = { ...s.flags };
@@ -107,6 +111,51 @@ function continueGame() {
   enterZone(game, s.zone, s.x, s.y);
   if (game.world.blocked(p.x, p.y, p.radius)) { p.x = game.world.zone.start.x; p.y = game.world.zone.start.y; }
   if (game.dialog) game.mode = 'dialog';
+}
+function leaveOnline() { if (game.online) { stopCloud(game); stopPresence(game); game.online = null; } }
+function startNew(skip, cls = 'warrior', name = 'นักล่าพลอย') {
+  leaveOnline();
+  clearSave();
+  freshHero(skip, cls, name);
+  writeSave(game);
+}
+function continueGame() {
+  leaveOnline();
+  const s = readSave(game.data);
+  if (!s) return startNew(false);
+  applySave(s);
+}
+
+// ออนไลน์ (แบบเอโดเรีย): ตัวละครอยู่บนเซิร์ฟเวอร์ · เซฟในเครื่องแยกคีย์ (ไม่ทับเซฟออฟไลน์) · เห็นผู้เล่นอื่นในพื้นที่เดียวกัน
+function enterOnline(id, save, fresh) {
+  leaveOnline();
+  hideFields();
+  startCloud(game, id);
+  if (save) applySave(save); else freshHero(fresh.skip, fresh.cls, fresh.name);
+  game.online = id;
+  startPresence(game, id);
+  writeSave(game);
+}
+async function createOnline(c) {
+  c.busy = true; c.err = null;
+  const r = await api('/api/char/create', { name: c.name.trim(), cls: c.cls });
+  c.busy = false;
+  if (game.create !== c) return;
+  if (r.err) { c.err = r.msg; if (r.err === 'auth') { hideFields(); game.create = null; openLogin(game); } return; }
+  game.create = null;
+  enterOnline(r.char.id, null, { skip: c.skip, cls: c.cls, name: c.name });
+}
+async function loadOnline(id) {
+  const g = game.chars;
+  g.busy = true; g.msg = 'กำลังโหลดตัวละคร…'; g.col = '#f4e6c8';
+  const r = await api('/api/char/load', { id });
+  if (game.chars !== g || game.mode !== 'chars') return;
+  g.busy = false;
+  if (r.err) { g.msg = r.msg; g.col = '#ff8a7a'; return; }
+  const s = r.save ? validate(r.save, game.data) : null;
+  if (r.save && !s) { g.msg = 'เซฟบนเซิร์ฟเวอร์อ่านไม่ได้'; g.col = '#ff8a7a'; return; }
+  game.chars = null;
+  enterOnline(id, s, s ? null : { skip: false, cls: r.char.cls, name: r.char.name });
 }
 
 function hitCircle(t, c) { return (t.sx - c.x) ** 2 + (t.sy - c.y) ** 2 <= (c.r * 1.3) ** 2; }
@@ -135,14 +184,25 @@ function update(dt) {
       if (!b) continue;
       game.audio.play('click');
       if (b.id === 'continue') continueGame();
+      else if (b.id === 'online') { if (session.token) openChars(game); else openLogin(game); }
       else if (b.id === 'skip') openCreate(game, true);
       else if (b.id === 'new') { if (game.hasSave && !game.confirmNew) game.confirmNew = true; else openCreate(game, false); }
     }
     if (input.pressed.interact || input.pressed.attack) { game.audio.unlock(); game.hasSave ? continueGame() : openCreate(game, false); }
+  } else if (game.mode === 'login') {
+    const r = updateLogin(game, layout, game.camera.viewW, game.camera.viewH);
+    if (r === 'back' || r === 'offline') { game.login = null; game.mode = 'title'; }
+    else if (r === 'ok') { game.login = null; openChars(game); }
+  } else if (game.mode === 'chars') {
+    const r = updateChars(game, layout, game.camera.viewW, game.camera.viewH);
+    if (r === 'back') { game.chars = null; game.mode = 'title'; }
+    else if (r === 'logout') { game.chars = null; openLogin(game); }
+    else if (r === 'create') { openCreate(game, false); game.create.online = true; }
+    else if (r && r.go) loadOnline(r.go);
   } else if (game.mode === 'create') {
     const r = updateCreate(game, layout, game.camera.viewW, game.camera.viewH);
-    if (r === 'back') game.mode = 'title';
-    else if (r === 'start') { const c = game.create; game.create = null; startNew(c.skip, c.cls, c.name); }
+    if (r === 'back') { if (game.create.online) { game.create = null; openChars(game); } else game.mode = 'title'; }
+    else if (r === 'start') { const c = game.create; if (c.online) createOnline(c); else { game.create = null; startNew(c.skip, c.cls, c.name); } }
     game.audio.music('town');
   } else if (game.mode === 'dialog') {
     updateDialog(game, dt);
@@ -211,7 +271,8 @@ function update(dt) {
       updateTravel(game, dt);
     }
   }
-  if (game.mode !== 'title') {
+  if (game.online) { updateCloud(game); updatePresence(game, dt); }
+  if (!['title', 'login', 'chars'].includes(game.mode)) {
     if (game.mode === 'dead') updateMonsters(game, dt);
     updateTutorial(game, dt);
     updateAutosave(game, dt);
@@ -226,9 +287,11 @@ function render() {
   const dpr = Math.min(2, devicePixelRatio || 1), w = game.camera.viewW, h = game.camera.viewH;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  if (game.mode === 'title' || game.mode === 'create') {
+  if (['title', 'create', 'login', 'chars'].includes(game.mode)) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    if (game.mode === 'title') drawTitle(ctx, game, layout, w, h); else drawCreate(ctx, game, layout, w, h);
+    if (game.mode === 'create') drawCreate(ctx, game, layout, w, h); else drawTitle(ctx, game, layout, w, h);
+    if (game.mode === 'login') drawLogin(ctx, game, layout, w, h);
+    if (game.mode === 'chars') drawChars(ctx, game, layout, w, h);
   } else {
     scene.draw(wctx, PIXEL);
     scene.drawOverlay(ctx, dpr);
@@ -261,11 +324,11 @@ function resize() {
 }
 addEventListener('resize', resize);
 resize();
-document.addEventListener('visibilitychange', () => { if (document.hidden && game.mode !== 'title') writeSave(game); });
+document.addEventListener('visibilitychange', () => { if (document.hidden && game.mode !== 'title') { writeSave(game); flushCloud(game); } });
 
 const loop = createLoop(update, render);
 game.loopStats = loop.stats;
 loop.start();
 
 // test-hook: เปิดเฉพาะเมื่อมี ?test ใน URL ใช้ในเทสต์อัตโนมัติเท่านั้น
-if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, rollElite, makeUnique, spawnDrop, art: { drawHuman, drawStats, heroLook, heroGear, itemSprite, drawMonster }, damage: damageMob, stashLayout: () => stashLayout(game.camera.viewW, game.camera.viewH, layout.s), craftLayout: () => craftLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s)), benchLayout: () => benchLayout(game.camera.viewW, game.camera.viewH, layout.s), treeLayout: () => treeLayout(game.camera.viewW, game.camera.viewH, layout.s), ascendLayout: () => ascendLayout(game.camera.viewW, game.camera.viewH, layout.s), openTree: () => { game.mode = 'tree'; openTree(game); }, createLayout: () => createLayout(game.camera.viewW, game.camera.viewH, layout.s), openCreate: (skip) => openCreate(game, skip), rewardLayout: () => rewardLayout(game.camera.viewW, game.camera.viewH, layout.s), shopLayout: () => shopLayout(game.camera.viewW, game.camera.viewH, layout.s), skills: () => skillsOf(game.data.gems, game.player, game.data.items), stats: () => playerStats(game.player, game.data), layout: () => layout, bagLayout: () => bagLayout(game.camera.viewW, game.camera.viewH, layout.s), gemLayout: () => gemLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s), game.player) }; // test-hook
+if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, online: { openLogin: () => openLogin(game), openChars: () => openChars(game), loadOnline, session }, titleButtons: () => titleButtons(game, game.camera.viewW, game.camera.viewH, layout.s), loginLayout: () => loginLayout(game.camera.viewW, game.camera.viewH, layout.s), charsLayout: () => charsLayout(game.camera.viewW, game.camera.viewH, layout.s), enterZone, respawn, writeSave, readSave, makeMob, rollElite, makeUnique, spawnDrop, art: { drawHuman, drawStats, heroLook, heroGear, itemSprite, drawMonster }, damage: damageMob, stashLayout: () => stashLayout(game.camera.viewW, game.camera.viewH, layout.s), craftLayout: () => craftLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s)), benchLayout: () => benchLayout(game.camera.viewW, game.camera.viewH, layout.s), treeLayout: () => treeLayout(game.camera.viewW, game.camera.viewH, layout.s), ascendLayout: () => ascendLayout(game.camera.viewW, game.camera.viewH, layout.s), openTree: () => { game.mode = 'tree'; openTree(game); }, createLayout: () => createLayout(game.camera.viewW, game.camera.viewH, layout.s), openCreate: (skip) => openCreate(game, skip), rewardLayout: () => rewardLayout(game.camera.viewW, game.camera.viewH, layout.s), shopLayout: () => shopLayout(game.camera.viewW, game.camera.viewH, layout.s), skills: () => skillsOf(game.data.gems, game.player, game.data.items), stats: () => playerStats(game.player, game.data), layout: () => layout, bagLayout: () => bagLayout(game.camera.viewW, game.camera.viewH, layout.s), gemLayout: () => gemLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s), game.player) }; // test-hook
