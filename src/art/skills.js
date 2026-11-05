@@ -1,5 +1,5 @@
 // รูปสกิล (ไอคอนสี่เหลี่ยมแบบแถบสกิล PoE): ลูกไฟ หอกน้ำแข็ง หมอกพิษ สายฟ้า — ใช้บนปุ่มสกิลและสลักในพลอยสกิล
-const BG = { fire: ['#5a1008', '#1a0402'], ice: ['#0e2a5a', '#040a1a'], poison: ['#0e3a14', '#031006'], bolt: ['#3a2a06', '#100a02'], holy: ['#4a4a5a', '#101018'], slash: ['#4a0a0a', '#120202'], cleave: ['#0a3a14', '#021006'], frost: ['#0a2050', '#020818'], firearrow: ['#5a1a08', '#1a0602'], arrow: ['#2a3a0a', '#0a1002'], aura: ['#2a1a3a', '#0a0612'], flicker: ['#2a0a4a', '#0a0214'] };
+const BG = { fire: ['#5a1008', '#1a0402'], ice: ['#0e2a5a', '#040a1a'], poison: ['#0e3a14', '#031006'], bolt: ['#3a2a06', '#100a02'], holy: ['#4a4a5a', '#101018'], slash: ['#4a0a0a', '#120202'], cleave: ['#0a3a14', '#021006'], frost: ['#0a2050', '#020818'], firearrow: ['#5a1a08', '#1a0602'], arrow: ['#2a3a0a', '#0a1002'], aura: ['#2a1a3a', '#0a0612'], flicker: ['#2a0a4a', '#0a0214'], nova: ['#0a3a4a', '#020c12'], slam: ['#2a2430', '#0a080c'], amber: ['#4a2a06', '#140a02'] };
 
 function paintSkill(g, kind, plate) {
   if (plate) {                                                   // พื้นหลังไอคอน
@@ -52,6 +52,17 @@ function paintSkill(g, kind, plate) {
     g.fillStyle = 'rgba(140,200,255,0.35)'; g.beginPath(); g.moveTo(14, 50); g.arc(14, 50, 44, -1.5, -0.1); g.closePath(); g.fill();
     g.strokeStyle = '#e8f4ff'; g.lineWidth = 3; g.beginPath(); g.arc(14, 50, 40, -1.45, -0.15); g.stroke();
     for (const [x, y] of [[40, 22], [50, 38], [28, 14]]) { g.fillStyle = '#cfe8ff'; g.beginPath(); g.moveTo(x, y - 6); g.lineTo(x + 3, y); g.lineTo(x, y + 6); g.lineTo(x - 3, y); g.closePath(); g.fill(); }
+  } else if (kind === 'nova') {                                 // วงคลื่นไข่มุก: วงน้ำซ้อนรอบไข่มุกกลาง
+    for (let i = 0; i < 3; i++) { g.strokeStyle = ['rgba(120,220,240,0.35)', 'rgba(170,240,250,0.65)', '#e8fffc'][i]; g.lineWidth = 6 - i * 1.6; g.beginPath(); g.arc(32, 32, 26 - i * 7, 0, Math.PI * 2); g.stroke(); }
+    g.fillStyle = '#f4fffe'; g.beginPath(); g.arc(32, 32, 7, 0, Math.PI * 2); g.fill(); g.fillStyle = '#ffffff'; g.fillRect(29, 28, 3, 3);
+  } else if (kind === 'slam') {                                  // ทุบธรณี: ค้อนทุบพื้น รอยแตกแผ่ออก
+    g.strokeStyle = '#ffb060'; g.lineWidth = 2.5;
+    for (const [x, y] of [[8, 52], [20, 58], [44, 58], [56, 50], [32, 60]]) { g.beginPath(); g.moveTo(32, 48); g.lineTo(x, y); g.stroke(); }
+    g.save(); g.translate(32, 30); g.rotate(0.5); g.fillStyle = '#6b4423'; g.fillRect(-2.5, -24, 5, 30); g.fillStyle = '#5a5f6a'; g.fillRect(-11, -28, 22, 12); g.restore();
+  } else if (kind === 'amber') {                                 // ศรอำพันทะลวง: ศรเดียวพุ่งทะลุวงสามวง
+    g.strokeStyle = 'rgba(255,190,80,0.5)'; g.lineWidth = 2; for (let i = 0; i < 3; i++) { g.beginPath(); g.ellipse(22 + i * 10, 42 - i * 10, 4, 9, 0.8, 0, Math.PI * 2); g.stroke(); }
+    g.strokeStyle = '#e8a030'; g.lineWidth = 3; g.beginPath(); g.moveTo(8, 56); g.lineTo(52, 12); g.stroke();
+    g.fillStyle = '#ffe0a0'; g.beginPath(); g.moveTo(56, 8); g.lineTo(44, 14); g.lineTo(50, 20); g.closePath(); g.fill();
   } else if (kind === 'flicker') {                              // วูบหายตัวฟัน: เงาม่วงสามเงาไล่กัน แล้วดาบฟันปลายทาง
     for (let i = 0; i < 3; i++) { g.fillStyle = `rgba(190,130,255,${0.18 + i * 0.2})`; g.beginPath(); g.ellipse(14 + i * 12, 44 - i * 9, 5, 9, -0.6, 0, Math.PI * 2); g.fill(); }
     g.strokeStyle = 'rgba(216,176,255,0.8)'; g.lineWidth = 2; g.setLineDash([4, 3]); g.beginPath(); g.moveTo(10, 54); g.lineTo(44, 22); g.stroke(); g.setLineDash([]);

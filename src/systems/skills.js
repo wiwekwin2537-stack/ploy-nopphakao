@@ -64,7 +64,7 @@ export function castSkill(game, group) {
   if (st0.bloodMagic) p.hp = Math.max(1, p.hp - sk.mp); else p.mp -= sk.mp;
   p.skillCd[group] = sk.cooldown * st0.castCdMult; p.combatTimer = 4;
   const wk = weaponKind(game);
-  if (sk.arrow || ((wk === 'staff' || wk === 'bow' || wk === 'crossbow') && !sk.melee)) { p.shootKind = wk === 'sword' || wk === 'kris' || wk === 'glaive' ? 'bow' : wk; p.shootDur = 0.3; p.shootT = 0.3 * 0.45; }   // สกิลศร/พลอยตอนถืออาวุธระยะไกล = ท่าปล่อย
+  if (sk.arrow || ((wk === 'staff' || wk === 'bow' || wk === 'crossbow') && !sk.melee && sk.shape !== 'nova')) { p.shootKind = wk === 'sword' || wk === 'kris' || wk === 'glaive' ? 'bow' : wk; p.shootDur = 0.3; p.shootT = 0.3 * 0.45; }   // สกิลศร/พลอยตอนถืออาวุธระยะไกล = ท่าปล่อย
   else if (sk.melee) { p.swing = 0.28; p.combo = sk.shape === 'line' ? 2 : sk.shape === 'cone' ? 1 : 0; p.comboT = 0; }   // สกิลฟัน = ท่าฟันด้วยอาวุธจริง (แนวตรง = แทง)
   else p.castT = 0.22;                                           // สกิลพลอย = ท่ายกมือร่าย
   releaseSkill(game, sk, ang);
@@ -77,6 +77,20 @@ export function releaseSkill(game, sk, ang) {
   const p = game.player, sx = p.x, sy = p.y - 22;
   const st = playerStats(p, game.data);
   if (sk.shape === 'flicker') { flicker(game, sk, st); return; }
+  if (sk.shape === 'nova') {                                     // วงคลื่นรอบตัว (ดาเมจพลอย): โดนทุกตัวในวง · ช้าลง
+    const R = sk.splash * st.areaMult;
+    for (const m of game.mobs) {
+      if (m.dead || Math.hypot(m.x - p.x, (m.y - p.y) * 1.2) > R + m.radius) continue;
+      const r = rollDamage(st.spellDamage * sk.damageMult, game.rng, st.crit, st.critMult);
+      damageMob(game, m, r.amount, r.crit);
+      if (sk.slow && !m.dead) { m.slowT = sk.slowTime; m.slowK = 1 - sk.slow; }
+    }
+    for (const k of [1, 0.75, 0.5]) game.fx.ring(p.x, p.y - 10, R * k, k === 1 ? '#7ad8e8' : '#e8fffc');
+    game.fx.burst(p.x, p.y - 14, '#bff4ff', 18, 160, 0.5, 3);
+    game.camera.shake = Math.max(game.camera.shake, 2);
+    game.audio.play('ice');
+    return;
+  }
   if (sk.melee) {                                                // สกิลฟัน (ใช้ดาเมจดาบ): วงรอบตัว / แนวตรง / พัดด้านหน้า — ขนาดขยายด้วยพลอยเสริมระเบิด + พาสซีฟ
     const R = sk.splash * st.areaMult, ca = Math.cos(ang), sa = Math.sin(ang);
     const hit = (m) => {
@@ -92,7 +106,7 @@ export function releaseSkill(game, sk, ang) {
       if (sk.slow && !m.dead) { m.slowT = sk.slowTime; m.slowK = 1 - sk.slow; }
     }
     if (sk.shape === 'line') { for (let i = 1; i <= 6; i++) game.fx.burst(p.x + ca * R * i / 6, p.y - 14 + sa * R * i / 6, '#a8ffb0', 3, 60, 0.3, 2.5); game.fx.slash(p.x, p.y - 14, ang, R, 0.35, 1); }
-    else if (sk.shape === 'cone') { game.fx.slash(p.x, p.y - 14, ang, R, sk.arc, 1); game.fx.slash(p.x, p.y - 14, ang, R * 0.7, sk.arc, -1); game.fx.burst(p.x + ca * R * 0.6, p.y - 14 + sa * R * 0.6, '#cfe8ff', 10, 90, 0.4, 3); }
+    else if (sk.shape === 'cone') { game.fx.slash(p.x, p.y - 14, ang, R, sk.arc, 1); game.fx.slash(p.x, p.y - 14, ang, R * 0.7, sk.arc, -1); game.fx.burst(p.x + ca * R * 0.6, p.y - 14 + sa * R * 0.6, sk.kind === 'slam' ? '#ffb060' : '#cfe8ff', sk.kind === 'slam' ? 22 : 10, 90, 0.4, 3); if (sk.kind === 'slam') { game.fx.ring(p.x + ca * R * 0.5, p.y + sa * R * 0.5, R * 0.6, '#c89060'); game.camera.shake = Math.max(game.camera.shake, 6); } }   // ทุบธรณี: ฝุ่นดิน + จอสั่นแรง
     else { game.fx.ring(p.x, p.y - 10, R, '#ff6a5a'); game.fx.ring(p.x, p.y - 10, R * 0.7, '#ffd0a0'); for (let i = 0; i < 4; i++) game.fx.slash(p.x, p.y - 14, i * Math.PI / 2, R * 0.8, 1.6, 1); }
     game.camera.shake = Math.max(game.camera.shake, 3);
     game.audio.play('swing');

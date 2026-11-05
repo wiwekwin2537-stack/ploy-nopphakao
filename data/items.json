@@ -1722,6 +1722,74 @@
     "thotsakan"
    ],
    "chance": 0.35
+  },
+  "shadow_kris": {
+   "name": "กริชเงาวูบ",
+   "base": "deva_kris",
+   "stats": {
+    "crit": 4,
+    "dmgFlat": 6
+   },
+   "trigger": {
+    "on": "hit",
+    "chance": 0.12,
+    "gem": "amethyst",
+    "level": 6
+   },
+   "lore": "กริชของมือสังหารที่ไม่มีใครเห็นตัว ฟันโดนเมื่อไรร่างก็วูบหายไปโผล่ข้างศัตรูตัวถัดไป",
+   "world": true,
+   "minLevel": 17,
+   "chance": 0.0015
+  },
+  "monk_staff": {
+   "name": "ไม้เท้าพระธุดงค์",
+   "base": "hermit_staff",
+   "stats": {
+    "mpFlat": 40,
+    "dmgSpell": 20
+   },
+   "grants": {
+    "gem": "pearl",
+    "level": 8
+   },
+   "lore": "ไม้เท้าที่ผ่านป่ามาร้อยพรรษา ปักลงพื้นเมื่อไรคลื่นน้ำมนต์ก็แผ่ออกรอบตัว",
+   "from": [
+    "naga_king"
+   ],
+   "chance": 0.35
+  },
+  "earth_glaive": {
+   "name": "ง้าวทุบธรณี",
+   "base": "garuda_glaive",
+   "stats": {
+    "dmgMelee": 20,
+    "hpFlat": 30
+   },
+   "grants": {
+    "gem": "black_diamond",
+    "level": 7
+   },
+   "lore": "ง้าวหนักที่เทวดาใช้ตอกเสาสวรรค์ ทุบทีเดียวแผ่นดินแยก",
+   "from": [
+    "vessavana"
+   ],
+   "chance": 0.35
+  },
+  "amber_bow": {
+   "name": "ศรอำพันพันปี",
+   "base": "garuda_bow",
+   "stats": {
+    "crit": 4,
+    "projSpeedInc": 20
+   },
+   "grants": {
+    "gem": "amber",
+    "level": 8
+   },
+   "lore": "คันศรที่ฝังยางไม้อำพันพันปี ลูกศรพุ่งทะลุทุกสิ่งที่ขวาง",
+   "world": true,
+   "minLevel": 14,
+   "chance": 0.0015
   }
  },
  "bench": {

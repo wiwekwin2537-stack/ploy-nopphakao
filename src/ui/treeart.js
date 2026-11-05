@@ -9,7 +9,7 @@ const GOLD = '#f3d27a', GOLD_D = '#9a6f1e', BRONZE = '#6a5030', BRONZE_D = '#3a2
 // ---------- ไอคอนตามค่าหลักของโหนด ----------
 const ICON_OF = {
   dmgMelee: 'sword', dmgFlat: 'sword', atkSpeedInc: 'bolt', dmgSpell: 'flame', castSpeedInc: 'flame',
-  hpFlat: 'heart', hpInc: 'heart', lifeOnHit: 'heart', mpFlat: 'drop', mpInc: 'drop', mpRegenInc: 'drop',
+  hpFlat: 'heart', hpInc: 'heart', lifeOnHit: 'heart', killHeal: 'heart', mpFlat: 'drop', mpInc: 'drop', mpRegenInc: 'drop', killMana: 'drop',
   moveInc: 'wing', dashCdInc: 'wing', crit: 'star', critMult: 'star', dmgAll: 'burst', areaInc: 'burst', projSpeedInc: 'arrow',
 };
 const KS_ICON = { elephant: 'sword', shadow: 'moon', blood: 'drop' };

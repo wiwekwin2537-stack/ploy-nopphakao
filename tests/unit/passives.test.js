@@ -104,3 +104,9 @@ test('อาชีพผสม (นักดาบ/นักฆ่าเงา/�
     }
   }
 });
+
+test('ไอคอนโหนด: ทุกค่าที่ต้นพาสซีฟและเลื่อนขั้นใช้ มีไอคอนเฉพาะ (ไม่ตกไปใช้ดาวสำรอง)', async () => {
+  const src = (await import('node:fs')).readFileSync(new URL('../../src/ui/treeart.js', import.meta.url), 'utf8');
+  const g = makeGame(), keys = new Set([...Object.values(g.data.passives.nodes), ...Object.values(g.data.ascendancy.list).flatMap((a) => a.nodes)].flatMap((n) => Object.keys(n.stats)).filter((k) => k !== 'ks'));
+  for (const k of keys) assert.ok(new RegExp('\\b' + k + ": '").test(src), `ค่า ${k} ไม่มีไอคอน`);
+});

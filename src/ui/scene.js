@@ -90,11 +90,12 @@ export function createScene(game) {
       for (let i = 1; i <= 5; i++) ctx.lineTo(-18 + i * 5, (i % 2 ? -3 : 3) * Math.sin(game.time * 40 + i));
       ctx.stroke(); ctx.restore(); return;
     }
-    if (s.kind === 'arrow' || s.kind === 'firearrow') {            // ลูกศร: ก้านไม้ หัวเหล็ก หางขนนก (ศรเพลิงมีไฟลุกที่หัว)
+    if (s.kind === 'arrow' || s.kind === 'firearrow' || s.kind === 'amber') {   // ลูกศร: ก้านไม้ หัวเหล็ก หางขนนก (ศรเพลิงมีไฟลุกที่หัว · ศรอำพันมีแสงทองลากยาว)
       ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(Math.atan2(s.vy, s.vx));
       ctx.fillStyle = '#8a5a32'; ctx.fillRect(-14, -1, 20, 2);
       poly(ctx, [11, 0, 5, -3, 5, 3], '#dfe6ea', '#3a3a3a', 0.8);
       ctx.fillStyle = '#f4f0e8'; poly(ctx, [-14, 0, -18, -4, -11, -1], '#f4f0e8', null); poly(ctx, [-14, 0, -18, 4, -11, 1], '#f4f0e8', null);
+      if (s.kind === 'amber') { const gr = ctx.createLinearGradient(-40, 0, 10, 0); gr.addColorStop(0, 'rgba(255,190,80,0)'); gr.addColorStop(1, 'rgba(255,210,120,0.8)'); ctx.fillStyle = gr; ctx.fillRect(-40, -3, 50, 6); }
       if (s.kind === 'firearrow') { ctx.fillStyle = 'rgba(255,150,40,0.85)'; ctx.beginPath(); ctx.arc(8, 0, 5 + Math.sin(game.time * 30) * 1.2, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#fff2a0'; ctx.beginPath(); ctx.arc(9, 0, 2.5, 0, Math.PI * 2); ctx.fill(); }
       ctx.restore(); return;
     }

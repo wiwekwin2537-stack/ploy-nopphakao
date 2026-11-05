@@ -266,6 +266,65 @@
    "hi": "#d8b0ff",
    "melee": true,
    "shape": "flicker"
+  },
+  "pearl": {
+   "name": "ไข่มุก",
+   "skill": "วงคลื่นไข่มุก",
+   "desc": "ปล่อยคลื่นน้ำเป็นวงรอบตัว โดนทุกตัวรอบกาย มอนช้าลงเล็กน้อย ใช้ดาเมจพลอย เหมาะเวลาโดนล้อม",
+   "kind": "nova",
+   "mp": 10,
+   "cooldown": 0.7,
+   "damageMult": 1.5,
+   "speed": 0,
+   "life": 0,
+   "radius": 0,
+   "splash": 120,
+   "slow": 0.25,
+   "slowTime": 1,
+   "socket": "b",
+   "color": "#7ad8e8",
+   "hi": "#e8fffc",
+   "shape": "nova"
+  },
+  "black_diamond": {
+   "name": "เพชรดำ",
+   "skill": "ทุบธรณี",
+   "desc": "ทุบอาวุธลงพื้นเป็นพัดกว้างด้านหน้า แรงมาก มอนที่โดนช้าลง ใช้ดาเมจอาวุธ",
+   "kind": "slam",
+   "mp": 10,
+   "cooldown": 0.8,
+   "damageMult": 1.75,
+   "speed": 0,
+   "life": 0,
+   "radius": 0,
+   "splash": 115,
+   "socket": "r",
+   "color": "#3a3440",
+   "hi": "#c8c0d8",
+   "melee": true,
+   "shape": "cone",
+   "arc": 2.4,
+   "slow": 0.4,
+   "slowTime": 1.5
+  },
+  "amber": {
+   "name": "อำพัน",
+   "skill": "ศรอำพันทะลวง",
+   "desc": "ยิงศรอำพันเร็วมาก ทะลุมอนได้หลายตัวในแนวเดียว ใช้ดาเมจโจมตี ต้องถือธนูหรือหน้าไม้",
+   "kind": "amber",
+   "arrow": true,
+   "count": 1,
+   "pierce": 4,
+   "mp": 8,
+   "cooldown": 0.55,
+   "damageMult": 1.6,
+   "speed": 820,
+   "life": 0.8,
+   "radius": 6,
+   "splash": 0,
+   "socket": "g",
+   "color": "#e8a030",
+   "hi": "#ffe0a0"
   }
  },
  "support": {
@@ -318,6 +377,14 @@
    "cooldownMult": 0.9,
    "socket": "w",
    "color": "#e4e4ee"
+  },
+  "thrift": {
+   "name": "พลอยเสริมประหยัดมนต์",
+   "desc": "ใช้มานาน้อยลงมาก แลกดาเมจลดลงเล็กน้อย",
+   "color": "#2a5fd8",
+   "mpMult": 0.6,
+   "damage": 0.9,
+   "socket": "b"
   }
  },
  "drops": [
@@ -415,6 +482,26 @@
    "gem": "amethyst",
    "chance": 0.008,
    "minLevel": 8
+  },
+  {
+   "gem": "pearl",
+   "chance": 0.008,
+   "minLevel": 6
+  },
+  {
+   "gem": "black_diamond",
+   "chance": 0.008,
+   "minLevel": 5
+  },
+  {
+   "gem": "amber",
+   "chance": 0.008,
+   "minLevel": 6
+  },
+  {
+   "gem": "thrift",
+   "chance": 0.01,
+   "minLevel": 4
   }
  ],
  "skillButtons": 3,

@@ -5,6 +5,7 @@ import { uiText as text, wrapLines } from './hud.js';
 import { describe } from '../systems/passives.js';
 import { ascPointsTotal, ascPointsLeft, ascOptions, chooseAscend, allocAsc, refundAsc, canAllocAsc } from '../systems/ascend.js';
 import { CLASS_COL } from './create.js';
+import { nodeImage } from './treeart.js';
 
 export function ascendLayout(w, h, s) {
   const pw = Math.min(w - 16, 720 * s), ph = Math.min(h - 12, 380 * s), x = w / 2 - pw / 2, y = h / 2 - ph / 2;
@@ -25,7 +26,9 @@ export function drawAscend(ctx, game, L, w, h) {
   const B = ascendLayout(w, h, L.s), s = B.s, A = game.data.ascendancy, P = game.data.passives, p = game.player, F = game.flags;
   ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(0, 0, w, h);
   kanokFrame(ctx, B.x, B.y, B.w, B.h, 12);
-  ctx.fillStyle = 'rgba(16,10,8,0.92)'; rrect(ctx, B.x + 8 * s, B.y + 8 * s, B.w - 16 * s, B.h - 16 * s, 8 * s); ctx.fill();
+  const bgr = ctx.createRadialGradient(B.x + B.w / 2, B.y + B.h / 2, 10, B.x + B.w / 2, B.y + B.h / 2, B.w * 0.6);   // พื้นม่วงครามแบบต้นพาสซีฟ
+  bgr.addColorStop(0, '#241a2e'); bgr.addColorStop(1, '#0c0810');
+  ctx.fillStyle = bgr; rrect(ctx, B.x + 8 * s, B.y + 8 * s, B.w - 16 * s, B.h - 16 * s, 8 * s); ctx.fill();
   const col = CLASS_COL[p.cls] || C.goldHi, total = ascPointsTotal(A, F), left = ascPointsLeft(A, p, F);
   text(ctx, `เลื่อนขั้นอาชีพ — ${P.classes[p.cls].name}${p.ascend ? ' → ' + A.list[p.ascend].name : ''}`, B.x + 20 * s, B.y + 24 * s, 15 * s, col, 'left', '600');
   text(ctx, `แต้มเลื่อนขั้น เหลือ ${left} จาก ${total}`, B.x + 20 * s, B.y + 42 * s, 10.5 * s, left > 0 ? '#9af0b0' : C.cream, 'left', 'normal');
@@ -41,8 +44,9 @@ export function drawAscend(ctx, game, L, w, h) {
       text(ctx, o.desc, c.x + c.w / 2, c.y + 38 * s, 9.5 * s, C.cream, 'center', 'normal');
       o.nodes.forEach((n, k) => {
         const y = c.y + 60 * s + k * 30 * s;
-        text(ctx, '◆ ' + n.name, c.x + 12 * s, y, 11 * s, C.goldHi, 'left', '600');
-        text(ctx, describe(P, n).join(' · '), c.x + 24 * s, y + 14 * s, 9.5 * s, 'rgba(244,230,200,0.8)', 'left', 'normal');
+        nodeImage(ctx, game.data, { kind: 'notable', stats: n.stats }, c.x + 22 * s, y + 7 * s, 9 * s, 'can', col);   // ไอคอนโหนดแบบต้นพาสซีฟ
+        text(ctx, n.name, c.x + 40 * s, y, 11 * s, C.goldHi, 'left', '600');
+        text(ctx, describe(P, n).join(' · '), c.x + 40 * s, y + 14 * s, 9.5 * s, 'rgba(244,230,200,0.8)', 'left', 'normal');
       });
     });
     info = total <= 0 ? 'ยังไม่มีแต้มเลื่อนขั้น — ผ่านบททดสอบก่อน: ' + trialsText(game)
@@ -53,9 +57,12 @@ export function drawAscend(ctx, game, L, w, h) {
       const t = B.tiles[i], has = p.ascNodes.includes(n.id), can = canAllocAsc(A, p, F, n.id), on = game.ascSel === n.id;
       ctx.fillStyle = has ? 'rgba(217,166,48,0.25)' : 'rgba(0,0,0,0.35)'; rrect(ctx, t.x, t.y, t.w, t.h, 8 * s); ctx.fill();
       ctx.strokeStyle = on ? '#ffffff' : has ? C.goldHi : can ? `rgba(243,210,122,${0.6 + Math.sin(game.time * 5) * 0.35})` : 'rgba(150,130,100,0.5)'; ctx.lineWidth = on ? 2.5 : 1.5; ctx.stroke();
-      text(ctx, (has ? '◆ ' : '◇ ') + n.name, t.x + 12 * s, t.y + 18 * s, 13 * s, has ? C.goldHi : C.cream, 'left', '600');
+      const R = Math.min(t.h * 0.26, 22 * s);                    // โหนดใหญ่กรอบทองแบบต้นพาสซีฟ (ลงแล้วเรืองแสง)
+      nodeImage(ctx, game.data, { kind: 'notable', stats: n.stats }, t.x + R * 1.5 + 8 * s, t.y + t.h / 2, R, has ? 'own' : can ? 'can' : 'none', col);
+      const tx = t.x + R * 3 + 16 * s;
+      text(ctx, n.name, tx, t.y + 18 * s, 13 * s, has ? C.goldHi : C.cream, 'left', '600');
       ctx.font = `normal ${10 * s}px Kanit, sans-serif`;
-      wrapLines(ctx, describe(P, n).join(' · '), t.w - 24 * s).slice(0, 3).forEach((l, k) => text(ctx, l, t.x + 12 * s, t.y + 38 * s + k * 14 * s, 10 * s, 'rgba(244,230,200,0.85)', 'left', 'normal'));
+      wrapLines(ctx, describe(P, n).join(' · '), t.x + t.w - tx - 10 * s).slice(0, 3).forEach((l, k) => text(ctx, l, tx, t.y + 38 * s + k * 14 * s, 10 * s, 'rgba(244,230,200,0.85)', 'left', 'normal'));
     });
     const sel = game.ascSel && a.nodes.find((n) => n.id === game.ascSel), rg = (p.currency && p.currency.regret) || 0;
     info = !sel ? (left > 0 ? 'แตะโหนดเพื่อดู แตะซ้ำเพื่อลงแต้ม (ลงโหนดไหนก่อนก็ได้)' : 'แต้มหมดแล้ว — ผ่านบททดสอบถัดไปเพื่อรับแต้มเพิ่ม: ' + trialsText(game))
