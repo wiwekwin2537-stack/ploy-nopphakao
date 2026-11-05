@@ -260,7 +260,11 @@ export function createScene(game) {
       for (let i = ghosts.length - 1; i >= 0; i--) { ghosts[i].life -= dtv; if (ghosts[i].life <= 0) ghosts.splice(i, 1); }
       if (p.dashT > 0 && dtv > 0) ghosts.push({ x: p.x, y: p.y, a: Math.atan2(p.dashVy, p.dashVx), life: 0.3, seed: Math.random() });
       for (const it of list) {
-        if (it.o) sprites.draw(ctx, it.o);
+        if (it.o) {
+          const wp = it.o.type === 'waypoint', on = wp && !!game.flags['wp_' + z.id];
+          sprites.draw(ctx, wp && !on ? { ...it.o, type: 'waypoint_off' } : it.o);   // ศาลวาร์ป: ยังไม่ปลด = สีเทา
+          if (on) drawWaypointGlow(ctx, it.o, t);                    // ปลดแล้ว = มีแสง
+        }
         else if (it.mob) {
           const mo = it.mob;
           if (mo.elite && !mo.dead) {                               // มอนพิเศษ: วงแสงสีใต้เท้า
@@ -321,4 +325,21 @@ function drawDashFx(ctx, pts) {
     ctx.beginPath(); ctx.ellipse(g.x - ca * 4, g.y + 1, r, r * 0.45, 0, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   }
+}
+
+// ศาลวาร์ปที่ปลดแล้ว: ลำแสงฟ้าพุ่งขึ้น + ผลึกเรืองเต้นเป็นจังหวะ + ประกายลอยขึ้น
+function drawWaypointGlow(ctx, o, t) {
+  const cx = o.x + o.w / 2, base = o.y + o.h, py = base - 33, pulse = 0.75 + Math.sin(t * 3) * 0.25;
+  ctx.save();
+  const beam = ctx.createLinearGradient(0, base - 110, 0, base - 30);
+  beam.addColorStop(0, 'rgba(140,220,255,0)'); beam.addColorStop(1, `rgba(140,220,255,${(0.35 * pulse).toFixed(2)})`);
+  ctx.fillStyle = beam; ctx.fillRect(cx - 6, base - 110, 12, 80);
+  const gl = ctx.createRadialGradient(cx, py, 1, cx, py, 22);
+  gl.addColorStop(0, `rgba(220,245,255,${(0.9 * pulse).toFixed(2)})`); gl.addColorStop(0.35, `rgba(140,220,255,${(0.5 * pulse).toFixed(2)})`); gl.addColorStop(1, 'rgba(140,220,255,0)');
+  ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(cx, py, 22, 0, Math.PI * 2); ctx.fill();
+  for (let i = 0; i < 4; i++) {
+    const ph = (t * 0.6 + i / 4) % 1, x = cx + Math.sin(i * 2.3 + t) * 9, y = py - ph * 40;
+    ctx.globalAlpha = Math.sin(ph * Math.PI); ctx.fillStyle = '#e8f8ff'; ctx.fillRect(x - 1, y - 1, 2, 2);
+  }
+  ctx.restore();
 }

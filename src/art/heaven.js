@@ -34,6 +34,16 @@ export const HEAVEN = {
     poly(g, [cx, -38, cx + 5, -33, cx, -28, cx - 5, -33], '#8ad8ff', '#2a6aa8', 1);
     g.fillStyle = '#ffffff'; g.fillRect(cx - 1, -36, 2, 3);
   } },
+  waypoint_off: { pad: [16, 60, 16, 4], draw(g, fw) {           // ศาลวาร์ปที่ยังไม่ปลด: หินสีเทาทั้งหลัง ผลึกหมองไม่มีแสง
+    const cx = fw / 2;
+    shadow(g, cx, -1, 16, 5, 0.25);
+    box(g, cx - 13, -8, 26, 8, '#6e6e74', C.line, 1.2);
+    box(g, cx - 2, -26, 4, 18, '#7a7a80', C.line, 1);
+    box(g, cx - 10, -40, 20, 14, '#9a9aa0', C.line, 1.2);
+    poly(g, [cx - 12, -40, cx, -52, cx + 12, -40], '#84848a', C.line, 1.2);
+    poly(g, [cx, -38, cx + 5, -33, cx, -28, cx - 5, -33], '#55585e', '#3a3c40', 1);
+    g.fillStyle = 'rgba(40,40,44,0.35)'; g.fillRect(cx - 9, -30, 7, 2); g.fillRect(cx + 3, -36, 5, 2);   // รอยร้าว/ฝุ่นจับ
+  } },
   cloud_puff: { pad: [16, 26, 16, 4], draw(g, fw, fh, seed) {     // ก้อนเมฆนุ่ม กั้นทาง
     const cx = fw / 2;
     g.fillStyle = 'rgba(150,130,200,0.18)'; g.beginPath(); g.ellipse(cx, -2, fw / 2 + 10, 6, 0, 0, Math.PI * 2); g.fill();
