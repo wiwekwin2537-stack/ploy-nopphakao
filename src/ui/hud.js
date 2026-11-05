@@ -88,7 +88,7 @@ function speaker(ctx, x, y, r, muted) {
 }
 
 // แผนที่เล็ก: วาดพื้นที่ย่อส่วนครั้งเดียวต่อพื้นที่
-const miniCache = new Map();
+const miniCache = new WeakMap();   // แคชตามตัวพื้นที่ (ถ้ำลายแทงใหม่ใช้ id 'map' ซ้ำ — ห้ามแคชด้วย id ไม่งั้นแผนที่เป็นของถ้ำเก่า)
 // แถบเลือดบอสใหญ่กลางบน เมื่อบอสตื่นแล้ว
 function bossBar(ctx, game, w, s) {
   const b = game.mobs.find((m) => m.def.boss && !m.dead && m.aggroed);
@@ -100,8 +100,8 @@ function bossBar(ctx, game, w, s) {
   bar(ctx, x, y + 14 * s, bw, 10 * s, b.hp / b.maxHp, b.enraged ? '#ff5a2a' : '#c9302a');
 }
 
-function miniMap(zone) {
-  if (miniCache.has(zone.id)) return miniCache.get(zone.id);
+export function miniMap(zone) {
+  if (miniCache.has(zone)) return miniCache.get(zone);
   const S = 140 / Math.max(zone.W, zone.H);
   const c = document.createElement('canvas'); c.width = Math.ceil(zone.W * S); c.height = Math.ceil(zone.H * S);
   const g = c.getContext('2d');
@@ -115,7 +115,7 @@ function miniMap(zone) {
     R(o, /tree/.test(o.type) ? '#2f4a22' : /wall/.test(o.type) ? '#8a3f28' : o.type === 'bridge' ? '#9a7446' : '#a3262a');
   }
   const out = { c, S };
-  miniCache.set(zone.id, out);
+  miniCache.set(zone, out);
   return out;
 }
 

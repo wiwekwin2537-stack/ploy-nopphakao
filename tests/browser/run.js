@@ -647,6 +647,22 @@ await check('ท่าตัวละครสมจริง: ทุกท่�
   return 'ครบทุกท่า';
 });
 
+await check('แผนที่ใหญ่แบบ PoE: กด Tab เปิด → เห็นทั้งพื้นที่ หมอกดำ ทางออก ศาลวาร์ป → Tab ปิด · แตะแผนที่เล็กก็เปิด', async () => {
+  await G(page, () => { const g = __ploy.game; __ploy.enterZone(g, 'field', 36 * 32, 50 * 32); g.mobs.length = 0; g.mode = 'play'; });
+  await page.waitForTimeout(200);
+  await page.keyboard.press('Tab'); await page.waitForTimeout(200);
+  assert((await state(page)).mode === 'bigmap', 'Tab ไม่เปิดแผนที่: ' + (await state(page)).mode);
+  await page.screenshot({ path: SHOTS + '/30-bigmap.png' });
+  await page.keyboard.press('Tab'); await page.waitForTimeout(150);
+  assert((await state(page)).mode === 'play', 'Tab ไม่ปิดแผนที่');
+  const M = await G(page, () => __ploy.layout().minimap);
+  await page.mouse.click(M.x, M.y); await page.waitForTimeout(150);
+  assert((await state(page)).mode === 'bigmap', 'แตะแผนที่เล็กไม่เปิด');
+  await page.mouse.click(200, 200); await page.waitForTimeout(150);
+  assert((await state(page)).mode === 'play', 'แตะแล้วไม่ปิด');
+  return 'เปิด/ปิดได้ทั้งปุ่มและแตะ';
+});
+
 await check('ความเร็ว: มอน 100 ตัวไล่ล้อม ใช้เวลาคำนวณ+วาดต่อเฟรมไม่เกิน 8ms', async () => {
   await G(page, () => { const g = __ploy.game, p = g.player; const types = ['boar', 'monkey', 'krasue', 'piglet']; for (let i = 0; i < 2000 && g.mobs.length < 100; i++) { const m = __ploy.makeMob(g, types[i % 4], 3, p.x + (Math.random() - 0.5) * 700, p.y + (Math.random() - 0.5) * 400, -1); if (!g.world.blocked(m.x, m.y, m.radius)) g.mobs.push(m); } g.mobs.forEach((m) => { m.aggroed = true; }); p.invuln = 99; });
   await page.waitForTimeout(1500);

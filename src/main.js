@@ -42,6 +42,7 @@ import { updateAltar } from './systems/maps.js';
 import { drawMapMenu, updateMapMenu } from './ui/mapmenu.js';
 import { drawStash, updateStash, stashLayout } from './ui/stash.js';
 import { drawReward, updateReward, rewardLayout } from './ui/reward.js';
+import { drawBigMap, updateBigMap } from './ui/bigmap.js';
 import { drawCreate, updateCreate, openCreate, createLayout } from './ui/create.js';
 import { tipCloseHit, resetTipClose } from './ui/tooltip.js';
 import { drawHuman, drawStats } from './art/characters.js';
@@ -151,6 +152,11 @@ function update(dt) {
     game.bagSel = game.gearSel = game.shopSel = game.stashSel = game.sockSel = game.craftSel = game.curSel = null;
     if (game.reward) game.reward.sel = null;
     game.audio.play('click');
+  } else if (game.mode === 'bigmap') {
+    if (updateBigMap(game)) { game.mode = 'play'; input.setUiMode(false); }
+  } else if (game.mode === 'play' && (input.pressed.map || input.taps.some((t) => !t.consumed && Math.hypot(t.sx - layout.minimap.x, t.sy - layout.minimap.y) < layout.minimap.r))) {
+    input.taps.forEach((t) => { if (Math.hypot(t.sx - layout.minimap.x, t.sy - layout.minimap.y) < layout.minimap.r) t.consumed = true; });   // Tab / แตะแผนที่เล็ก = แผนที่ใหญ่
+    game.mode = 'bigmap'; game.audio.play('click');
   } else if (game.mode === 'reward') {
     if (updateReward(game, layout, game.camera.viewW, game.camera.viewH)) { game.mode = 'play'; writeSave(game); }
   } else if (game.mode === 'stash') {
@@ -225,6 +231,7 @@ function render() {
     if (game.mode === 'mapmenu') drawMapMenu(ctx, game, layout, w, h);
     if (game.mode === 'stash') drawStash(ctx, game, layout, w, h);
     if (game.mode === 'reward') drawReward(ctx, game, layout, w, h);
+    if (game.mode === 'bigmap') drawBigMap(ctx, game, layout, w, h);
   }
 }
 
