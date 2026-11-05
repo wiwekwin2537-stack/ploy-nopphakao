@@ -6,7 +6,8 @@ import { C, rrect, circle, poly } from '../art/draw.js';
 import { gemSprite } from '../art/gems.js';
 import { uiText as text } from './hud.js';
 import { socketGem, unsocketGem, skillsOf, SOCKET_SLOTS, gemLevel } from '../systems/gems.js';
-import { useCurrency, socketMax, itemName } from '../systems/items.js';
+import { socketMax, itemName } from '../systems/items.js';
+import { applyCurrency } from '../systems/crafting.js';
 import { itemSprite } from '../art/items.js';
 import { drawItemTip, drawGemTip, drawCurrencyTip } from './tooltip.js';
 
@@ -206,12 +207,11 @@ export function updateGemTab(game, B, t) {
     if (t.sx < c.x || t.sx > c.x + c.w || t.sy < c.y || t.sy > c.y + c.h) continue;
     game.bagSel = null; clear();
     if (game.curSel !== c.kind) { game.curSel = c.kind; game.audio.play('click'); return; }
-    const slot = SOCKET_SLOTS[game.bagGroup || 0], it = p.equip[slot], name = I.currency[c.kind].name;
-    if (!(p.currency[c.kind] > 0)) { say(`ไม่มี${name} — หาได้จากมอน บอส หรือร้านแม่ค้า`); return; }
-    const r = useCurrency(I, game.rng, p, c.kind, it, G);
-    if (!r) { say(it ? `ใช้${name}กับ${itemName(I, it)}ไม่ได้` : `ยังไม่ได้สวม${SLOT_NAME[slot]}`); return; }
-    game.audio.play('level'); say(`${name}: ${r}`, '#9af0b0');
-    game.events.emit('currencyUsed', { kind: c.kind }); game.events.emit('gemsChanged', {});
+    const slot = SOCKET_SLOTS[game.bagGroup || 0], it = p.equip[slot];
+    if (!it) { say(`ยังไม่ได้สวม${SLOT_NAME[slot]}`); return; }
+    const r = applyCurrency(game, c.kind, it);
+    if (!r.ok) { say(r.text); return; }
+    game.audio.play('level'); say(r.text, '#9af0b0');
     return;
   }
   const g = B.grid, col = Math.floor((t.sx - g.x) / g.cell), r = Math.floor((t.sy - g.y) / g.cell);

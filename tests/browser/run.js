@@ -713,6 +713,26 @@ await check('โต๊ะช่างแบบ PoE: เดินไปโต๊�
   return 'คราฟต์เลือด +25 ลงเสื้อ เสีย 200 เบี้ย';
 });
 
+await check('แถบคราฟต์แบบหีบศิลา PoE: โปรไฟล์ → แถบคราฟต์ → แตะของวางลงช่อง → แตะปรอทสองครั้ง = ของเป็นสีม่วง ศิลาลด 1', async () => {
+  await G(page, () => { const g = __ploy.game, p = g.player; p.currency.alch = 2; p.equip.weapon.rarity = 'normal'; p.equip.weapon.mods = []; p.equip.weapon.rareName = null; g.craftUid = null; g.craftCur = null; g.mode = 'bag'; g.bagTab = 'stats'; });
+  await page.waitForTimeout(150);
+  const B = await G(page, () => __ploy.bagLayout());
+  const tb = B.tabs.find((q) => q.id === 'craft');
+  await page.mouse.click(tb.x + tb.w / 2, tb.y + tb.h / 2); await page.waitForTimeout(150);
+  const L = await G(page, () => __ploy.craftLayout());
+  await page.mouse.click(L.grid.x + L.grid.cell / 2, L.grid.y + L.grid.cell / 2 + 6 * B.s); await page.waitForTimeout(120);
+  assert(await G(page, () => __ploy.game.craftUid === __ploy.game.player.equip.weapon.uid), 'วางอาวุธลงช่องไม่ได้');
+  const c = L.cur.find((q) => q.kind === 'alch');
+  await page.mouse.click(c.x + c.w / 2, c.y + c.h / 2); await page.waitForTimeout(100);
+  await page.mouse.click(c.x + c.w / 2, c.y + c.h / 2); await page.waitForTimeout(150);
+  const r = await G(page, () => ({ rar: __ploy.game.player.equip.weapon.rarity, n: __ploy.game.player.currency.alch }));
+  assert(r.rar === 'purple' && r.n === 1, 'ใช้ปรอทไม่ติด: ' + JSON.stringify(r));
+  await page.screenshot({ path: SHOTS + '/33-crafttab.png' });
+  await page.mouse.click(B.close.x, B.close.y); await page.waitForTimeout(150);
+  assert((await state(page)).mode === 'play', '✕ ไม่ปิด');
+  return 'อาวุธกลายเป็นสีม่วง ปรอทเหลือ 1';
+});
+
 await check('ความเร็ว: มอน 100 ตัวไล่ล้อม ใช้เวลาคำนวณ+วาดต่อเฟรมไม่เกิน 8ms', async () => {
   await G(page, () => { const g = __ploy.game, p = g.player; const types = ['boar', 'monkey', 'krasue', 'piglet']; for (let i = 0; i < 2000 && g.mobs.length < 100; i++) { const m = __ploy.makeMob(g, types[i % 4], 3, p.x + (Math.random() - 0.5) * 700, p.y + (Math.random() - 0.5) * 400, -1); if (!g.world.blocked(m.x, m.y, m.radius)) g.mobs.push(m); } g.mobs.forEach((m) => { m.aggroed = true; }); p.invuln = 99; });
   await page.waitForTimeout(1500);

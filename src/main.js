@@ -54,6 +54,7 @@ import { itemSprite } from './art/items.js';
 import { updateStashSpot } from './systems/stash.js';
 import { updateBenchSpot } from './systems/bench.js';
 import { drawBench, updateBench, benchLayout } from './ui/bench.js';
+import { craftLayout } from './ui/crafttab.js';
 import { updateExplore } from './systems/explore.js';
 import { updatePotion, setupFlasks } from './systems/shop.js';
 import { setupUniques, makeUnique } from './systems/uniques.js';
@@ -158,7 +159,7 @@ function update(dt) {
     game.mode = 'tree'; openTree(game); game.audio.play('click');
   } else if (['bag', 'shop', 'stash', 'reward'].includes(game.mode) && input.taps.some((t) => !t.consumed && tipCloseHit(t))) {
     input.taps.forEach((t) => { if (tipCloseHit(t)) t.consumed = true; });   // ✕ ของกล่องรายละเอียด = ยกเลิกสิ่งที่เลือก
-    game.bagSel = game.gearSel = game.shopSel = game.stashSel = game.sockSel = game.craftSel = game.curSel = null;
+    game.bagSel = game.gearSel = game.shopSel = game.stashSel = game.sockSel = game.craftSel = game.curSel = game.craftCur = game.craftUid = null;
     if (game.reward) game.reward.sel = null;
     game.audio.play('click');
   } else if (game.mode === 'bigmap') {
@@ -267,4 +268,4 @@ game.loopStats = loop.stats;
 loop.start();
 
 // test-hook: เปิดเฉพาะเมื่อมี ?test ใน URL ใช้ในเทสต์อัตโนมัติเท่านั้น
-if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, rollElite, makeUnique, spawnDrop, art: { drawHuman, drawStats, heroLook, heroGear, itemSprite, drawMonster }, damage: damageMob, stashLayout: () => stashLayout(game.camera.viewW, game.camera.viewH, layout.s), benchLayout: () => benchLayout(game.camera.viewW, game.camera.viewH, layout.s), treeLayout: () => treeLayout(game.camera.viewW, game.camera.viewH, layout.s), ascendLayout: () => ascendLayout(game.camera.viewW, game.camera.viewH, layout.s), openTree: () => { game.mode = 'tree'; openTree(game); }, createLayout: () => createLayout(game.camera.viewW, game.camera.viewH, layout.s), openCreate: (skip) => openCreate(game, skip), rewardLayout: () => rewardLayout(game.camera.viewW, game.camera.viewH, layout.s), shopLayout: () => shopLayout(game.camera.viewW, game.camera.viewH, layout.s), skills: () => skillsOf(game.data.gems, game.player, game.data.items), stats: () => playerStats(game.player, game.data), layout: () => layout, bagLayout: () => bagLayout(game.camera.viewW, game.camera.viewH, layout.s), gemLayout: () => gemLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s), game.player) }; // test-hook
+if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, rollElite, makeUnique, spawnDrop, art: { drawHuman, drawStats, heroLook, heroGear, itemSprite, drawMonster }, damage: damageMob, stashLayout: () => stashLayout(game.camera.viewW, game.camera.viewH, layout.s), craftLayout: () => craftLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s)), benchLayout: () => benchLayout(game.camera.viewW, game.camera.viewH, layout.s), treeLayout: () => treeLayout(game.camera.viewW, game.camera.viewH, layout.s), ascendLayout: () => ascendLayout(game.camera.viewW, game.camera.viewH, layout.s), openTree: () => { game.mode = 'tree'; openTree(game); }, createLayout: () => createLayout(game.camera.viewW, game.camera.viewH, layout.s), openCreate: (skip) => openCreate(game, skip), rewardLayout: () => rewardLayout(game.camera.viewW, game.camera.viewH, layout.s), shopLayout: () => shopLayout(game.camera.viewW, game.camera.viewH, layout.s), skills: () => skillsOf(game.data.gems, game.player, game.data.items), stats: () => playerStats(game.player, game.data), layout: () => layout, bagLayout: () => bagLayout(game.camera.viewW, game.camera.viewH, layout.s), gemLayout: () => gemLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s), game.player) }; // test-hook

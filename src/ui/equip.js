@@ -4,7 +4,8 @@ import { itemSprite } from '../art/items.js';
 import { drawItemTip } from './tooltip.js';
 import { socketSpots, SOCKET_COL } from './gemtab.js';
 import { uiText as text } from './hud.js';
-import { EQUIP_SLOTS, itemName, equipFromBag, unequip, discard, craftItem } from '../systems/items.js';
+import { EQUIP_SLOTS, itemName, equipFromBag, unequip, discard } from '../systems/items.js';
+import { applyCurrency } from '../systems/crafting.js';
 import { currencyIcon } from './gemtab.js';
 import { drawCurrencyTip } from './tooltip.js';
 
@@ -98,14 +99,9 @@ export function updateEquip(game, B, t) {
   if (cb) {
     game.confirmDiscard = null;
     if (game.craftSel !== cb.kind) { game.craftSel = cb.kind; game.audio.play('click'); return; }
-    const it = sel ? (sel.uid ? p.items.find((x) => x.uid === sel.uid) : p.equip[sel.slot]) : null, nm = I.currency[cb.kind].name;
-    const say = (text, col = '#ff8a7a') => { game.craftMsg = { text, col, t: game.time + 2.5 }; };
-    if (!it) { say('เลือกของที่จะใช้ก่อน (แตะของ 1 ครั้ง)'); return; }
-    if (!(p.currency[cb.kind] > 0)) { say(`ไม่มี${nm}`); return; }
-    const r = craftItem(I, game.rng, p, cb.kind, it);
-    if (!r) { say({ kali: 'เถ้ากาลีใช้ได้กับของสีม่วงหรือแดงเท่านั้น', exalt: 'มณีโชติใช้ได้กับของสีเขียวที่มีค่าเดียว หรือของสีม่วง' }[cb.kind] || `${nm}ใช้ได้กับของสีขาว (ทั่วไป) เท่านั้น`); return; }
-    game.audio.play('level'); say('ได้: ' + r, I.rarity[it.rarity].color); game.craftSel = null;
-    game.events.emit('gearChanged', {}); game.events.emit('currencyUsed', { kind: cb.kind });
+    const it = sel ? (sel.uid ? p.items.find((x) => x.uid === sel.uid) : p.equip[sel.slot]) : null, r = applyCurrency(game, cb.kind, it);
+    game.craftMsg = { text: r.text, col: r.ok ? I.rarity[it.rarity].color : '#ff8a7a', t: game.time + 2.5 };
+    if (r.ok) { game.audio.play('level'); game.craftSel = null; }
     return;
   }
   game.craftSel = null;
