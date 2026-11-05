@@ -1,24 +1,12 @@
 // เทสต์ในเบราว์เซอร์จริง: เล่นบทนำด้วยปุ่มจริง เซฟ/โหลด มือถือ และความเร็ว
 // รัน: node tests/browser/run.js   (ต้อง build ก่อน)
-import { openGame, G } from './lib.js';
+import { openGame, G, makeSuite } from './lib.js';
 import { mkdirSync } from 'node:fs';
 
 const SHOTS = process.env.SHOTS || 'tests/browser/shots';
 mkdirSync(SHOTS, { recursive: true });
-const results = [];
-let currentPage = null;
-async function check(name, fn) {
-  const t0 = Date.now();
-  try { const note = await fn(); results.push({ ok: true, name, note, ms: Date.now() - t0 }); }
-  catch (e) {
-    // ข้อที่ล้ม: แนบสภาพเกมตอนนั้นไว้ด้วย (โหมด เลือด พื้นที่ มอนรอบตัว) ช่วยหาสาเหตุเทสต์ผลไม่นิ่ง
-    const why = currentPage ? await currentPage.evaluate(() => { const g = globalThis.__ploy && __ploy.game; if (!g || !g.player) return ''; const p = g.player; const near = g.mobs.filter((m) => !m.dead && Math.hypot(m.x - p.x, m.y - p.y) < 200).length; return ` [โหมด ${g.mode} · เลือด ${Math.ceil(p.hp)} · ${g.world.zone.id} · มอนใกล้ ${near} · ui ${g.input.uiMode}]`; }).catch(() => '') : '';
-    results.push({ ok: false, name, note: e.message + why, ms: Date.now() - t0 });
-  }
-  // ปิดหน้าต่างที่ค้าง เพื่อไม่ให้ข้อที่พังลามไปข้ออื่น
-  if (currentPage) await currentPage.evaluate(() => { const g = globalThis.__ploy && __ploy.game; if (g && (g.mode === 'bag' || g.mode === 'tree')) { g.mode = 'play'; g.input.setUiMode(false); } }).catch(() => {});
-}
-const assert = (c, msg) => { if (!c) throw new Error(msg); };
+const suite = makeSuite(), { check, assert } = suite;
+
 const state = (page) => G(page, () => { const g = __ploy.game, p = g.player; return { mode: g.mode, step: g.flags.tutStep, zone: g.world.zone.id, x: p.x, y: p.y, hp: p.hp, lv: p.level, xp: p.xp, coins: p.coins, gems: ['weapon', 'body'].flatMap((k) => (p.equip[k] && p.equip[k].gems) || []).filter(Boolean), allGems: [...p.bag, ...[...Object.values(p.equip).filter(Boolean), ...p.items].flatMap((it) => it.gems || []).filter(Boolean)].sort().join(','), pas: p.passives.join(','), gear: Object.values(p.equip).filter(Boolean).map((q) => q.uid).join(','), bagN: p.items.length, mobs: g.mobs.length, done: !!g.flags.tutorialDone }; });
 // วางผู้เล่นห่างบอส d พิกเซลในจุดที่บอสมองเห็น (ไม่มีต้นไม้/หินบัง) — บอสสุ่มตำแหน่งในลานได้ ห้ามสมมติว่าทางซ้ายโล่งเสมอ
 const nearBoss = (page, type, d) => G(page, ([type, d]) => {
@@ -51,7 +39,7 @@ async function killTutorialMob(page, type) {
 }
 
 const { browser, page, errors } = await openGame({ w: 844, h: 390 });
-currentPage = page;
+suite.setPage(page);
 await G(page, () => localStorage.clear());
 await page.reload();
 await wait(page, () => globalThis.__ploy && __ploy.loop.stats.frames > 2);
@@ -593,7 +581,7 @@ await check('ยูนีค: ง้าวพิทักษ์วัดร้�
   });
   await page.waitForTimeout(600);
   const res = await G(page, () => {
-    const g = __ploy.game, p = g.player, it = p.items.find((x) => x.rarity === 'unique');
+    const g = __ploy.game, p = g.player, it = p.items.find((x) => x.unique === 'wat_glaive');   // ระบุชิ้น (เทสต์ก่อนหน้าอาจสุ่มได้ยูนีคอื่นค้างในกระเป๋า)
     if (!it) return { got: false };
     p.items.splice(p.items.indexOf(it), 1); if (p.equip.weapon) p.items.push(p.equip.weapon); p.equip.weapon = it;
     const sk = __ploy.skills(); return { got: true, idx: sk.findIndex((k) => k.fromItem), gem: (sk.find((k) => k.fromItem) || {}).gem };
@@ -786,7 +774,4 @@ await check('มือถือ: แตะเริ่ม → ลากจอย
 });
 await mob.browser.close();
 
-const pass = results.filter((r) => r.ok).length;
-for (const r of results) console.log(`${r.ok ? '✅' : '❌'} ${r.name}${r.note ? ' — ' + r.note : ''} (${(r.ms / 1000).toFixed(1)}s)`);
-console.log(`\nผ่าน ${pass}/${results.length}`);
-process.exit(pass === results.length ? 0 : 1);
+process.exit(suite.finish() ? 0 : 1);

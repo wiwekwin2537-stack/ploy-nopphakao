@@ -6,7 +6,7 @@
   "scripts": {
     "build": "node tools/build.js",
     "check": "node tools/check.js",
-    "test": "node tools/check.js && node --test tests/unit/*.test.js && node tools/build.js && node tests/browser/run.js"
+    "test": "node tools/check.js && node --test tests/unit/*.test.js && node tools/build.js && node tests/browser/run.js && node tests/browser/story.js"
   },
   "keywords": [],
   "author": "",

@@ -43,3 +43,13 @@ test('ล้มท้าวเวสสุวรรณ: ของม่วง/�
   talkTo(g, chan); assert.deepEqual(g.dialog.lines, g.data.dialogue.chan_vessavana); g.dialog.onDone();
   talkTo(g, chan); assert.notDeepEqual(g.dialog.lines, g.data.dialogue.chan_vessavana);
 });
+
+test('พ่อเฒ่าจันทร์: ถ้าไม่ได้กลับมาคุยระหว่างบท เล่าเรื่องล่าสุดเรื่องเดียว (ไม่ย้อนเล่าเรื่องเก่าที่ล้าสมัย)', () => {
+  const g = makeGame(); g.flags.tutorialDone = true;
+  Object.assign(g.flags, { metChan: true, yakSlain: true, heardHimmapan: true, q_q1_main: true, khotchasi_kingSlain: true, garuda_kingSlain: true, vessavanaSlain: true });
+  enterZone(g, 'town');
+  const chan = g.world.zone.npcs.find((x) => x.id === 'chan');
+  talkTo(g, chan); assert.deepEqual(g.dialog.lines, g.data.dialogue.chan_vessavana, 'เล่าเรื่องล่าสุด'); g.dialog.onDone();
+  assert.ok(g.flags.heardKailash && g.flags.heardHeaven && g.flags.heardEnding1, 'เรื่องเก่านับว่าฟังแล้ว');
+  talkTo(g, chan); assert.notDeepEqual(g.dialog.lines, g.data.dialogue.chan_king);
+});

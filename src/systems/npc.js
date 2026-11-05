@@ -24,8 +24,9 @@ function lineFor(game, npc) {
     game.audio.play('level');
   } };
   // บทพูดตามเหตุการณ์ (data/dialogue.json "events"): พูดครั้งเดียวเมื่อมีธงที่กำหนด
-  const ev = (D.events || []).find((e) => e.npc === npc.id && game.flags[e.flag] && !game.flags[e.once]);
-  if (ev) return { lines: D[ev.lines], done: () => { game.flags[ev.once] = true; } };
+  // ค้างหลายเรื่อง (ไม่ได้กลับมาคุยระหว่างบท) = เล่าเรื่องล่าสุดเรื่องเดียว เรื่องเก่าที่ล้าสมัยนับว่าฟังแล้ว
+  const evs = (D.events || []).filter((e) => e.npc === npc.id && game.flags[e.flag] && !game.flags[e.once]), ev = evs[evs.length - 1];
+  if (ev) return { lines: D[ev.lines], done: () => { for (const e of evs) game.flags[e.once] = true; } };
   const list = D[npc.id] || ['...'];
   npc.talkIdx = ((npc.talkIdx ?? -1) + 1) % list.length;
   return { lines: [list[npc.talkIdx]], done: null };
