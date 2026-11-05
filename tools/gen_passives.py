@@ -127,6 +127,7 @@ data = {"pointsPerLevel": 1, "nodes": nodes,
         "statNames": {"dmgFlat": "ดาเมจดาบ +{}", "dmgMelee": "ดาเมจดาบ +{}%", "dmgSpell": "ดาเมจพลอย +{}%", "dmgAll": "ดาเมจทั้งหมด +{}%", "hpFlat": "เลือด +{}", "hpInc": "เลือดสูงสุด +{}%",
                       "mpFlat": "มานา +{}", "mpInc": "มานาสูงสุด +{}%", "mpRegenInc": "ฟื้นมานา +{}%", "moveInc": "ความเร็วเดิน +{}%", "atkSpeedInc": "ความเร็วฟัน +{}%",
                       "castSpeedInc": "ความเร็วร่าย +{}%", "crit": "โอกาสคริติคอล +{}%", "critMult": "แรงคริติคอล +{}%", "lifeOnHit": "ฟันโดนฟื้นเลือด {}",
-                      "dashCdInc": "คูลดาวน์หลบ {}%", "areaInc": "วงระเบิด +{}%", "projSpeedInc": "ความเร็วกระสุน +{}%"}}
+                      "dashCdInc": "คูลดาวน์หลบ {}%", "areaInc": "วงระเบิด +{}%", "projSpeedInc": "ความเร็วกระสุน +{}%",
+                      "killHeal": "ฆ่ามอนฟื้นเลือด {}%", "killMana": "ฆ่ามอนฟื้นมานา {}%"}}
 json.dump(data, open("data/passives.json", "w"), ensure_ascii=False, indent=1)
 print(len(nodes), "nodes")

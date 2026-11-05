@@ -665,6 +665,29 @@ await check('แผนที่ใหญ่แบบ PoE: กด Tab เปิ�
   return 'เปิด/ปิดได้ทั้งปุ่มและแตะ';
 });
 
+await check('เลื่อนขั้นอาชีพแบบ PoE: ต้นพาสซีฟ → ปุ่มเลื่อนขั้น → เลือกทาง (แตะสองครั้ง) → ลงโหนด → ✕ กลับต้นพาสซีฟ', async () => {
+  await G(page, () => { const g = __ploy.game; g.flags.garuda_kingSlain = true; g.player.ascend = null; g.player.ascNodes = []; g.mode = 'play'; __ploy.openTree(); });
+  await page.waitForTimeout(150);
+  const T = await G(page, () => __ploy.treeLayout());
+  await page.mouse.click(T.asc.x + T.asc.w / 2, T.asc.y + T.asc.h / 2); await page.waitForTimeout(150);
+  assert((await state(page)).mode === 'ascend', 'ไม่เปิดหน้าเลื่อนขั้น: ' + (await state(page)).mode);
+  const B = await G(page, () => __ploy.ascendLayout());
+  const c = B.cards[0];
+  await page.mouse.click(c.x + c.w / 2, c.y + 40); await page.waitForTimeout(120);
+  await page.mouse.click(c.x + c.w / 2, c.y + 40); await page.waitForTimeout(150);
+  const who = await G(page, () => ({ a: __ploy.game.player.ascend, opts: __ploy.game.data.ascendancy.classes[__ploy.game.player.cls] }));
+  assert(who.a === who.opts[0], 'เลือกทางไม่ติด: ' + JSON.stringify(who));
+  const t0 = B.tiles[0];
+  await page.mouse.click(t0.x + t0.w / 2, t0.y + t0.h / 2); await page.waitForTimeout(100);
+  await page.mouse.click(t0.x + t0.w / 2, t0.y + t0.h / 2); await page.waitForTimeout(150);
+  assert((await G(page, () => __ploy.game.player.ascNodes.length)) === 1, 'ลงโหนดไม่ติด');
+  await page.screenshot({ path: SHOTS + '/31-ascend.png' });
+  await page.mouse.click(B.close.x, B.close.y); await page.waitForTimeout(150);
+  assert((await state(page)).mode === 'tree', '✕ ไม่กลับต้นพาสซีฟ');
+  await page.keyboard.press('Escape'); await page.waitForTimeout(150);
+  return 'เลือก ' + who.a + ' ลงโหนดได้ ปิดกลับได้';
+});
+
 await check('ความเร็ว: มอน 100 ตัวไล่ล้อม ใช้เวลาคำนวณ+วาดต่อเฟรมไม่เกิน 8ms', async () => {
   await G(page, () => { const g = __ploy.game, p = g.player; const types = ['boar', 'monkey', 'krasue', 'piglet']; for (let i = 0; i < 2000 && g.mobs.length < 100; i++) { const m = __ploy.makeMob(g, types[i % 4], 3, p.x + (Math.random() - 0.5) * 700, p.y + (Math.random() - 0.5) * 400, -1); if (!g.world.blocked(m.x, m.y, m.radius)) g.mobs.push(m); } g.mobs.forEach((m) => { m.aggroed = true; }); p.invuln = 99; });
   await page.waitForTimeout(1500);

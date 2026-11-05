@@ -1,0 +1,464 @@
+{
+ "_doc": "อาชีพเลื่อนขั้นแบบ PoE (Ascendancy): อาชีพละ 2 ทาง เลือกได้ทางเดียวถาวร · แต้มเลื่อนขั้นได้จากการผ่านบททดสอบ = ล้มบอสตามธงใน trials (ครั้งละ 2 แต้ม) · ลงโหนดไหนก่อนก็ได้ · คืนแต้มใช้ใบลานล้างกรรม 1 ใบ · ค่า stats ใช้ชื่อเดียวกับต้นพาสซีฟ (passives.json statNames)",
+ "trials": [
+  {
+   "flag": "garuda_kingSlain",
+   "points": 2,
+   "name": "บททดสอบแห่งไกรลาส"
+  },
+  {
+   "flag": "naga_kingSlain",
+   "points": 2,
+   "name": "บททดสอบแห่งบาดาล"
+  },
+  {
+   "flag": "thotsakanSlain",
+   "points": 2,
+   "name": "บททดสอบแห่งลงกา"
+  }
+ ],
+ "classes": {
+  "warrior": [
+   "juggernaut",
+   "berserker"
+  ],
+  "ranger": [
+   "deadeye",
+   "pathfinder"
+  ],
+  "shaman": [
+   "elementalist",
+   "herbalist"
+  ],
+  "duelist": [
+   "gladiator",
+   "slayer"
+  ],
+  "shadow": [
+   "assassin",
+   "trickster"
+  ],
+  "templar": [
+   "hierophant",
+   "inquisitor"
+  ]
+ },
+ "list": {
+  "juggernaut": {
+   "name": "ขุนศึกช้างสาร",
+   "desc": "ทนทานไม่ล้ม เลือดหนามาก ฟื้นเลือดเมื่อฆ่า",
+   "nodes": [
+    {
+     "id": "jug1",
+     "name": "กายช้างสาร",
+     "stats": {
+      "hpInc": 20,
+      "hpFlat": 60
+     }
+    },
+    {
+     "id": "jug2",
+     "name": "งาทะลวงทัพ",
+     "stats": {
+      "dmgMelee": 20,
+      "areaInc": 15
+     }
+    },
+    {
+     "id": "jug3",
+     "name": "ไม่รู้จักถอย",
+     "stats": {
+      "killHeal": 4
+     }
+    },
+    {
+     "id": "jug4",
+     "name": "ย่างก้าวช้างศึก",
+     "stats": {
+      "atkSpeedInc": 10,
+      "moveInc": 5
+     }
+    }
+   ]
+  },
+  "berserker": {
+   "name": "ยักษ์คลั่ง",
+   "desc": "ดาเมจดาบมหาศาล ฟันเร็ว ดูดเลือดจากการฟัน",
+   "nodes": [
+    {
+     "id": "ber1",
+     "name": "โทสะยักษ์",
+     "stats": {
+      "dmgMelee": 35
+     }
+    },
+    {
+     "id": "ber2",
+     "name": "คลั่งเลือด",
+     "stats": {
+      "atkSpeedInc": 15
+     }
+    },
+    {
+     "id": "ber3",
+     "name": "ดื่มเลือดศัตรู",
+     "stats": {
+      "lifeOnHit": 4
+     }
+    },
+    {
+     "id": "ber4",
+     "name": "ฟันไม่ยั้ง",
+     "stats": {
+      "critMult": 40
+     }
+    }
+   ]
+  },
+  "deadeye": {
+   "name": "พรานตาทิพย์",
+   "desc": "ศรเร็ว แม่นยำ เดินไว ยิงรัว",
+   "nodes": [
+    {
+     "id": "dea1",
+     "name": "ศรลมกรด",
+     "stats": {
+      "projSpeedInc": 25,
+      "dmgAll": 15
+     }
+    },
+    {
+     "id": "dea2",
+     "name": "ตาทิพย์",
+     "stats": {
+      "crit": 5
+     }
+    },
+    {
+     "id": "dea3",
+     "name": "เท้าไฟ",
+     "stats": {
+      "moveInc": 10
+     }
+    },
+    {
+     "id": "dea4",
+     "name": "น้าวไม่พัก",
+     "stats": {
+      "atkSpeedInc": 12
+     }
+    }
+   ]
+  },
+  "pathfinder": {
+   "name": "นางไม้ป่าลึก",
+   "desc": "ฟื้นเลือดและมานาทุกครั้งที่ฆ่า หลบบ่อย ยืนระยะยาว",
+   "nodes": [
+    {
+     "id": "pat1",
+     "name": "น้ำค้างป่าลึก",
+     "stats": {
+      "killHeal": 3,
+      "killMana": 5
+     }
+    },
+    {
+     "id": "pat2",
+     "name": "ลมหายใจไพร",
+     "stats": {
+      "mpRegenInc": 50
+     }
+    },
+    {
+     "id": "pat3",
+     "name": "ย่องเงา",
+     "stats": {
+      "dashCdInc": -25
+     }
+    },
+    {
+     "id": "pat4",
+     "name": "พรนางไม้",
+     "stats": {
+      "dmgAll": 20
+     }
+    }
+   ]
+  },
+  "elementalist": {
+   "name": "หมอผีธาตุ",
+   "desc": "ดาเมจพลอยแรง ร่ายเร็ว วงระเบิดกว้าง",
+   "nodes": [
+    {
+     "id": "ele1",
+     "name": "เพลิงทับทิม",
+     "stats": {
+      "dmgSpell": 35
+     }
+    },
+    {
+     "id": "ele2",
+     "name": "คาถาเร็ว",
+     "stats": {
+      "castSpeedInc": 15
+     }
+    },
+    {
+     "id": "ele3",
+     "name": "ธาตุแผ่กว้าง",
+     "stats": {
+      "areaInc": 25
+     }
+    },
+    {
+     "id": "ele4",
+     "name": "ห้วงมานา",
+     "stats": {
+      "mpInc": 25
+     }
+    }
+   ]
+  },
+  "herbalist": {
+   "name": "หมอยาสมุนไพร",
+   "desc": "มานาไม่มีวันหมด ฟื้นมานาเมื่อฆ่า ทนขึ้น",
+   "nodes": [
+    {
+     "id": "her1",
+     "name": "ว่านดูดวิญญาณ",
+     "stats": {
+      "killMana": 6
+     }
+    },
+    {
+     "id": "her2",
+     "name": "ยาหม้อขม",
+     "stats": {
+      "hpInc": 15
+     }
+    },
+    {
+     "id": "her3",
+     "name": "ลมหายใจสมุนไพร",
+     "stats": {
+      "mpRegenInc": 60
+     }
+    },
+    {
+     "id": "her4",
+     "name": "พิษแก่น",
+     "stats": {
+      "dmgSpell": 20,
+      "critMult": 30
+     }
+    }
+   ]
+  },
+  "gladiator": {
+   "name": "ขุนดาบ",
+   "desc": "ฟันหนัก ฟันเร็ว เลือดดี ดูดเลือดจากการฟัน",
+   "nodes": [
+    {
+     "id": "gla1",
+     "name": "คมดาบขุน",
+     "stats": {
+      "dmgMelee": 25,
+      "crit": 3
+     }
+    },
+    {
+     "id": "gla2",
+     "name": "จังหวะดาบ",
+     "stats": {
+      "atkSpeedInc": 15
+     }
+    },
+    {
+     "id": "gla3",
+     "name": "เกราะกาย",
+     "stats": {
+      "hpFlat": 80
+     }
+    },
+    {
+     "id": "gla4",
+     "name": "เลือดแลกเลือด",
+     "stats": {
+      "lifeOnHit": 5
+     }
+    }
+   ]
+  },
+  "slayer": {
+   "name": "นักดาบพายุ",
+   "desc": "ฆ่าแล้วฟื้นเลือด วงฟันกว้าง คริแรง หลบไว",
+   "nodes": [
+    {
+     "id": "sla1",
+     "name": "ล้างบาง",
+     "stats": {
+      "killHeal": 5
+     }
+    },
+    {
+     "id": "sla2",
+     "name": "พายุดาบ",
+     "stats": {
+      "areaInc": 25
+     }
+    },
+    {
+     "id": "sla3",
+     "name": "คมสังหาร",
+     "stats": {
+      "critMult": 50
+     }
+    },
+    {
+     "id": "sla4",
+     "name": "ฝีเท้าพายุ",
+     "stats": {
+      "moveInc": 8,
+      "dashCdInc": -20
+     }
+    }
+   ]
+  },
+  "assassin": {
+   "name": "มือสังหาร",
+   "desc": "คริติคอลบ่อยและแรงที่สุดในเกม",
+   "nodes": [
+    {
+     "id": "ass1",
+     "name": "จุดตาย",
+     "stats": {
+      "crit": 6
+     }
+    },
+    {
+     "id": "ass2",
+     "name": "แทงซ้ำแผล",
+     "stats": {
+      "critMult": 60
+     }
+    },
+    {
+     "id": "ass3",
+     "name": "พิษเงา",
+     "stats": {
+      "dmgAll": 15
+     }
+    },
+    {
+     "id": "ass4",
+     "name": "ย่องไร้เสียง",
+     "stats": {
+      "moveInc": 10
+     }
+    }
+   ]
+  },
+  "trickster": {
+   "name": "จอมกล",
+   "desc": "หลบบ่อย ฆ่าแล้วฟื้นมานา ร่ายเร็ว",
+   "nodes": [
+    {
+     "id": "tri1",
+     "name": "หายตัว",
+     "stats": {
+      "dashCdInc": -30
+     }
+    },
+    {
+     "id": "tri2",
+     "name": "ขโมยวิญญาณ",
+     "stats": {
+      "killMana": 6
+     }
+    },
+    {
+     "id": "tri3",
+     "name": "มือไว",
+     "stats": {
+      "castSpeedInc": 15
+     }
+    },
+    {
+     "id": "tri4",
+     "name": "กลลวง",
+     "stats": {
+      "dmgSpell": 25
+     }
+    }
+   ]
+  },
+  "hierophant": {
+   "name": "พระมหาเถระ",
+   "desc": "มานามหาศาล ร่ายเร็ว พลังพลอยแรง",
+   "nodes": [
+    {
+     "id": "hie1",
+     "name": "สมาธิแก่กล้า",
+     "stats": {
+      "mpInc": 30
+     }
+    },
+    {
+     "id": "hie2",
+     "name": "บทสวดเร็ว",
+     "stats": {
+      "castSpeedInc": 15
+     }
+    },
+    {
+     "id": "hie3",
+     "name": "อานุภาพพระคาถา",
+     "stats": {
+      "dmgSpell": 25
+     }
+    },
+    {
+     "id": "hie4",
+     "name": "จิตสงบ",
+     "stats": {
+      "mpRegenInc": 50
+     }
+    }
+   ]
+  },
+  "inquisitor": {
+   "name": "นักบวชนักรบ",
+   "desc": "ดาเมจทุกแบบสูง คริบ่อย ทนทาน",
+   "nodes": [
+    {
+     "id": "inq1",
+     "name": "ธรรมะติดอาวุธ",
+     "stats": {
+      "dmgAll": 25
+     }
+    },
+    {
+     "id": "inq2",
+     "name": "ตาธรรม",
+     "stats": {
+      "crit": 4
+     }
+    },
+    {
+     "id": "inq3",
+     "name": "กายวัชระ",
+     "stats": {
+      "hpInc": 15
+     }
+    },
+    {
+     "id": "inq4",
+     "name": "เลือดผู้ศรัทธา",
+     "stats": {
+      "lifeOnHit": 3
+     }
+    }
+   ]
+  }
+ }
+}

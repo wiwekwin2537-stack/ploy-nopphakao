@@ -1,8 +1,9 @@
 // เซฟ/โหลด — มีที่เขียนเซฟที่เดียวคือไฟล์นี้ มีเลขเวอร์ชันเซฟ
 import { validTree } from './passives.js';
+import { validAscend } from './ascend.js';
 import { validItems, emptyEquip } from './items.js';
 
-export const SAVE_VERSION = 13;
+export const SAVE_VERSION = 14;
 const KEY = 'ploy.save';
 
 // ตัวแปลงเซฟรุ่นเก่า → รุ่นใหม่ (เพิ่มที่นี่เมื่อเปลี่ยนรูปแบบเซฟ)
@@ -61,6 +62,8 @@ const MIGRATIONS = {
   // v11 → v12: แต้มพาสซีฟจากเควสรอง (บทแบบ PoE) · รางวัลเควสหลักที่ทำไปแล้วนับว่ารับแล้ว (ไม่ให้ซ้ำ)
   // v12 → v13: อาชีพ + ชื่อตัวละคร (เซฟเก่า: อาชีพจากสายที่เลือกในต้นพาสซีฟ ไม่มี = นักรบ)
   12: (d) => { const st = ['warrior', 'ranger', 'shaman'].find((c) => (d.passives || []).includes(c)); return { ...d, v: 13, cls: st || 'warrior', name: 'นักล่าพลอย', passives: st ? d.passives : ['warrior', ...(d.passives || [])] }; },
+  // v13 → v14: อาชีพเลื่อนขั้น (ยังไม่ได้เลือก)
+  13: (d) => ({ ...d, v: 14, ascend: null, ascNodes: [] }),
   11: (d) => ({ ...d, v: 12, questPoints: 0, flags: { ...d.flags, ...(d.flags.heardHimmapan ? { q_q1_main: true } : {}) } }),
 };
 
@@ -71,7 +74,7 @@ export function serialize(game) {
     zone: at ? at.zone : z.id, x: Math.round(at ? at.x * 32 : p.x), y: Math.round(at ? at.y * 32 : p.y),
     level: p.level, xp: p.xp, coins: p.coins, potions: p.potions, mpPotions: p.mpPotions, hp: Math.round(p.hp), mp: Math.round(p.mp),
     items: JSON.parse(JSON.stringify(p.items)), stash: JSON.parse(JSON.stringify(p.stash || [])), equip: JSON.parse(JSON.stringify(p.equip)), nextUid: p.nextUid,
-    passives: p.passives.slice(), gemXp: { ...(p.gemXp || {}) }, questPoints: p.questPoints || 0, cls: p.cls, name: p.name, bag: p.bag.slice(), currency: { ...p.currency }, flags: { ...game.flags },
+    passives: p.passives.slice(), gemXp: { ...(p.gemXp || {}) }, questPoints: p.questPoints || 0, ascend: p.ascend || null, ascNodes: (p.ascNodes || []).slice(), cls: p.cls, name: p.name, bag: p.bag.slice(), currency: { ...p.currency }, flags: { ...game.flags },
   };
 }
 
@@ -91,6 +94,7 @@ export function validate(s, data) {
   if (!Number.isInteger(d.questPoints) || d.questPoints < 0 || d.questPoints > 50) return null;
   if (!d.gemXp || typeof d.gemXp !== 'object' || !Object.entries(d.gemXp).every(([k, v]) => known(k) && Number.isInteger(v) && v >= 0 && v <= 1e7)) return null;
   if (!d.currency || typeof d.currency !== 'object' || !Object.entries(d.currency).every(([k, v]) => (!data.items || data.items.currency[k]) && Number.isInteger(v) && v >= 0 && v <= 9999)) return null;
+  if (data.ascendancy && !validAscend(data.ascendancy, d)) return null;
   if (data.passives && !validTree(data.passives, d.passives, d.level)) return null;
   if (data.items && (!Number.isInteger(d.nextUid) || !validItems(data.items, d.items, d.equip, d.nextUid, gemsData, d.stash))) return null;
   return d;

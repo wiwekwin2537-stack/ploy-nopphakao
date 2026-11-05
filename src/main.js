@@ -8,6 +8,7 @@ import zones from '../data/zones.json' with { type: 'json' };
 import dialogue from '../data/dialogue.json' with { type: 'json' };
 import gems from '../data/gems.json' with { type: 'json' };
 import passives from '../data/passives.json' with { type: 'json' };
+import ascendancy from '../data/ascendancy.json' with { type: 'json' };
 import items from '../data/items.json' with { type: 'json' };
 import shop from '../data/shop.json' with { type: 'json' };
 import quests from '../data/quests.json' with { type: 'json' };
@@ -34,7 +35,8 @@ import { computeLayout } from './ui/layout.js';
 import { createScene } from './ui/scene.js';
 import { drawHud, drawDialog, drawDeath, drawTitle, titleButtons } from './ui/hud.js';
 import { drawBag, updateBag, profileHit, bagLayout } from './ui/bag.js';
-import { drawTree, updateTree, openTree } from './ui/tree.js';
+import { drawTree, updateTree, openTree, treeLayout } from './ui/tree.js';
+import { drawAscend, updateAscend, openAscend, ascendLayout } from './ui/ascend.js';
 import { drawShop, updateShop, shopLayout } from './ui/shop.js';
 import { gemLayout } from './ui/gemtab.js';
 import { drawWarp, updateWarp } from './ui/warp.js';
@@ -54,6 +56,7 @@ import { updateExplore } from './systems/explore.js';
 import { updatePotion, setupFlasks } from './systems/shop.js';
 import { setupUniques, makeUnique } from './systems/uniques.js';
 import { setupActs } from './systems/quests.js';
+import { setupAscend } from './systems/ascend.js';
 
 // สองชั้น: โลกวาดความละเอียดต่ำแล้วขยายแบบพิกเซล (สไตล์เอโดเรีย) · หน้าจอซ้อน/ตัวหนังสือวาดคมเต็มความละเอียด
 const PIXEL = 0.62;
@@ -66,7 +69,7 @@ let layoutKey = '';
 let layout = computeLayout(canvas.clientWidth || innerWidth, canvas.clientHeight || innerHeight);
 
 const game = {
-  data: { balance, monsters, zones, dialogue, gems, passives, items, shop, quests },
+  data: { balance, monsters, zones, dialogue, gems, passives, ascendancy, items, shop, quests },
   events: createEvents(), camera: createCamera(), audio: createAudio(), fx: createFx(), rng: createRng(Date.now() & 0xffff),
   flags: {}, mobs: [], shots: [], drops: [], hazards: [], later: [], spawnTimers: [],
   mode: 'title', dialog: null, time: 0, hitStop: 0, toast: null, debug: params.has('debug'),
@@ -75,7 +78,7 @@ game.world = createWorld(zones, (f) => !!game.flags[f], (type) => game.mobs.some
 game.input = createInput(canvas, () => layout);
 game.player = createPlayer(game.data);
 game.hasSave = !!readSave(game.data);
-setupLoot(game); setupFlasks(game); setupUniques(game); setupActs(game); setupProgress(game); setupAutosave(game); setupTutorial(game); setupDeath(game);
+setupLoot(game); setupFlasks(game); setupUniques(game); setupActs(game); setupAscend(game, () => playerStats(game.player, game.data)); setupProgress(game); setupAutosave(game); setupTutorial(game); setupDeath(game);
 game.world.load('road');
 const scene = createScene(game);
 
@@ -95,7 +98,7 @@ function continueGame() {
   const s = readSave(game.data);
   if (!s) return startNew(false);
   const p = game.player = createPlayer(game.data);
-  Object.assign(p, { level: s.level, xp: s.xp, coins: s.coins, bag: s.bag.slice(), currency: { ...p.currency, ...s.currency }, passives: s.passives.slice(), gemXp: { ...s.gemXp }, questPoints: s.questPoints || 0, cls: s.cls, name: s.name, items: s.items, stash: s.stash || [], equip: { ...p.equip, ...s.equip }, nextUid: s.nextUid, potions: s.potions, mpPotions: s.mpPotions, hp: s.hp, mp: s.mp });
+  Object.assign(p, { level: s.level, xp: s.xp, coins: s.coins, bag: s.bag.slice(), currency: { ...p.currency, ...s.currency }, passives: s.passives.slice(), gemXp: { ...s.gemXp }, questPoints: s.questPoints || 0, ascend: s.ascend, ascNodes: s.ascNodes.slice(), cls: s.cls, name: s.name, items: s.items, stash: s.stash || [], equip: { ...p.equip, ...s.equip }, nextUid: s.nextUid, potions: s.potions, mpPotions: s.mpPotions, hp: s.hp, mp: s.mp });
   game.flags = { ...s.flags };
   game.mode = 'play';
   enterZone(game, s.zone, s.x, s.y);
@@ -145,7 +148,10 @@ function update(dt) {
     if (game.deadT > 1.2 && (input.taps.length || input.pressed.attack || input.pressed.interact || input.pressed.dash)) { respawn(game); writeSave(game); }
   } else if (game.mode === 'tree') {
     const r = updateTree(game, layout, game.camera.viewW, game.camera.viewH);
-    if (r) { game.mode = r === 'back' ? 'bag' : 'play'; input.setUiMode(false); writeSave(game); }
+    if (r === 'ascend') openAscend(game);
+    else if (r) { game.mode = r === 'back' ? 'bag' : 'play'; input.setUiMode(false); writeSave(game); }
+  } else if (game.mode === 'ascend') {
+    if (updateAscend(game, layout, game.camera.viewW, game.camera.viewH)) { game.mode = 'tree'; writeSave(game); }
   } else if (game.mode === 'play' && input.pressed.tree) {
     game.mode = 'tree'; openTree(game); game.audio.play('click');
   } else if (['bag', 'shop', 'stash', 'reward'].includes(game.mode) && input.taps.some((t) => !t.consumed && tipCloseHit(t))) {
@@ -226,7 +232,8 @@ function render() {
     if (game.mode === 'dialog') drawDialog(ctx, game, layout, w, h);
     if (game.mode === 'dead') drawDeath(ctx, game, layout, w, h);
     if (game.mode === 'bag') drawBag(ctx, game, layout, w, h);
-    if (game.mode === 'tree') drawTree(ctx, game, layout, w, h);
+    if (game.mode === 'tree' || game.mode === 'ascend') drawTree(ctx, game, layout, w, h);
+    if (game.mode === 'ascend') drawAscend(ctx, game, layout, w, h);
     if (game.mode === 'shop') drawShop(ctx, game, layout, w, h);
     if (game.mode === 'warp') drawWarp(ctx, game, layout, w, h);
     if (game.mode === 'mapmenu') drawMapMenu(ctx, game, layout, w, h);
@@ -254,4 +261,4 @@ game.loopStats = loop.stats;
 loop.start();
 
 // test-hook: เปิดเฉพาะเมื่อมี ?test ใน URL ใช้ในเทสต์อัตโนมัติเท่านั้น
-if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, rollElite, makeUnique, spawnDrop, art: { drawHuman, drawStats, heroLook, heroGear, itemSprite, drawMonster }, damage: damageMob, stashLayout: () => stashLayout(game.camera.viewW, game.camera.viewH, layout.s), createLayout: () => createLayout(game.camera.viewW, game.camera.viewH, layout.s), openCreate: (skip) => openCreate(game, skip), rewardLayout: () => rewardLayout(game.camera.viewW, game.camera.viewH, layout.s), shopLayout: () => shopLayout(game.camera.viewW, game.camera.viewH, layout.s), skills: () => skillsOf(game.data.gems, game.player, game.data.items), stats: () => playerStats(game.player, game.data), layout: () => layout, bagLayout: () => bagLayout(game.camera.viewW, game.camera.viewH, layout.s), gemLayout: () => gemLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s), game.player) }; // test-hook
+if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, rollElite, makeUnique, spawnDrop, art: { drawHuman, drawStats, heroLook, heroGear, itemSprite, drawMonster }, damage: damageMob, stashLayout: () => stashLayout(game.camera.viewW, game.camera.viewH, layout.s), treeLayout: () => treeLayout(game.camera.viewW, game.camera.viewH, layout.s), ascendLayout: () => ascendLayout(game.camera.viewW, game.camera.viewH, layout.s), openTree: () => { game.mode = 'tree'; openTree(game); }, createLayout: () => createLayout(game.camera.viewW, game.camera.viewH, layout.s), openCreate: (skip) => openCreate(game, skip), rewardLayout: () => rewardLayout(game.camera.viewW, game.camera.viewH, layout.s), shopLayout: () => shopLayout(game.camera.viewW, game.camera.viewH, layout.s), skills: () => skillsOf(game.data.gems, game.player, game.data.items), stats: () => playerStats(game.player, game.data), layout: () => layout, bagLayout: () => bagLayout(game.camera.viewW, game.camera.viewH, layout.s), gemLayout: () => gemLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s), game.player) }; // test-hook

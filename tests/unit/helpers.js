@@ -5,6 +5,7 @@ import zones from '../../data/zones.json' with { type: 'json' };
 import dialogue from '../../data/dialogue.json' with { type: 'json' };
 import gems from '../../data/gems.json' with { type: 'json' };
 import passives from '../../data/passives.json' with { type: 'json' };
+import ascendancy from '../../data/ascendancy.json' with { type: 'json' };
 import items from '../../data/items.json' with { type: 'json' };
 import shop from '../../data/shop.json' with { type: 'json' };
 import quests from '../../data/quests.json' with { type: 'json' };
@@ -19,11 +20,13 @@ import { setupProgress } from '../../src/systems/progress.js';
 import { setupTutorial } from '../../src/systems/tutorial.js';
 import { setupDeath } from '../../src/systems/travel.js';
 import { setupActs } from '../../src/systems/quests.js';
+import { setupAscend } from '../../src/systems/ascend.js';
+import { playerStats } from '../../src/systems/stats.js';
 
 export function makeGame() {
   const noop = () => {};
   const game = {
-    data: { balance, monsters, zones, dialogue, gems, passives, items, shop, quests },
+    data: { balance, monsters, zones, dialogue, gems, passives, ascendancy, items, shop, quests },
     events: createEvents(), rng: createRng(42),
     fx: { text: noop, burst: noop, trail: noop, ring: noop, slash: noop, clear: noop, update: noop },
     audio: { play: noop, blip: noop, music: noop, update: noop, muted: true },
@@ -33,7 +36,7 @@ export function makeGame() {
   };
   game.world = createWorld(zones, (f) => !!game.flags[f], (t) => game.mobs.some((m) => m.type === t && !m.dead));
   game.player = createPlayer(game.data);
-  setupLoot(game); setupFlasks(game); setupUniques(game); setupActs(game); setupProgress(game); setupTutorial(game); setupDeath(game);
+  setupLoot(game); setupFlasks(game); setupUniques(game); setupActs(game); setupAscend(game, () => playerStats(game.player, game.data)); setupProgress(game); setupTutorial(game); setupDeath(game);
   return game;
 }
 

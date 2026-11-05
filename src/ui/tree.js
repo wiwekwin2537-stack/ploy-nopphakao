@@ -3,6 +3,7 @@ import { C, kanokFrame, rrect, circle, poly } from '../art/draw.js';
 import { uiText as text } from './hud.js';
 import { startOf, pointsLeft, canAllocate, allocate, canRefund, refund, describe } from '../systems/passives.js';
 import { playerStats } from '../systems/stats.js';
+import { ascPointsLeft, ascPointsTotal } from '../systems/ascend.js';
 
 import { CLASS_COL } from './create.js';
 
@@ -14,10 +15,11 @@ function classOfNode(P, id) {
 
 function nodeR(n, s) { return (n.kind === 'keystone' ? 17 : n.kind === 'notable' ? 13 : n.kind === 'start' ? 19 : 8) * s; }
 
-function ui(w, h, s) {
+export function treeLayout(w, h, s) {
   return {
     close: { x: w - 26 * s, y: 24 * s, r: 15 * s },
     back: { x: w - 150 * s, y: 12 * s, w: 96 * s, h: 26 * s },
+    asc: { x: w - 262 * s, y: 12 * s, w: 104 * s, h: 26 * s },
     zin: { x: w - 26 * s, y: 64 * s, r: 14 * s },
     zout: { x: w - 26 * s, y: 98 * s, r: 14 * s },
     info: { x: 10 * s, y: h - 86 * s, w: Math.min(w - 20 * s, 460 * s), h: 76 * s },
@@ -75,7 +77,7 @@ export function drawTree(ctx, game, L, w, h) {
     if (v.sel === id) circle(ctx, x, y, r + 5 * s, null, '#ffffff', 2);
   }
   // แถบบน
-  const U = ui(w, h, s), left = pointsLeft(p, P), st = startOf(p, P);
+  const U = treeLayout(w, h, s), left = pointsLeft(p, P), st = startOf(p, P);
   ctx.fillStyle = 'rgba(14,12,18,0.8)'; rrect(ctx, 10 * s, 8 * s, 300 * s, 34 * s, 10 * s); ctx.fill();
   text(ctx, 'ต้นพาสซีฟ', 22 * s, 25 * s, 15 * s, C.goldHi);
   text(ctx, st ? `แต้มเหลือ ${left}` : 'เลือกสายเริ่มต้นก่อน', 120 * s, 25 * s, 12 * s, left > 0 || !st ? '#9af0b0' : C.cream);
@@ -85,6 +87,13 @@ export function drawTree(ctx, game, L, w, h) {
   ctx.fillStyle = 'rgba(14,12,18,0.85)'; rrect(ctx, BK.x, BK.y, BK.w, BK.h, 9 * s); ctx.fill();
   ctx.strokeStyle = C.gold; ctx.lineWidth = 1.2; ctx.stroke();
   text(ctx, '◀ โปรไฟล์', BK.x + BK.w / 2, BK.y + BK.h / 2 + 0.5, 11 * s, C.goldHi, 'center', '600');
+  const A = game.data.ascendancy, AS = U.asc;             // ปุ่มเลื่อนขั้นอาชีพ (เรืองแสงเมื่อมีแต้มเหลือ)
+  if (A) {
+    const al = ascPointsLeft(A, p, game.flags), glow = al > 0 && ascPointsTotal(A, game.flags) > 0;
+    ctx.fillStyle = glow ? `rgba(120,70,20,${0.75 + Math.sin(t * 5) * 0.2})` : 'rgba(14,12,18,0.85)'; rrect(ctx, AS.x, AS.y, AS.w, AS.h, 9 * s); ctx.fill();
+    ctx.strokeStyle = glow ? C.goldHi : C.gold; ctx.lineWidth = glow ? 2 : 1.2; ctx.stroke();
+    text(ctx, glow ? `เลื่อนขั้น (${al})` : 'เลื่อนขั้น', AS.x + AS.w / 2, AS.y + AS.h / 2 + 0.5, 11 * s, C.goldHi, 'center', '600');
+  }
   for (const [k, b] of [['close', U.close], ['zin', U.zin], ['zout', U.zout]]) {
     circle(ctx, b.x, b.y, b.r, k === 'close' ? 'rgba(120,30,20,0.9)' : 'rgba(14,12,18,0.85)', C.gold, 1.5);
     text(ctx, k === 'close' ? '✕' : k === 'zin' ? '+' : '−', b.x, b.y + 1, 14 * s, '#fff', 'center');
@@ -106,12 +115,12 @@ export function drawTree(ctx, game, L, w, h) {
     else act = left <= 0 ? 'แต้มไม่พอ — เลเวลอัพเพื่อรับแต้ม' : 'ต้องต่อจากโหนดที่เลือกไว้แล้ว';
     text(ctx, act, I.x + 12 * s, I.y + 58 * s, 10.5 * s, '#9af0b0', 'left', '600');
   } else {
-    text(ctx, st ? 'แตะโหนดที่ติดกับเส้นทองเพื่อดูรายละเอียด แตะซ้ำเพื่อเลือก' : 'เลือกสายเริ่มต้น: นักรบ (ดาบ/เลือด) · พราน (เร็ว/คริ) · หมอผี (พลอย/มานา)', I.x + 12 * s, I.y + 22 * s, 11 * s, C.cream, 'left', 'normal');
+    text(ctx, st ? 'แตะโหนดที่ติดกับเส้นทองเพื่อดูรายละเอียด แตะซ้ำเพื่อเลือก' : 'แตะจุดเริ่มของอาชีพตัวเอง (วงใหญ่สีประจำอาชีพ) เพื่อเริ่มต้น', I.x + 12 * s, I.y + 22 * s, 11 * s, C.cream, 'left', 'normal');
     text(ctx, 'ต้นเดียวกันทั้งหมด เดินข้ามไปสายอื่นได้ผ่านวงกลางหรือทางผสม', I.x + 12 * s, I.y + 46 * s, 10 * s, 'rgba(244,230,200,0.7)', 'left', 'normal');
   }
 }
 
-// คืน true ถ้าควรปิด หรือ 'back' ถ้ากลับหน้าโปรไฟล์
+// คืน true ถ้าควรปิด · 'back' = กลับหน้าโปรไฟล์ · 'ascend' = เปิดหน้าต่างเลื่อนขั้น
 export function updateTree(game, L, w, h) {
   const P = game.data.passives, p = game.player, v = game.treeView, s = L.s, inp = game.input;
   if (inp.pressed.tree || inp.pressed.pause || inp.pressed.bag) return true;
@@ -120,13 +129,14 @@ export function updateTree(game, L, w, h) {
   if (inp.drag.pinch !== 1) v.z *= inp.drag.pinch;
   v.z = Math.max(0.35, Math.min(2, v.z));
   v.x = Math.max(-800, Math.min(800, v.x)); v.y = Math.max(-800, Math.min(800, v.y));
-  const U = ui(w, h, s);
+  const U = treeLayout(w, h, s);
   for (const t of inp.taps) {
     if (t.consumed) continue;
     t.consumed = true;
     const hit = (b) => Math.hypot(t.sx - b.x, t.sy - b.y) < b.r * 1.4;
     if (hit(U.close)) return true;
     if (t.sx >= U.back.x && t.sx <= U.back.x + U.back.w && t.sy >= U.back.y && t.sy <= U.back.y + U.back.h) { game.audio.play('click'); return 'back'; }
+    if (game.data.ascendancy && t.sx >= U.asc.x && t.sx <= U.asc.x + U.asc.w && t.sy >= U.asc.y && t.sy <= U.asc.y + U.asc.h) { game.audio.play('click'); return 'ascend'; }
     if (hit(U.zin)) { v.z = Math.min(2, v.z * 1.25); continue; }
     if (hit(U.zout)) { v.z = Math.max(0.35, v.z / 1.25); continue; }
     let best = null, bd = 1e9;
