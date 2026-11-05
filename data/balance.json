@@ -89,7 +89,7 @@
  "deathCoinLoss": 0.1,
  "autosaveSeconds": 10,
  "maps": {
-  "levelBase": 18,
+  "levelBase": 30,
   "levelPerTier": 2,
   "monsters": [
    "phi_pob",
@@ -101,13 +101,21 @@
    "apsara",
    "erawan_calf",
    "khotchasi",
-   "naga_noi"
+   "naga_noi",
+   "naga_soldier",
+   "mermaid",
+   "sea_crab",
+   "lanka_yak",
+   "rakshasi",
+   "war_elephant"
   ],
   "bosses": [
    "yak",
    "khotchasi_king",
    "garuda_king",
-   "vessavana"
+   "vessavana",
+   "naga_king",
+   "thotsakan"
   ],
   "mods": [
    {

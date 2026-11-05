@@ -585,6 +585,228 @@
    "color": "#f2c230",
    "mat": "gold",
    "art": "naga_ring"
+  },
+  "badan_sword": {
+   "slot": "weapon",
+   "name": "ดาบวังบาดาล",
+   "req": 22,
+   "stats": {
+    "dmgFlat": 42,
+    "crit": 4
+   },
+   "color": "#5ae0b0",
+   "look": {
+    "kind": "sword"
+   },
+   "mat": "naga",
+   "art": "naga_blade"
+  },
+  "pearl_staff": {
+   "slot": "weapon",
+   "name": "คทาไข่มุก",
+   "req": 22,
+   "stats": {
+    "dmgFlat": 14,
+    "dmgSpell": 22,
+    "mpFlat": 30
+   },
+   "color": "#e8fffc",
+   "look": {
+    "kind": "staff"
+   },
+   "mat": "silver",
+   "art": "herb_staff"
+  },
+  "naga_bow": {
+   "slot": "weapon",
+   "name": "ธนูนาคบาศ",
+   "req": 23,
+   "stats": {
+    "dmgFlat": 36,
+    "crit": 5
+   },
+   "color": "#2ab88a",
+   "look": {
+    "kind": "bow"
+   },
+   "mat": "naga",
+   "art": "bamboo_bow"
+  },
+  "lanka_kris": {
+   "slot": "weapon",
+   "name": "กริชลงกา",
+   "req": 24,
+   "stats": {
+    "dmgFlat": 36,
+    "crit": 7
+   },
+   "color": "#aab4c5",
+   "look": {
+    "kind": "kris"
+   },
+   "mat": "iron",
+   "art": "silver_kris"
+  },
+  "lanka_crossbow": {
+   "slot": "weapon",
+   "name": "หน้าไม้ลงกา",
+   "req": 26,
+   "stats": {
+    "dmgFlat": 46,
+    "crit": 3,
+    "atkSpeedInc": -8
+   },
+   "color": "#aab4c5",
+   "look": {
+    "kind": "crossbow"
+   },
+   "mat": "iron",
+   "art": "wood_crossbow"
+  },
+  "tosa_glaive": {
+   "slot": "weapon",
+   "name": "ง้าวทศพักตร์",
+   "req": 28,
+   "stats": {
+    "dmgFlat": 58,
+    "atkSpeedInc": -6
+   },
+   "color": "#f2c230",
+   "look": {
+    "kind": "glaive"
+   },
+   "mat": "gold",
+   "art": "brass_glaive"
+  },
+  "brahma_bow": {
+   "slot": "weapon",
+   "name": "ศรพรหมาสตร์",
+   "req": 30,
+   "stats": {
+    "dmgFlat": 50,
+    "crit": 6
+   },
+   "color": "#f2c230",
+   "look": {
+    "kind": "bow"
+   },
+   "mat": "gold",
+   "art": "bamboo_bow"
+  },
+  "naga_scale": {
+   "slot": "body",
+   "name": "เกราะเกล็ดพญานาค",
+   "req": 22,
+   "stats": {
+    "hpFlat": 130
+   },
+   "color": "#2ab88a",
+   "look": {
+    "trim": "#8af0d0",
+    "plates": "#1e6a50"
+   },
+   "mat": "naga",
+   "art": "naga_mail"
+  },
+  "pearl_crown": {
+   "slot": "head",
+   "name": "มงกุฎไข่มุก",
+   "req": 22,
+   "stats": {
+    "mpFlat": 50,
+    "dmgSpell": 14
+   },
+   "color": "#e8fffc",
+   "look": {
+    "hat": "crown"
+   },
+   "mat": "silver",
+   "art": "silver_crown"
+  },
+  "naga_greaves": {
+   "slot": "legs",
+   "name": "สนับแข้งเกล็ดนาค",
+   "req": 24,
+   "stats": {
+    "hpFlat": 70,
+    "moveInc": 4
+   },
+   "color": "#1e6a50",
+   "look": {
+    "guard": "#5ae0b0"
+   },
+   "mat": "naga",
+   "art": "iron_greaves"
+  },
+  "pearl_ring": {
+   "slot": "ring",
+   "name": "แหวนไข่มุกบาดาล",
+   "req": 22,
+   "stats": {
+    "crit": 4,
+    "dmgAll": 8
+   },
+   "color": "#e8fffc",
+   "mat": "silver",
+   "art": "naga_ring"
+  },
+  "lanka_helm": {
+   "slot": "head",
+   "name": "หมวกยักษ์ลงกา",
+   "req": 26,
+   "stats": {
+    "hpFlat": 60,
+    "dmgMelee": 8
+   },
+   "color": "#8a1e22",
+   "look": {
+    "hat": "helm"
+   },
+   "mat": "iron",
+   "art": "iron_helm"
+  },
+  "lanka_bracers": {
+   "slot": "arms",
+   "name": "ปลอกแขนยักษ์",
+   "req": 26,
+   "stats": {
+    "dmgMelee": 14,
+    "atkSpeedInc": 5
+   },
+   "color": "#8a1e22",
+   "look": {},
+   "mat": "iron",
+   "art": "leather_bracers"
+  },
+  "lanka_mail": {
+   "slot": "body",
+   "name": "เกราะยักษ์ลงกา",
+   "req": 28,
+   "stats": {
+    "hpFlat": 170
+   },
+   "color": "#8a1e22",
+   "look": {
+    "trim": "#f2c230",
+    "plates": "#3a3a44"
+   },
+   "mat": "iron",
+   "art": "bronze_cuirass"
+  },
+  "lanka_amulet": {
+   "slot": "amulet",
+   "name": "ประคำทศกัณฐ์",
+   "req": 28,
+   "stats": {
+    "dmgAll": 14,
+    "mpFlat": 20
+   },
+   "color": "#ff7a2a",
+   "look": {
+    "neck": "#ff7a2a"
+   },
+   "mat": "gold",
+   "art": "takrut"
   }
  },
  "affixes": {
@@ -1173,15 +1395,15 @@
   },
   "map1": {
    "name": "ลายแทงขั้น 1",
-   "desc": "ใช้ที่แท่นลายแทงในเวียง เปิดถ้ำปริศนาขั้น 1 (มอนเลเวล 20 บอสสุ่ม)",
+   "desc": "ใช้ที่แท่นลายแทงในเวียง เปิดถ้ำปริศนาขั้น 1 (มอนเลเวล 32 บอสสุ่ม)",
    "color": "#e8d8a8",
    "dropChance": 0.004,
-   "minLevel": 18,
+   "minLevel": 30,
    "tier": 1
   },
   "map2": {
    "name": "ลายแทงขั้น 2",
-   "desc": "ใช้ที่แท่นลายแทงในเวียง เปิดถ้ำปริศนาขั้น 2 (มอนเลเวล 22 บอสสุ่ม)",
+   "desc": "ใช้ที่แท่นลายแทงในเวียง เปิดถ้ำปริศนาขั้น 2 (มอนเลเวล 34 บอสสุ่ม)",
    "color": "#a8e070",
    "dropChance": 0,
    "minLevel": 99,
@@ -1189,7 +1411,7 @@
   },
   "map3": {
    "name": "ลายแทงขั้น 3",
-   "desc": "ใช้ที่แท่นลายแทงในเวียง เปิดถ้ำปริศนาขั้น 3 (มอนเลเวล 24 บอสสุ่ม)",
+   "desc": "ใช้ที่แท่นลายแทงในเวียง เปิดถ้ำปริศนาขั้น 3 (มอนเลเวล 36 บอสสุ่ม)",
    "color": "#70b8f0",
    "dropChance": 0,
    "minLevel": 99,
@@ -1197,7 +1419,7 @@
   },
   "map4": {
    "name": "ลายแทงขั้น 4",
-   "desc": "ใช้ที่แท่นลายแทงในเวียง เปิดถ้ำปริศนาขั้น 4 (มอนเลเวล 26 บอสสุ่ม)",
+   "desc": "ใช้ที่แท่นลายแทงในเวียง เปิดถ้ำปริศนาขั้น 4 (มอนเลเวล 38 บอสสุ่ม)",
    "color": "#c890f0",
    "dropChance": 0,
    "minLevel": 99,
@@ -1205,7 +1427,7 @@
   },
   "map5": {
    "name": "ลายแทงขั้น 5",
-   "desc": "ใช้ที่แท่นลายแทงในเวียง เปิดถ้ำปริศนาขั้น 5 (มอนเลเวล 28 บอสสุ่ม)",
+   "desc": "ใช้ที่แท่นลายแทงในเวียง เปิดถ้ำปริศนาขั้น 5 (มอนเลเวล 40 บอสสุ่ม)",
    "color": "#ff7a5a",
    "dropChance": 0,
    "minLevel": 99,
@@ -1369,6 +1591,43 @@
    "world": true,
    "minLevel": 4,
    "chance": 0.0015
+  },
+  "naga_king_scale": {
+   "name": "เกราะเกล็ดพญานาคราช",
+   "base": "naga_scale",
+   "stats": {
+    "hpFlat": 80,
+    "mpFlat": 30
+   },
+   "trigger": {
+    "on": "hurt",
+    "chance": 0.25,
+    "gem": "sapphire",
+    "level": 10
+   },
+   "lore": "เกล็ดเจ็ดเศียรของพญานาคราช ใครทำร้ายผู้สวมจะโดนหอกน้ำแข็งสวนกลับ",
+   "from": [
+    "naga_king"
+   ],
+   "chance": 0.35
+  },
+  "tosakan_crown": {
+   "name": "ชฎาทศพักตร์",
+   "base": "lanka_helm",
+   "stats": {
+    "dmgAll": 18,
+    "crit": 4,
+    "hpFlat": 40
+   },
+   "grants": {
+    "gem": "ruby",
+    "level": 10
+   },
+   "lore": "ชฎาสิบหน้าของทศกัณฐ์ สวมแล้วเห็นศัตรูทุกทิศ ลูกไฟทับทิมพุ่งออกจากทุกพักตร์",
+   "from": [
+    "thotsakan"
+   ],
+   "chance": 0.35
   }
  }
 }

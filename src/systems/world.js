@@ -17,6 +17,10 @@ const SCATTER_FOOT = {
   snow_pine: { w: 0.6, h: 0.4, solid: true },
   ice_crystal: { w: 0.7, h: 0.45, solid: true },
   cloud_puff: { w: 1.2, h: 0.6, solid: true },
+  sea_weed: { w: 0.5, h: 0.35, solid: true },
+  coral: { w: 0.8, h: 0.45, solid: true },
+  dead_tree: { w: 0.6, h: 0.4, solid: true },
+  bone_pile: { w: 0.8, h: 0.4, solid: false },
 };
 const NON_SOLID_TYPES = new Set(['gate', 'bridge', 'lantern']);
 

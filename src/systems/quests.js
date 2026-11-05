@@ -44,7 +44,7 @@ export function npcMark(game, npcId) {
 export function setupActs(game) {
   game.events.on('zoneChanged', ({ zone }) => {
     if (!game.flags.tutorialDone) return;
-    const a = game.data.quests.acts.find((x) => x.town === zone && x.n > 1 && x.n <= 4);
+    const a = game.data.quests.acts.find((x) => x.town === zone && x.n > 1 && !x.endgame);
     if (!a || game.flags['act_' + a.n]) return;
     game.flags['act_' + a.n] = true;
     game.actCard = { text: a.name, t: 4.5 };

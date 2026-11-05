@@ -16,7 +16,7 @@ test('ยูนีค: ข้อมูลครบ — ฐานมีจริ�
     const U = I.uniques[id];
     assert.ok(I.bases[U.base], id); assert.ok(U.name && U.lore && !/\d/.test(U.lore), id);
     for (const k of Object.keys(U.stats)) assert.ok(P.statNames[k], `${id}: ${k}`);
-    for (const x of [U.grants, U.trigger].filter(Boolean)) assert.ok(G.main[x.gem] && x.level >= 1, id);
+    for (const x of [U.grants, U.trigger].filter(Boolean)) assert.ok(G.main[x.gem] && x.level >= 1 && x.level <= G.levels.max, id + ' เลเวลพลอยไม่เกินสูงสุด');
     if (U.trigger) assert.ok(['hit', 'hurt'].includes(U.trigger.on) && !G.main[U.trigger.gem].aura, id);
     for (const b of U.from || []) assert.ok(M[b] && M[b].boss, `${id}: ${b}`);
     assert.ok(U.from || U.world, id);

@@ -1,6 +1,7 @@
 // อสูรหิมพานต์และผีไทย วาดด้วยโค้ด
 const SCALE = 1.4;
 import { C, shadow, box, poly, circle } from './draw.js';
+import { DEEP, DEEP_FLYING, DEEP_HEIGHT, DEEP_SHADOW } from './monsters_deep.js';
 
 function pig(ctx, s, o, colors) {
   const { body, dark, mane } = colors;
@@ -267,7 +268,8 @@ export function drawMonster(ctx, type, x, y, o) {
   const big = type === 'bigboar' ? 1.45 : type === 'piglet' ? 0.75 : 1;
   ctx.save();
   if (o.dying > 0) ctx.globalAlpha = Math.max(0, 1 - o.dying);
-  if (type === 'krasue' || type === 'phi_phong' || type === 'hatsadi' || type === 'kinnorn' || type === 'apsara') shadow(ctx, x, y, 10, 3, 0.18);
+  if (type === 'krasue' || type === 'phi_phong' || type === 'hatsadi' || type === 'kinnorn' || type === 'apsara' || DEEP_FLYING.has(type)) shadow(ctx, x, y, 10, 3, 0.18);
+  else if (DEEP_SHADOW[type]) shadow(ctx, x, y, DEEP_SHADOW[type][0], DEEP_SHADOW[type][1], 0.3);
   else if (type === 'khotchasi') shadow(ctx, x, y, 22, 6);
   else if (type === 'khotchasi_king') shadow(ctx, x, y, 40, 11, 0.32);
   else if (type === 'garuda_king') shadow(ctx, x, y, 38, 11, 0.32);
@@ -278,7 +280,7 @@ export function drawMonster(ctx, type, x, y, o) {
   ctx.scale(SCALE, SCALE);
   if (o.recoil > 0) ctx.scale(1 + o.recoil * 0.8, 1 - o.recoil * 0.8);
   if (o.stun) ctx.rotate(Math.sin(o.t * 30) * 0.06);                                    // ขยายให้สมกับตัวละครสูงแบบเอโดเรีย
-  if (o.windup > 0 && type !== 'krasue' && type !== 'yak' && type !== 'khotchasi_king' && type !== 'garuda_king' && type !== 'vessavana') ctx.translate(Math.sin(o.t * 60) * 1.2, 0);
+  if (o.windup > 0 && type !== 'krasue' && type !== 'yak' && type !== 'khotchasi_king' && type !== 'garuda_king' && type !== 'vessavana' && type !== 'naga_king' && type !== 'thotsakan') ctx.translate(Math.sin(o.t * 60) * 1.2, 0);
   ctx.scale(o.face < 0 ? -1 : 1, 1);
   if (o.dying > 0) { const k = Math.min(1, o.dying * 2.2); ctx.translate(-4 * k, -6 * Math.sin(k * Math.PI)); ctx.rotate(-k * 1.4); } // ล้มตะแคง
   if (o.flash > 0 && Math.floor(o.t * 30) % 2) ctx.globalAlpha *= 0.55;
@@ -319,9 +321,10 @@ export function drawMonster(ctx, type, x, y, o) {
   }
   else if (type === 'naga_noi') nagaNoi(ctx, o);
   else if (type === 'hatsadi') hatsadi(ctx, o);
+  else if (DEEP[type]) DEEP[type](ctx, o, yak);
   ctx.restore();
 }
 
 export function monsterHeight(type) {
-  return Math.round(({ piglet: 18, boar: 24, bigboar: 34, monkey: 34, krasue: 50, phi_pob: 42, phi_phong: 40, yak: 96, khotchasi: 32, naga_noi: 40, hatsadi: 50, khotchasi_king: 62, kumbhan: 48, kinnorn: 52, garuda_chick: 44, garuda_king: 96, deva_warrior: 52, apsara: 62, erawan_calf: 36, vessavana: 125 }[type] || 26) * SCALE);
+  return Math.round(({ piglet: 18, boar: 24, bigboar: 34, monkey: 34, krasue: 50, phi_pob: 42, phi_phong: 40, yak: 96, khotchasi: 32, naga_noi: 40, hatsadi: 50, khotchasi_king: 62, kumbhan: 48, kinnorn: 52, garuda_chick: 44, garuda_king: 96, deva_warrior: 52, apsara: 62, erawan_calf: 36, vessavana: 125, ...DEEP_HEIGHT }[type] || 26) * SCALE);
 }

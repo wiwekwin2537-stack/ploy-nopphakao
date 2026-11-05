@@ -1,4 +1,5 @@
 // จุดเริ่มเกม: ประกอบทุกระบบเข้าด้วยกัน (ไม่มีกติกาเกมในไฟล์นี้)
+import { drawMonster } from './art/monsters.js';
 import { skillsOf } from './systems/gems.js';
 import { playerStats } from './systems/stats.js';
 import balance from '../data/balance.json' with { type: 'json' };
@@ -253,4 +254,4 @@ game.loopStats = loop.stats;
 loop.start();
 
 // test-hook: เปิดเฉพาะเมื่อมี ?test ใน URL ใช้ในเทสต์อัตโนมัติเท่านั้น
-if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, rollElite, makeUnique, spawnDrop, art: { drawHuman, drawStats, heroLook, heroGear, itemSprite }, damage: damageMob, stashLayout: () => stashLayout(game.camera.viewW, game.camera.viewH, layout.s), createLayout: () => createLayout(game.camera.viewW, game.camera.viewH, layout.s), openCreate: (skip) => openCreate(game, skip), rewardLayout: () => rewardLayout(game.camera.viewW, game.camera.viewH, layout.s), shopLayout: () => shopLayout(game.camera.viewW, game.camera.viewH, layout.s), skills: () => skillsOf(game.data.gems, game.player, game.data.items), stats: () => playerStats(game.player, game.data), layout: () => layout, bagLayout: () => bagLayout(game.camera.viewW, game.camera.viewH, layout.s), gemLayout: () => gemLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s), game.player) }; // test-hook
+if (params.has("test")) globalThis.__ploy = { game, loop, startNew, continueGame, enterZone, respawn, writeSave, readSave, makeMob, rollElite, makeUnique, spawnDrop, art: { drawHuman, drawStats, heroLook, heroGear, itemSprite, drawMonster }, damage: damageMob, stashLayout: () => stashLayout(game.camera.viewW, game.camera.viewH, layout.s), createLayout: () => createLayout(game.camera.viewW, game.camera.viewH, layout.s), openCreate: (skip) => openCreate(game, skip), rewardLayout: () => rewardLayout(game.camera.viewW, game.camera.viewH, layout.s), shopLayout: () => shopLayout(game.camera.viewW, game.camera.viewH, layout.s), skills: () => skillsOf(game.data.gems, game.player, game.data.items), stats: () => playerStats(game.player, game.data), layout: () => layout, bagLayout: () => bagLayout(game.camera.viewW, game.camera.viewH, layout.s), gemLayout: () => gemLayout(bagLayout(game.camera.viewW, game.camera.viewH, layout.s), game.player) }; // test-hook

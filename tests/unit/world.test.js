@@ -25,7 +25,7 @@ test('ท่อนไม้ในทางเกวียนกั้นทา�
 });
 
 test('ทุกทางออกเดินไปถึงได้จริงจากจุดเริ่มของพื้นที่ (หาทางแบบตาราง)', () => {
-  const g = makeGame(); g.flags.gotRuby = true; g.flags.yakSlain = true; g.flags.khotchasi_kingSlain = true; g.flags.garuda_kingSlain = true;   // เปิดทุกด่านที่มีธงกั้น (ด่านกั้นมีเทสต์แยก)
+  const g = makeGame(); g.flags.gotRuby = true; g.flags.yakSlain = true; g.flags.khotchasi_kingSlain = true; g.flags.garuda_kingSlain = true; g.flags.vessavanaSlain = true; g.flags.naga_kingSlain = true;   // เปิดทุกด่านที่มีธงกั้น (ด่านกั้นมีเทสต์แยก)
   for (const [id, z] of Object.entries(g.data.zones)) {
     g.world.load(id); g.world.refreshFlags();
     for (const e of g.world.zone.exits) {
@@ -45,5 +45,17 @@ test('ทุกชาวบ้านเดินไปคุยได้', () =>
   for (const n of g.world.zone.npcs) {
     const hit = reachable(g.world, g.world.zone.start, (x, y) => Math.hypot(x - n.x, y - n.y) < 40);
     assert.ok(hit, `เดินไปหา ${n.name} ไม่ได้`);
+  }
+});
+
+test('บท 5–6: บันไดนาคในดาวดึงส์ และประตูน้ำวนในนครบาดาล กั้นทางจนกว่าจะล้มบอสของบท', () => {
+  const g = makeGame();
+  for (const [zone, to, flag] of [['tavatimsa', 'naga_pier', 'vessavanaSlain'], ['badan', 'lanka_camp', 'naga_kingSlain']]) {
+    g.world.load(zone); g.world.refreshFlags();
+    const e = g.world.zone.exits.find((x) => x.to === to);
+    assert.ok(e, zone + ' ต้องมีทางออกไป ' + to);
+    assert.ok(!reachable(g.world, g.world.zone.start, (x, y) => g.world.exitAt(x, y) === e), zone + ' ยังไม่ล้มบอสต้องผ่านไม่ได้');
+    g.flags[flag] = true; g.world.refreshFlags();
+    assert.ok(reachable(g.world, g.world.zone.start, (x, y) => g.world.exitAt(x, y) === e), zone + ' ล้มบอสแล้วต้องผ่านได้');
   }
 });

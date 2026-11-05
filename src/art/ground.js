@@ -11,6 +11,8 @@ const BASE = {
   dungeon: ['#2a2430', '#262029', '#2e2734'],
   snow: ['#e8eef4', '#dfe7ef', '#eef3f8'],
   cloud: ['#f2ecf8', '#ede4f4', '#f6f0fb'],
+  abyss: ['#1e3e48', '#1b3842', '#22444e'],
+  lanka: ['#5a3a2c', '#553628', '#5f3e2e'],
 };
 
 // ดันเจี้ยนวัดร้าง: นอกห้อง = กำแพงศิลาแลง (ด้านบนมืด มีหน้ากำแพงอิฐเมื่อติดพื้น) ในห้อง = พื้นหินแผ่นแตกร้าว
@@ -39,6 +41,38 @@ function dungeonTile(g, x, y, v, h, tx, ty, at) {
   g.fillStyle = 'rgba(255,240,220,0.06)'; g.fillRect(x + 1, y + 1, T - 2, 2);
   if (hash2(tx, ty, 31) > 0.85) { g.fillStyle = 'rgba(70,110,50,0.4)'; g.fillRect(x + h * 22, y + hash2(tx, ty, 5) * 26, 5, 3); }
   if (at(tx, ty - 1) !== 1) { g.fillStyle = 'rgba(0,0,0,0.4)'; g.fillRect(x, y, T, 6); }        // เงาใต้กำแพง
+}
+
+// เมืองบาดาล: พื้นหินใต้น้ำสีครามเข้ม มีแสงคลื่นระยิบและไข่มุกเรือง · ทาง = ทรายขาวมีเปลือกหอย
+function abyssTile(g, x, y, v, h, tx, ty) {
+  if (v === 1) {
+    g.fillStyle = h > 0.5 ? '#c8bc96' : '#c0b48c'; g.fillRect(x, y, T, T);
+    g.fillStyle = 'rgba(120,100,70,0.35)'; for (let i = 0; i < 3; i++) g.fillRect(x + hash2(tx, ty, i + 11) * 28, y + hash2(tx, ty, i + 21) * 28, 2.5, 1.5);
+    if (h > 0.8) { g.fillStyle = '#f0d8e0'; g.beginPath(); g.arc(x + hash2(tx, ty, 4) * 24 + 4, y + hash2(tx, ty, 6) * 24 + 4, 2.2, Math.PI, 0); g.fill(); }   // เปลือกหอย
+    return;
+  }
+  g.fillStyle = BASE.abyss[Math.floor(h * 3)]; g.fillRect(x, y, T, T);
+  g.strokeStyle = 'rgba(140,230,240,0.13)'; g.lineWidth = 1.2;                    // แสงคลื่นส่องลงมา
+  g.beginPath(); g.moveTo(x + h * 10, y + 8 + hash2(tx, ty, 3) * 12); g.quadraticCurveTo(x + 16, y + hash2(tx, ty, 8) * 26, x + 30, y + 10 + h * 12); g.stroke();
+  if (h > 0.86) { g.fillStyle = 'rgba(220,255,250,0.8)'; g.fillRect(x + hash2(tx, ty, 5) * 26, y + hash2(tx, ty, 6) * 26, 2, 2); }   // ไข่มุกเรือง
+  if (h < 0.12) { g.fillStyle = '#2f6a5a'; g.fillRect(x + 6, y + 18, 2, 6); g.fillRect(x + 10, y + 16, 2, 8); }               // สาหร่ายเตี้ย
+}
+
+// กรุงลงกา: ดินแดงไหม้มีเถ้าและรอยแยกลาวา · ทาง = หินบะซอลต์ดำปูเป็นแผ่น
+function lankaTile(g, x, y, v, h, tx, ty) {
+  if (v === 1) {
+    g.fillStyle = h > 0.5 ? '#3e3438' : '#383034'; g.fillRect(x, y, T, T);
+    g.strokeStyle = 'rgba(10,6,8,0.6)'; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, T - 1, T - 1);
+    g.beginPath(); g.moveTo(x, y + 16); g.lineTo(x + T, y + 16); g.moveTo(x + (ty % 2 ? 10 : 22), y); g.lineTo(x + (ty % 2 ? 10 : 22), y + 16); g.stroke();
+    if (h > 0.85) { g.strokeStyle = 'rgba(255,120,40,0.55)'; g.beginPath(); g.moveTo(x + 6, y + 22); g.lineTo(x + 14, y + 26); g.lineTo(x + 20, y + 23); g.stroke(); }
+    return;
+  }
+  g.fillStyle = BASE.lanka[Math.floor(h * 3)]; g.fillRect(x, y, T, T);
+  g.fillStyle = 'rgba(30,20,20,0.35)'; for (let i = 0; i < 4; i++) g.fillRect(x + hash2(tx, ty, i + 3) * 28, y + hash2(tx, ty, i + 9) * 28, 3, 2);   // เถ้า
+  if (h > 0.9) {                                                                   // รอยแยกลาวา
+    g.strokeStyle = '#ff7a2a'; g.lineWidth = 1.4; g.beginPath(); g.moveTo(x + 4, y + 10); g.lineTo(x + 12, y + 16); g.lineTo(x + 10, y + 24); g.lineTo(x + 20, y + 28); g.stroke();
+    g.strokeStyle = 'rgba(255,200,80,0.6)'; g.lineWidth = 0.6; g.stroke();
+  }
 }
 
 function classify(zone) {
@@ -79,6 +113,8 @@ export function createGround(zone, scale) {
       }
       return;
     }
+    if (zone.def.ground === 'abyss' && v !== 2) { abyssTile(g, x, y, v, h, tx, ty); return; }
+    if (zone.def.ground === 'lanka' && v !== 2) { lankaTile(g, x, y, v, h, tx, ty); return; }
     if (v === 0 && zone.def.ground === 'snow') {                     // หิมะ: ขาวอมฟ้า มีประกายและรอยเงา
       g.fillStyle = base[Math.floor(h * 3)]; g.fillRect(x, y, T, T);
       g.fillStyle = 'rgba(140,170,210,0.25)'; g.fillRect(x + h * 18, y + hash2(tx, ty, 3) * 24, 10, 3);

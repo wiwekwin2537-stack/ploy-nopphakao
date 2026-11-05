@@ -36,6 +36,9 @@ test('บท: บทนำไม่แสดง → บท 1 → ล้มยั
   const t = questTracker(g);
   assert.equal(t[0].kind, 'ready'); assert.ok(t[0].text.includes('พ่อเฒ่าจันทร์') && t[0].text.includes('เวียงด่านหิน'));
   Object.assign(g.flags, { khotchasi_kingSlain: true, garuda_kingSlain: true, vessavanaSlain: true });
+  assert.equal(currentAct(g).n, 5, 'ล้มท้าวเวสสุวรรณ → บท 5 เมืองบาดาล');
+  g.flags.naga_kingSlain = true; assert.equal(currentAct(g).n, 6, 'ล้มพญานาคราช → บท 6 กรุงลงกา');
+  g.flags.thotsakanSlain = true; assert.ok(currentAct(g).endgame, 'ล้มทศกัณฐ์ → หลังจบเรื่อง');
   for (const q of g.data.quests.list) g.flags['q_' + q.id] = true;
   assert.equal(questTracker(g)[0].title, g.data.quests.endgame.title);
 });
@@ -65,7 +68,7 @@ test('เควสรอง: มอนชื่อเฉพาะเกิดเ
 
 test('แม่ค้าในเมืองบทใหม่เปิดร้าน · เมืองบทใหม่ปลอดภัย มีศาลวาร์ป หีบเก็บของ ทางเข้าออกครบ', () => {
   const g = makeGame(); g.flags.tutorialDone = true;
-  for (const id of ['camp_hunter', 'hermitage', 'sky_sala']) {
+  for (const id of ['camp_hunter', 'hermitage', 'sky_sala', 'naga_pier', 'lanka_camp']) {
     enterZone(g, id);
     const z = g.world.zone;
     assert.equal(g.mobs.length, 0, id + ' ไม่มีมอน');
@@ -92,7 +95,7 @@ test('เครื่องหมาย ! บนหัว NPC: ทอง = เ�
 test('พื้นที่ย่อยของบท (แบบ PoE): เมือง → พื้นที่ย่อย → พื้นที่บอส · เดินจากทางเข้าถึงศาลวาร์ปและทางออกได้จริง · มีมอนเลเวลไล่ระดับ', () => {
   const g = makeGame(); g.flags.tutorialDone = true;
   const Z = g.data.zones;
-  for (const [town, sub, boss] of [['camp_hunter', 'himmapan_edge', 'himmapan'], ['hermitage', 'snow_valley', 'kailash'], ['sky_sala', 'nandana', 'tavatimsa']]) {
+  for (const [town, sub, boss] of [['camp_hunter', 'himmapan_edge', 'himmapan'], ['hermitage', 'snow_valley', 'kailash'], ['sky_sala', 'nandana', 'tavatimsa'], ['naga_pier', 'badan_cave', 'badan'], ['lanka_camp', 'lanka_shore', 'lanka']]) {
     assert.ok(Z[town].exits.some((e) => e.to === sub), `${town} → ${sub}`);
     assert.ok(Z[sub].exits.some((e) => e.to === boss) && Z[sub].exits.some((e) => e.to === town), `${sub} ↔`);
     assert.ok(Z[boss].exits.some((e) => e.to === sub), `${boss} → ${sub}`);

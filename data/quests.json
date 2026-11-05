@@ -45,11 +45,32 @@
   },
   {
    "n": 5,
+   "name": "บทที่ 5 · เมืองบาดาล",
+   "town": "naga_pier",
+   "zones": [
+    "naga_pier",
+    "badan_cave",
+    "badan"
+   ]
+  },
+  {
+   "n": 6,
+   "name": "บทที่ 6 · กรุงลงกา",
+   "town": "lanka_camp",
+   "zones": [
+    "lanka_camp",
+    "lanka_shore",
+    "lanka"
+   ]
+  },
+  {
+   "n": 7,
    "name": "หลังจบเรื่อง · ถ้ำลายแทง",
    "town": "town",
    "zones": [
     "map"
-   ]
+   ],
+   "endgame": true
   }
  ],
  "list": [
@@ -181,10 +202,74 @@
    "reward": {
     "passive": 1
    }
+  },
+  {
+   "id": "q5_main",
+   "act": 5,
+   "kind": "main",
+   "title": "พญานาคราช",
+   "text": "ออกทางตะวันออกของท่าน้ำนาคินทร์ ผ่านถ้ำธารบาดาล เข้านครบาดาล ล้มพญานาคราชหน้าวังพญานาค",
+   "done": "naga_kingSlain",
+   "giver": "nak_kham",
+   "giverName": "นาคคำ",
+   "talk": "nak_reward",
+   "reward": {
+    "gems": [
+     "moonstone",
+     "peridot",
+     "purity"
+    ]
+   }
+  },
+  {
+   "id": "q5_side",
+   "act": 5,
+   "kind": "side",
+   "title": "นางเงือกน้ำวน",
+   "text": "ปู่เต่าเฒ่าเล่าว่านางเงือกตนหนึ่งปั่นน้ำวนจมเรือทางเหนือของถ้ำธารบาดาล ไปหยุดนาง",
+   "done": "q5_side_kill",
+   "giver": "pu_tao",
+   "giverName": "ปู่เต่าเฒ่า",
+   "talk": "pu_reward",
+   "reward": {
+    "passive": 1
+   }
+  },
+  {
+   "id": "q6_main",
+   "act": 6,
+   "kind": "main",
+   "title": "ทศกัณฐ์",
+   "text": "ออกทางตะวันออกของค่ายพลับพลา ผ่านชายฝั่งลงกา บุกกรุงลงกา ล้มทศกัณฐ์หน้าปราสาท",
+   "done": "thotsakanSlain",
+   "giver": "phiphek",
+   "giverName": "พิเภก",
+   "talk": "phiphek_reward",
+   "reward": {
+    "gems": [
+     "ruby",
+     "topaz",
+     "cateye"
+    ]
+   }
+  },
+  {
+   "id": "q6_side",
+   "act": 6,
+   "kind": "side",
+   "title": "ช้างศึกเอกทันต์",
+   "text": "หนุมานเห็นช้างศึกงาเดียวคุมทัพยักษ์อยู่ทางเหนือของชายฝั่งลงกา ไปโค่นมันลง",
+   "done": "q6_side_kill",
+   "giver": "hanuman",
+   "giverName": "หนุมาน",
+   "talk": "hanuman_reward",
+   "reward": {
+    "passive": 1
+   }
   }
  ],
  "endgame": {
   "title": "ถ้ำลายแทง",
-  "text": "เก็บลายแทงจากมอนและบอส ใช้ที่แท่นลายแทงในเวียงด่านหิน ผจญถ้ำสุ่มที่ยากขึ้นทีละขั้น"
+  "text": "ล้มทศกัณฐ์แล้ว! เก็บลายแทงจากมอนและบอส ใช้ที่แท่นลายแทงในเวียงด่านหิน ผจญถ้ำสุ่มที่ยากขึ้นทีละขั้น"
  }
 }

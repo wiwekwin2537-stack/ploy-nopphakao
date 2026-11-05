@@ -449,5 +449,192 @@
   "waveThick": 28,
   "summon": "deva_warrior",
   "summonCount": 3
+ },
+ "naga_soldier": {
+  "name": "นาคทหาร",
+  "hp": 330,
+  "damage": 42,
+  "xp": 100,
+  "speed": 92,
+  "radius": 14,
+  "ai": "melee",
+  "aggro": 280,
+  "attackRange": 30,
+  "attackCooldown": 1.0,
+  "coins": [
+   7,
+   13
+  ],
+  "coinChance": 0.7
+ },
+ "mermaid": {
+  "name": "นางเงือก",
+  "hp": 220,
+  "damage": 38,
+  "xp": 95,
+  "speed": 96,
+  "radius": 13,
+  "ai": "caster",
+  "aggro": 320,
+  "keepDistance": 180,
+  "attackRange": 300,
+  "attackCooldown": 1.5,
+  "shotSpeed": 290,
+  "coins": [
+   7,
+   13
+  ],
+  "coinChance": 0.7,
+  "shotKind": "water"
+ },
+ "sea_crab": {
+  "name": "ปูยักษ์บาดาล",
+  "hp": 420,
+  "damage": 46,
+  "xp": 120,
+  "speed": 80,
+  "radius": 19,
+  "ai": "charger",
+  "aggro": 290,
+  "attackRange": 30,
+  "attackCooldown": 1.3,
+  "chargeSpeed": 480,
+  "chargeWindup": 0.8,
+  "chargeTime": 0.7,
+  "chargeCooldown": 3.4,
+  "coins": [
+   8,
+   15
+  ],
+  "coinChance": 0.7
+ },
+ "naga_king": {
+  "name": "พญานาคราช",
+  "hp": 7600,
+  "damage": 66,
+  "xp": 5200,
+  "speed": 88,
+  "radius": 36,
+  "ai": "boss",
+  "aggro": 360,
+  "attackRange": 72,
+  "attackCooldown": 0.95,
+  "chargeSpeed": 560,
+  "chargeWindup": 0.7,
+  "chargeTime": 0.8,
+  "coins": [
+   220,
+   320
+  ],
+  "coinChance": 1,
+  "boss": true,
+  "bossLoot": {
+   "items": 4,
+   "rarity": "purple",
+   "redChance": 0.65,
+   "gems": 3
+  },
+  "slamRadius": 105,
+  "slamWindup": 0.7,
+  "stompWindup": 0.9,
+  "waveSpeed": 290,
+  "waveMax": 350,
+  "waveThick": 28,
+  "summon": "naga_soldier",
+  "summonCount": 3
+ },
+ "lanka_yak": {
+  "name": "ยักษ์พลลงกา",
+  "hp": 420,
+  "damage": 48,
+  "xp": 130,
+  "speed": 90,
+  "radius": 16,
+  "ai": "melee",
+  "aggro": 290,
+  "attackRange": 32,
+  "attackCooldown": 1.0,
+  "coins": [
+   8,
+   15
+  ],
+  "coinChance": 0.7
+ },
+ "rakshasi": {
+  "name": "นางยักษ์เหาะ",
+  "hp": 260,
+  "damage": 44,
+  "xp": 120,
+  "speed": 104,
+  "radius": 13,
+  "ai": "caster",
+  "aggro": 330,
+  "keepDistance": 180,
+  "attackRange": 310,
+  "attackCooldown": 1.4,
+  "shotSpeed": 300,
+  "coins": [
+   8,
+   15
+  ],
+  "coinChance": 0.7,
+  "shotKind": "fire",
+  "flying": true
+ },
+ "war_elephant": {
+  "name": "ช้างศึกลงกา",
+  "hp": 560,
+  "damage": 54,
+  "xp": 150,
+  "speed": 82,
+  "radius": 21,
+  "ai": "charger",
+  "aggro": 300,
+  "attackRange": 32,
+  "attackCooldown": 1.3,
+  "chargeSpeed": 520,
+  "chargeWindup": 0.75,
+  "chargeTime": 0.75,
+  "chargeCooldown": 3.2,
+  "coins": [
+   9,
+   16
+  ],
+  "coinChance": 0.7
+ },
+ "thotsakan": {
+  "name": "ทศกัณฐ์",
+  "hp": 11500,
+  "damage": 76,
+  "xp": 8000,
+  "speed": 90,
+  "radius": 38,
+  "ai": "boss",
+  "aggro": 360,
+  "attackRange": 74,
+  "attackCooldown": 0.9,
+  "chargeSpeed": 580,
+  "chargeWindup": 0.65,
+  "chargeTime": 0.8,
+  "coins": [
+   300,
+   420
+  ],
+  "coinChance": 1,
+  "boss": true,
+  "bossLoot": {
+   "items": 5,
+   "rarity": "purple",
+   "redChance": 0.7,
+   "gems": 3
+  },
+  "slamRadius": 110,
+  "slamWindup": 0.65,
+  "stompWindup": 0.85,
+  "waveSpeed": 300,
+  "waveMax": 360,
+  "waveThick": 30,
+  "summon": "lanka_yak",
+  "summonCount": 4
  }
 }
