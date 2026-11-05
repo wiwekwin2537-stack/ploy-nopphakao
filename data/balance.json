@@ -82,9 +82,9 @@
   }
  },
  "monsterScale": {
-  "hpPerLevel": 0.28,
-  "damagePerLevel": 0.16,
-  "xpPerLevel": 0.22
+  "hpPerLevel": 0.2,
+  "damagePerLevel": 0.11,
+  "xpPerLevel": 0.3
  },
  "deathCoinLoss": 0.1,
  "autosaveSeconds": 10,

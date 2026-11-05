@@ -606,8 +606,8 @@
    "name": "คทาไข่มุก",
    "req": 22,
    "stats": {
-    "dmgFlat": 14,
-    "dmgSpell": 22,
+    "dmgFlat": 26,
+    "dmgSpell": 28,
     "mpFlat": 30
    },
    "color": "#e8fffc",
@@ -807,6 +807,100 @@
    },
    "mat": "gold",
    "art": "takrut"
+  },
+  "horn_staff": {
+   "slot": "weapon",
+   "name": "คทาเขาควาย",
+   "req": 6,
+   "stats": {
+    "dmgFlat": 6,
+    "dmgSpell": 12,
+    "mpFlat": 12
+   },
+   "color": "#d8c8a0",
+   "look": {
+    "kind": "staff"
+   },
+   "mat": "bone",
+   "art": "herb_staff"
+  },
+  "hermit_staff": {
+   "slot": "weapon",
+   "name": "ไม้เท้าฤๅษี",
+   "req": 12,
+   "stats": {
+    "dmgFlat": 13,
+    "dmgSpell": 18,
+    "mpFlat": 18
+   },
+   "color": "#8a5a32",
+   "look": {
+    "kind": "staff"
+   },
+   "mat": "leather",
+   "art": "herb_staff"
+  },
+  "deva_staff": {
+   "slot": "weapon",
+   "name": "คทาเทวดา",
+   "req": 17,
+   "stats": {
+    "dmgFlat": 20,
+    "dmgSpell": 24,
+    "mpFlat": 24
+   },
+   "color": "#f2c230",
+   "look": {
+    "kind": "staff"
+   },
+   "mat": "gold",
+   "art": "herb_staff"
+  },
+  "lanka_staff": {
+   "slot": "weapon",
+   "name": "คทาไฟลงกา",
+   "req": 28,
+   "stats": {
+    "dmgFlat": 34,
+    "dmgSpell": 34,
+    "mpFlat": 40
+   },
+   "color": "#ff7a2a",
+   "look": {
+    "kind": "staff"
+   },
+   "mat": "iron",
+   "art": "herb_staff"
+  },
+  "kinnari_kris": {
+   "slot": "weapon",
+   "name": "กริชกินรี",
+   "req": 10,
+   "stats": {
+    "dmgFlat": 12,
+    "crit": 5
+   },
+   "color": "#d9a630",
+   "look": {
+    "kind": "kris"
+   },
+   "mat": "gold",
+   "art": "silver_kris"
+  },
+  "deva_kris": {
+   "slot": "weapon",
+   "name": "กริชเทวดา",
+   "req": 17,
+   "stats": {
+    "dmgFlat": 24,
+    "crit": 6
+   },
+   "color": "#eef4ff",
+   "look": {
+    "kind": "kris"
+   },
+   "mat": "silver",
+   "art": "silver_kris"
   }
  },
  "affixes": {

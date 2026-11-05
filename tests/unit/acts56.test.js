@@ -11,7 +11,7 @@ import { readyQuestFor } from '../../src/systems/quests.js';
 
 const ACTS = [
   { boss: 'naga_king', zone: 'badan', sub: 'badan_cave', town: 'naga_pier', giver: 'nak_kham', mobs: ['naga_soldier', 'mermaid', 'sea_crab'], lv: [21, 26] },
-  { boss: 'thotsakan', zone: 'lanka', sub: 'lanka_shore', town: 'lanka_camp', giver: 'phiphek', mobs: ['lanka_yak', 'rakshasi', 'war_elephant'], lv: [27, 32] },
+  { boss: 'thotsakan', zone: 'lanka', sub: 'lanka_shore', town: 'lanka_camp', giver: 'phiphek', mobs: ['lanka_yak', 'rakshasi', 'war_elephant'], lv: [26, 31] },
 ];
 
 for (const A of ACTS) test(`บท ${A.zone}: มอนใหม่ครบ เลเวล ${A.lv.join('–')} · เดินถึงบอส · ล้มบอสได้ของม่วง/แดง ตั้งธง เควสรอรับรางวัล`, () => {
