@@ -2,7 +2,7 @@
 // แตะของ = เลือก · แตะสูตร = ดูราคา · แตะสูตรซ้ำ = คราฟต์ · ปุ่มลบค่าคราฟต์ · ✕ ปิด
 import { C, kanokFrame, rrect, circle } from '../art/draw.js';
 import { uiText as text } from './hud.js';
-import { itemIcon } from './equip.js';
+import { itemIcon } from './itemicon.js';
 import { benchItems, recipesFor, recipeUnlocked, craftBlock, craftBench, removeCraft, recipeOf } from '../systems/bench.js';
 import { itemName } from '../systems/items.js';
 
@@ -39,7 +39,7 @@ export function drawBench(ctx, game, L, w, h) {
     const cx = G.x + (i % G.cols) * G.cell + G.cell / 2, cy = G.y + Math.floor(i / G.cols) * G.cell + G.cell / 2, on = game.benchSel === it.uid;
     ctx.fillStyle = on ? 'rgba(217,166,48,0.35)' : slot ? 'rgba(60,40,20,0.5)' : 'rgba(0,0,0,0.3)'; rrect(ctx, cx - G.cell / 2 + 1.5, cy - G.cell / 2 + 1.5, G.cell - 3, G.cell - 3, 4 * s); ctx.fill();
     ctx.strokeStyle = I.rarity[it.rarity].color; ctx.lineWidth = on ? 2.5 : 1.5; ctx.stroke();
-    itemIcon(ctx, I, it, cx, cy, G.cell * 0.32);
+    itemIcon(ctx, game.data, it, cx, cy, G.cell * 0.32);
     if (it.craft) circle(ctx, cx + G.cell * 0.3, cy - G.cell * 0.3, 4 * s, '#b8a0ff', null);   // จุดม่วง = มีค่าคราฟต์แล้ว
     if (slot) text(ctx, 'สวม', cx - G.cell * 0.32, cy - G.cell * 0.32, 7.5 * s, C.goldHi, 'left', '600');
   });

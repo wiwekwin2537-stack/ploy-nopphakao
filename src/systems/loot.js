@@ -52,7 +52,7 @@ function bossLoot(game, mob) {
   for (const [k, c] of Object.entries(I.currency)) if (c.bossGift) spawnDrop(game, { kind: 'currency', cur: k, x: mob.x, y: mob.y - 10 });
   const mt = game.world.zone.def.mapTier;                       // บอสในถ้ำลายแทง: ได้ลายแทงขั้นถัดไป (สูงสุดขั้น 5)
   if (mt) spawnDrop(game, { kind: 'currency', cur: 'map' + Math.min(5, mt + 1), x: mob.x + 20, y: mob.y });
-  else if (mob.level >= 13) spawnDrop(game, { kind: 'currency', cur: 'map1', x: mob.x + 20, y: mob.y });
+  else if (mob.level >= I.currency.map1.minLevel) spawnDrop(game, { kind: 'currency', cur: 'map1', x: mob.x + 20, y: mob.y });   // ลายแทงแรก: บอสหลังจบเรื่องเท่านั้น
   game.flags[mob.type + 'Slain'] = true;
   game.notice = { text: 'ล้ม' + mob.def.name + 'สำเร็จ! ประตูมิติกลับทุ่งนาเปิดแล้ว', t: 6 };
   game.audio.play('level');

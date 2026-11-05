@@ -3,9 +3,9 @@
 // แตะของ = วางลงช่องคราฟต์ · แตะศิลา = ดูคำอธิบาย · แตะซ้ำ = ใช้กับของในช่อง
 import { C, rrect } from '../art/draw.js';
 import { uiText as text, wrapLines } from './hud.js';
-import { itemIcon } from './equip.js';
-import { currencyIcon } from './gemtab.js';
-import { drawItemTip } from './tooltip.js';
+import { itemIcon } from './itemicon.js';
+import { currencyIcon } from './itemicon.js';
+import { drawItemTip, drawCurrencyTip } from './tooltip.js';
 import { itemName } from '../systems/items.js';
 import { applyCurrency, CRAFT_CURRENCY, SOCKET_CURRENCY } from '../systems/crafting.js';
 
@@ -32,14 +32,14 @@ export function drawCraftTab(ctx, game, B) {
     const cx = G.x + (i % COLS) * G.cell + G.cell / 2, cy = G.y + Math.floor(i / COLS) * G.cell + G.cell / 2 + 6 * s, on = target && target.uid === it.uid;
     ctx.fillStyle = on ? 'rgba(217,166,48,0.35)' : eq.has(it.uid) ? 'rgba(60,40,20,0.5)' : 'rgba(0,0,0,0.3)'; rrect(ctx, cx - G.cell / 2 + 1.5, cy - G.cell / 2 + 1.5, G.cell - 3, G.cell - 3, 4 * s); ctx.fill();
     ctx.strokeStyle = I.rarity[it.rarity].color; ctx.lineWidth = on ? 2.4 : 1.3; ctx.stroke();
-    itemIcon(ctx, I, it, cx, cy, G.cell * 0.32);
+    itemIcon(ctx, game.data, it, cx, cy, G.cell * 0.32);
     if (eq.has(it.uid)) text(ctx, 'สวม', cx - G.cell * 0.34, cy - G.cell * 0.32, 7 * s, C.goldHi, 'left', '600');
   });
   // ช่องคราฟต์ตรงกลาง
   const S = L.slot;
   ctx.fillStyle = 'rgba(0,0,0,0.5)'; rrect(ctx, S.x, S.y, S.w, S.h, 8 * s); ctx.fill();
   ctx.strokeStyle = target ? I.rarity[target.rarity].color : `rgba(217,166,48,${0.5 + Math.sin(game.time * 4) * 0.3})`; ctx.lineWidth = 2.2; ctx.stroke();
-  if (target) itemIcon(ctx, I, target, S.x + S.w / 2, S.y + S.h / 2, S.w * 0.36);
+  if (target) itemIcon(ctx, game.data, target, S.x + S.w / 2, S.y + S.h / 2, S.w * 0.36);
   else text(ctx, 'วางของ', S.x + S.w / 2, S.y + S.h / 2, 10 * s, 'rgba(244,230,200,0.6)', 'center', 'normal');
   text(ctx, target ? itemName(I, target) : 'ช่องคราฟต์', S.x + S.w / 2, S.y + S.h + 10 * s, 10 * s, target ? I.rarity[target.rarity].color : C.cream, 'center', '600');
   // ช่องศิลาประจำชนิด
@@ -52,11 +52,13 @@ export function drawCraftTab(ctx, game, B) {
     text(ctx, info.name, c.x + c.w / 2, c.y + c.h - 8 * s, 7.5 * s, have ? C.cream : 'rgba(244,230,200,0.4)', 'center', 'normal');
   }
   // บรรทัดแนะนำ/ผลลัพธ์
-  let info = !target ? 'แตะของทางซ้ายเพื่อวางลงช่องคราฟต์' : !game.craftCur ? 'แตะศิลาเพื่อดูว่าทำอะไร · แตะซ้ำเพื่อใช้กับของในช่อง' : I.currency[game.craftCur].desc + ' — แตะซ้ำเพื่อใช้', col = game.craftCur ? '#9af0b0' : C.cream;
+  let info = !target ? 'แตะของทางซ้ายเพื่อวางลงช่องคราฟต์' : !game.craftCur ? 'แตะศิลาเพื่อดูว่าทำอะไร · แตะซ้ำเพื่อใช้กับของในช่อง' : `แตะ${I.currency[game.craftCur].name}ซ้ำเพื่อใช้กับของในช่อง (รายละเอียดอยู่ในกล่องข้างศิลา)`, col = game.craftCur ? '#9af0b0' : C.cream;
   if (game.craftTabMsg && game.craftTabMsg.t > game.time) { info = game.craftTabMsg.text; col = game.craftTabMsg.col; }
   ctx.font = `normal ${9.5 * s}px Kanit, sans-serif`;
   wrapLines(ctx, info, L.info.w).slice(0, 3).forEach((l, k) => text(ctx, l, L.info.x, L.info.y + 6 * s + k * 13 * s, 9.5 * s, col, 'left', 'normal'));
-  if (target) game.tipLater = () => drawItemTip(ctx, game, target, L.tipX, B.y + B.h / 2, { s, W: B.W, H: B.H });   // รายละเอียดสดของชิ้นในช่อง
+  const cs = game.craftCur && L.cur.find((q) => q.kind === game.craftCur);
+  if (cs) game.tipLater = () => drawCurrencyTip(ctx, game, cs.kind, cs.x + cs.w, cs.y + cs.h / 2, { s, W: B.W, H: B.H, hint: `มี ${(p.currency && p.currency[cs.kind]) || 0} · ${target ? 'แตะซ้ำเพื่อใช้กับ' + itemName(I, target) : 'วางของลงช่องคราฟต์ก่อน'}` });   // กล่องศิลาแบบเดียวกับร้าน/แถบชุด
+  else if (target) game.tipLater = () => drawItemTip(ctx, game, target, L.tipX, B.y + B.h / 2, { s, W: B.W, H: B.H });   // รายละเอียดสดของชิ้นในช่อง
 }
 
 export function updateCraftTab(game, B, t) {
@@ -65,6 +67,7 @@ export function updateCraftTab(game, B, t) {
   const c = L.cur.find(inR);
   if (c) {
     if (game.craftCur !== c.kind) { game.craftCur = c.kind; game.craftTabMsg = null; game.audio.play('click'); return; }
+    game.craftCur = null;                                                   // ใช้แล้วปิดกล่องศิลา กลับไปเห็นรายละเอียดของ (ค่าใหม่)
     const it = craftTarget(game), r = applyCurrency(game, c.kind, it);
     game.craftTabMsg = { text: r.text, col: r.ok ? I.rarity[it.rarity].color : '#ff8a7a', t: game.time + 3 };
     game.audio.play(r.ok ? 'level' : 'click');

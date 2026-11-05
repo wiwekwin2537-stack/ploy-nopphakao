@@ -1,7 +1,7 @@
 // หน้าแท่นลายแทง: เลือกขั้น 1–5 (แสดงจำนวนลายแทงที่มี) แตะขั้นที่มีลายแทง = เปิดถ้ำ
 import { C, kanokFrame, rrect, circle } from '../art/draw.js';
 import { uiText as text } from './hud.js';
-import { currencyIcon } from './gemtab.js';
+import { currencyIcon } from './itemicon.js';
 import { openMap } from '../systems/maps.js';
 
 const TIERS = [1, 2, 3, 4, 5];

@@ -2,8 +2,9 @@
 // แตะพลอยในกระเป๋า → แตะช่อง = ฝังลงช่องนั้น (หรือแตะพลอยซ้ำ = ฝังช่องว่างแรก) · แตะช่องที่มีพลอย = ดูรายละเอียด แตะซ้ำ = ถอด
 // ช่องพลอยวาดทับบนรูปไอเท็ม (แบบ PoE) ไม่ใช่แถวแยก
 // ศิลาเจาะ / ด้ายสายสิญจน์: แตะเลือก แล้วแตะซ้ำ = ใช้กับของแถวที่เลือก
-import { C, rrect, circle, poly } from '../art/draw.js';
+import { C, rrect, circle } from '../art/draw.js';
 import { gemSprite } from '../art/gems.js';
+import { socketSpots, SOCKET_COL, currencyIcon } from './itemicon.js';
 import { uiText as text } from './hud.js';
 import { socketGem, unsocketGem, skillsOf, SOCKET_SLOTS, gemLevel } from '../systems/gems.js';
 import { socketMax, itemName } from '../systems/items.js';
@@ -13,13 +14,8 @@ import { drawItemTip, drawGemTip, drawCurrencyTip } from './tooltip.js';
 
 const COLS = 6;
 const SLOT_NAME = { weapon: 'อาวุธ', body: 'เสื้อ' };
-export const SOCKET_COL = { r: { fill: 'rgba(90,14,16,0.92)', rim: '#e8404a' }, g: { fill: 'rgba(14,60,26,0.92)', rim: '#4ad870' }, b: { fill: 'rgba(14,30,80,0.92)', rim: '#4a8af0' }, w: { fill: 'rgba(60,60,64,0.92)', rim: '#f4f4f4' } };
 
 // ตำแหน่งช่องบนรูปไอเท็มแบบ PoE: 2 แถวตั้งแบบงูเลื้อย (0 1 / 3 2 / 4 5) ศูนย์กลางที่ (cx, cy)
-export function socketSpots(n, cx, cy, gap) {
-  const order = [[0, 0], [1, 0], [1, 1], [0, 1], [0, 2], [1, 2]].slice(0, n), cols = n > 1 ? 2 : 1, rows = Math.ceil(n / 2);
-  return order.map(([c, r]) => ({ x: cx + (c - (cols - 1) / 2) * gap, y: cy + (r - (rows - 1) / 2) * gap }));
-}
 
 // การ์ดอาวุธ/เสื้อ (รูปไอเท็มใหญ่ + ช่องพลอยบนตัวของ) วางคู่กัน · ปุ่มศิลา/ด้าย · รายการสกิล
 export function gemLayout(B, p) {
@@ -47,55 +43,6 @@ export function gemIcon(ctx, G, id, x, y, r, dim, lv) {
   }
 }
 
-// ไอคอนของเชื่อม/เจาะ: ศิลา (หินเทามีรู) · ด้ายสายสิญจน์ (ม้วนด้ายขาว)
-export function currencyIcon(ctx, kind, x, y, r) {
-  if (kind.startsWith('map')) {                                // ลายแทง: ม้วนหนังสือ สีตามขั้น
-    const col = ['#e8d8a8', '#a8e070', '#70b8f0', '#c890f0', '#ff7a5a'][Number(kind.slice(3)) - 1] || '#e8d8a8';
-    ctx.fillStyle = '#f0e2c0'; ctx.fillRect(x - r * 0.8, y - r * 0.55, r * 1.6, r * 1.1);
-    ctx.strokeStyle = '#6a4a20'; ctx.lineWidth = 1; ctx.strokeRect(x - r * 0.8, y - r * 0.55, r * 1.6, r * 1.1);
-    ctx.fillStyle = col; ctx.fillRect(x - r, y - r * 0.7, r * 0.35, r * 1.4); ctx.fillRect(x + r * 0.65, y - r * 0.7, r * 0.35, r * 1.4);
-    ctx.strokeStyle = '#a3262a'; ctx.beginPath(); ctx.moveTo(x - r * 0.4, y - r * 0.2); ctx.lineTo(x, y + r * 0.2); ctx.lineTo(x + r * 0.4, y - r * 0.1); ctx.stroke();
-    return;
-  }
-  if (kind === 'regret') {                                     // ใบลานล้างกรรม: ใบลานจารอักษร ผูกด้ายแดง
-    ctx.fillStyle = '#e8d090'; ctx.fillRect(x - r * 0.95, y - r * 0.32, r * 1.9, r * 0.64);
-    ctx.strokeStyle = '#7a5a20'; ctx.lineWidth = 1; ctx.strokeRect(x - r * 0.95, y - r * 0.32, r * 1.9, r * 0.64);
-    ctx.fillStyle = '#5a3a10'; for (let i = 0; i < 3; i++) ctx.fillRect(x - r * 0.7, y - r * 0.18 + i * r * 0.16, r * 1.4, r * 0.05);
-    ctx.fillStyle = '#c8302a'; ctx.fillRect(x - r * 0.08, y - r * 0.45, r * 0.16, r * 0.9);
-    return;
-  }
-  if (kind === 'gild') {                                       // ทองคำเปลว: แผ่นทองบาง
-    poly(ctx, [x - r * 0.8, y - r * 0.5, x + r * 0.6, y - r * 0.8, x + r * 0.8, y + r * 0.5, x - r * 0.6, y + r * 0.8], '#f2c230', C.ink, 1);
-    ctx.fillStyle = 'rgba(255,250,200,0.8)'; ctx.fillRect(x - r * 0.4, y - r * 0.3, r * 0.5, r * 0.15); return;
-  }
-  if (kind === 'alch') {                                       // ปรอท: หยดเงินวาว
-    ctx.fillStyle = '#c8d0e0'; ctx.beginPath(); ctx.moveTo(x, y - r); ctx.quadraticCurveTo(x + r * 0.9, y + r * 0.2, x, y + r * 0.8); ctx.quadraticCurveTo(x - r * 0.9, y + r * 0.2, x, y - r); ctx.fill();
-    ctx.strokeStyle = C.ink; ctx.lineWidth = 1; ctx.stroke(); circle(ctx, x - r * 0.25, y, r * 0.18, '#ffffff', null); return;
-  }
-  if (kind === 'exalt') {                                      // มณีโชติ: เพชรทองส่องแสงแปดแฉก
-    ctx.fillStyle = 'rgba(255,233,160,0.35)'; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
-    poly(ctx, [x, y - r * 0.85, x + r * 0.6, y - r * 0.2, x, y + r * 0.85, x - r * 0.6, y - r * 0.2], '#ffe9a0', C.ink, 1);
-    poly(ctx, [x, y - r * 0.85, x + r * 0.6, y - r * 0.2, x, y - r * 0.05], '#fff8dc', null);
-    return;
-  }
-  if (kind === 'kali') {                                       // เถ้ากาลี: กองเถ้าม่วงมีประกายไฟ
-    poly(ctx, [x - r, y + r * 0.6, x - r * 0.3, y - r * 0.4, x + r * 0.2, y - r * 0.1, x + r, y + r * 0.6], '#5a2a7a', C.ink, 1);
-    circle(ctx, x, y - r * 0.5, r * 0.2, '#ff7a3a', null); return;
-  }
-  if (kind === 'jeweller') {
-    poly(ctx, [x - r * 0.8, y + r * 0.5, x - r * 0.6, y - r * 0.5, x + r * 0.2, y - r * 0.8, x + r * 0.8, y - r * 0.2, x + r * 0.6, y + r * 0.6], '#b8b0a0', C.ink, 1.2);
-    circle(ctx, x, y, r * 0.22, '#3a3430', null);
-  } else if (kind === 'chroma') {                                // หินเจ็ดสี: ผลึกสามสีแดง/เขียว/น้ำเงิน
-    poly(ctx, [x - r * 0.9, y + r * 0.6, x - r * 0.3, y - r * 0.8, x, y + r * 0.6], '#e8404a', C.ink, 1);
-    poly(ctx, [x - r * 0.3, y + r * 0.6, x + r * 0.2, y - r * 0.9, x + r * 0.5, y + r * 0.6], '#4ad870', C.ink, 1);
-    poly(ctx, [x + r * 0.1, y + r * 0.6, x + r * 0.6, y - r * 0.7, x + r * 0.95, y + r * 0.6], '#4a8af0', C.ink, 1);
-  } else {
-    circle(ctx, x, y, r * 0.7, '#f4f0e8', C.ink, 1.2);
-    ctx.strokeStyle = '#c9b89a'; ctx.lineWidth = 1;
-    for (let i = -2; i <= 2; i++) { ctx.beginPath(); ctx.moveTo(x - r * 0.6, y + i * r * 0.2); ctx.lineTo(x + r * 0.6, y + i * r * 0.2); ctx.stroke(); }
-    ctx.strokeStyle = '#f4f0e8'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(x + r * 0.5, y + r * 0.4); ctx.quadraticCurveTo(x + r, y + r, x + r * 1.1, y + r * 0.3); ctx.stroke();
-  }
-}
 
 export function drawGemTab(ctx, game, B) {
   const G = game.data.gems, I = game.data.items, p = game.player, s = B.s, GL = gemLayout(B, p);

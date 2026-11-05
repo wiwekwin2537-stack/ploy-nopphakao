@@ -1,7 +1,7 @@
 // หน้าหีบเก็บของ: ซ้าย = กระเป๋า · ขวา = หีบ — แตะของ 1 ครั้งดูรายละเอียด แตะซ้ำ = ย้ายไปอีกฝั่ง
 import { C, kanokFrame, rrect, circle } from '../art/draw.js';
 import { uiText as text } from './hud.js';
-import { itemIcon } from './equip.js';
+import { itemIcon } from './itemicon.js';
 import { drawItemTip } from './tooltip.js';
 import { moveItem } from '../systems/stash.js';
 
@@ -28,7 +28,7 @@ function grid(ctx, game, G, list, cap, s) {
     ctx.fillStyle = on ? 'rgba(217,166,48,0.35)' : 'rgba(0,0,0,0.3)'; rrect(ctx, cx - G.cell / 2 + 1.5, cy - G.cell / 2 + 1.5, G.cell - 3, G.cell - 3, 4 * s); ctx.fill();
     if (!it) continue;
     ctx.strokeStyle = I.rarity[it.rarity].color; ctx.lineWidth = 1.5; ctx.stroke();
-    itemIcon(ctx, I, it, cx, cy, G.cell * 0.32);
+    itemIcon(ctx, game.data, it, cx, cy, G.cell * 0.32);
   }
 }
 

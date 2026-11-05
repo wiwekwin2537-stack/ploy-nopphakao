@@ -1,6 +1,6 @@
 // ต้นไม้ ก้อนหิน เกวียน และของประกอบฉาก (วาดลงแคนวาสพักไว้ครั้งเดียว)
 // ทุกฟังก์ชันวาดโดยจุด (0,0) = มุมล่างซ้ายของฐาน (footprint) ขนาดฐาน fw x fh
-import { C, shadow, box, poly, circle, hash2, shade } from './draw.js';
+import { C, shadow, box, poly, circle, hash2 } from './draw.js';
 
 const rnd = (seed, i) => hash2(seed, i, 13);
 

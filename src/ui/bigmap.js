@@ -1,6 +1,6 @@
 // แผนที่ใหญ่เต็มจอ (แบบ PoE กด Tab / แตะแผนที่เล็ก): ทั้งพื้นที่ + หมอกดำส่วนที่ยังไม่สำรวจ
 // แสดง ทางออก (ชื่อพื้นที่ปลายทาง) · ศาลวาร์ป (ปลดแล้วสีฟ้า/ยังไม่ปลดสีเทา) · ชาวบ้าน · มอน (เฉพาะที่สำรวจแล้ว) · ตัวเรา
-import { C, rrect, circle, poly } from '../art/draw.js';
+import { C, circle, poly } from '../art/draw.js';
 import { uiText as text, miniMap } from './hud.js';
 import { fogCanvas, isExplored, exploredRatio } from '../systems/explore.js';
 

@@ -3,8 +3,8 @@
 import { C, kanokFrame, rrect, circle } from '../art/draw.js';
 import { uiText as text } from './hud.js';
 import { flaskIcon } from './hudbar.js';
-import { itemIcon } from './equip.js';
-import { currencyIcon } from './gemtab.js';
+import { itemIcon } from './itemicon.js';
+import { currencyIcon } from './itemicon.js';
 import { drawItemTip, drawCurrencyTip } from './tooltip.js';
 import { buyPotion, buyItem, sellItem, sellPrice } from '../systems/shop.js';
 
@@ -68,7 +68,7 @@ export function drawShop(ctx, game, L, w, h) {
       text(ctx, 'มี ' + (p.currency[k] || 0), c.x + G.cell * 0.44, c.y - G.cell * 0.36, 8.5 * s, C.cream, 'right', '600');
     } else {
       const base = S.stock[g.idx].base;
-      itemIcon(ctx, I, { base }, c.x, iy, r * 1.05);
+      itemIcon(ctx, game.data, { base }, c.x, iy, r * 1.05);
       if (p.level < I.bases[base].req) text(ctx, 'Lv.' + I.bases[base].req, c.x - G.cell * 0.44, c.y - G.cell * 0.36, 8.5 * s, '#ff8a7a', 'left', '600');
     }
     const pr = priceOf(S, g);
@@ -80,7 +80,7 @@ export function drawShop(ctx, game, L, w, h) {
   for (let i = 0; i < Bg.cols * Bg.rows; i++) {
     const c = cellCenter(Bg, i), it = p.items[i], on = it && sel && sel.side === 'sell' && sel.uid === it.uid;
     slotBox(ctx, Bg, c, on, it ? I.rarity[it.rarity].color : null, s);
-    if (it) itemIcon(ctx, I, it, c.x, c.y, Bg.cell * 0.32);
+    if (it) itemIcon(ctx, game.data, it, c.x, c.y, Bg.cell * 0.32);
   }
 
   // แถบล่าง

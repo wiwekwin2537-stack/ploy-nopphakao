@@ -50,14 +50,13 @@ test('บอสถ้ำ: ประตูปิดจนบอสตาย · �
   assert.equal(g.world.blocked(g.player.x, g.player.y, g.player.radius), false);
 });
 
-test('บอสใหญ่ในเรื่อง (Lv.13+) ให้ลายแทงขั้น 1 · ยักษ์วัดไม่ให้', () => {
+test('ลายแทงขั้น 1 ได้จากบอสหลังจบเรื่องเท่านั้น (ทศกัณฐ์) · บอสระหว่างเรื่องไม่ให้ (ถ้ำลายแทงเป็นเนื้อหาหลังจบบท 6)', () => {
   const g = makeGame(); g.flags.tutorialDone = true;
-  enterZone(g, 'dungeon3');
-  let n = g.drops.length; damageMob(g, g.mobs.find((m) => m.type === 'yak'), 1e9);
-  assert.equal(g.drops.slice(n).filter((d) => d.cur === 'map1').length, 0);
-  enterZone(g, 'himmapan');
-  n = g.drops.length; damageMob(g, g.mobs.find((m) => m.type === 'khotchasi_king'), 1e9);
-  assert.equal(g.drops.slice(n).filter((d) => d.cur === 'map1').length, 1);
+  for (const [zone, boss, want] of [['dungeon3', 'yak', 0], ['himmapan', 'khotchasi_king', 0], ['tavatimsa', 'vessavana', 0], ['badan', 'naga_king', 0], ['lanka', 'thotsakan', 1]]) {
+    enterZone(g, zone);
+    const n = g.drops.length; damageMob(g, g.mobs.find((m) => m.type === boss), 1e9);
+    assert.equal(g.drops.slice(n).filter((d) => d.cur === 'map1').length, want, boss);
+  }
 });
 
 test('ค่าปรับฝูงใหญ่ทวีมอน แต่บอสยังตัวเดียวเสมอ (20 ถ้ำ)', () => {

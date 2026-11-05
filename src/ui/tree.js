@@ -1,5 +1,5 @@
 // หน้าต้นพาสซีฟ: ลากเพื่อเลื่อน · ซูมด้วยปุ่ม +/− ล้อเมาส์ หรือสองนิ้ว · แตะโหนดดูรายละเอียด แตะซ้ำเพื่อเลือก/คืนแต้ม
-import { C, kanokFrame, rrect, circle, poly } from '../art/draw.js';
+import { C, rrect, circle, poly } from '../art/draw.js';
 import { uiText as text } from './hud.js';
 import { startOf, pointsLeft, canAllocate, allocate, canRefund, refund, describe } from '../systems/passives.js';
 import { playerStats } from '../systems/stats.js';

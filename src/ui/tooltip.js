@@ -5,8 +5,7 @@ import { uiText as text, wrapLines } from './hud.js';
 import { itemName, itemStats, longestLink } from '../systems/items.js';
 import { gemInfo, gemType, computeSkill, supportLines, gemLevel, gemXpInfo, auraAt } from '../systems/gems.js';
 import { gemSprite } from '../art/gems.js';
-import { itemSprite } from '../art/items.js';
-import { SOCKET_COL } from './gemtab.js';
+import { itemIcon, currencyIcon } from './itemicon.js';
 
 const FONT = 'Kanit, sans-serif';
 const MOD_COL = '#8ab4ff';      // ค่าสุ่ม (แบบ PoE สีฟ้า)
@@ -46,22 +45,11 @@ function tipBox(ctx, lines0, ax, ay, s, W, H, border) {
   }
 }
 
-// แถวช่องพลอยเล็กในกล่อง: วงกลม + เส้นเชื่อม + พลอยที่ฝัง
-function socketRow(ctx, G, it, x, y, s) {
-  const r = 7 * s, gap = 20 * s;
-  for (let i = 0; i < it.sockets - 1; i++) if (it.links[i]) { ctx.fillStyle = C.goldHi; ctx.fillRect(x + r + i * gap, y - 2 * s, gap, 4 * s); }
-  for (let i = 0; i < it.sockets; i++) {
-    const cx = x + r + i * gap;
-    const sc = SOCKET_COL[(it.colors && it.colors[i]) || 'w'];
-    circle(ctx, cx, y, r, sc.fill, sc.rim, 2);
-    if (it.gems[i]) ctx.drawImage(gemSprite(G, it.gems[i], r * 4), cx - r * 1.1, y - r * 1.1, r * 2.2, r * 2.2);
-  }
-}
-
 export function drawItemTip(ctx, game, it, ax, ay, opt = {}) {
   const I = game.data.items, P = game.data.passives, G = game.data.gems, s = opt.s || 1, b = I.bases[it.base], col = I.rarity[it.rarity].color;
   const lines = [];
-  lines.push({ h: 40 * s, draw: (c, x, y, w) => { c.drawImage(itemSprite(I, it.base, 80), x + w / 2 - 18 * s, y, 36 * s, 36 * s); } });
+  const R = it.sockets ? 34 * s : 18 * s;                         // รูปของ + รูพลอยบนตัวของ แบบเดียวกับในกระเป๋า/ช่องคราฟต์ (ขยายใหญ่ เห็นพลอยในรู)
+  lines.push({ h: R * 2 + 4 * s, draw: (c, x, y, w) => itemIcon(c, game.data, it, x + w / 2, y + R, R) });
   lines.push({ t: itemName(I, it), col, size: 12.5, weight: '600', center: true });
   if (it.rarity !== 'normal') lines.push({ t: b.name, col: 'rgba(244,230,200,0.85)', size: 10, center: true });
   lines.push({ t: `${I.rarity[it.rarity].name} · ${I.slots[b.slot].name}`, col: 'rgba(244,230,200,0.6)', size: 9, center: true });
@@ -84,8 +72,7 @@ export function drawItemTip(ctx, game, it, ax, ay, opt = {}) {
   if (cr) lines.push({ t: `${statText(P, cr.stat, cr.value)}  (คราฟต์จากโต๊ะช่าง)`, col: '#b8a0ff', size: 10 });
   if (it.sockets) {
     lines.push({ sep: true, h: 8 * s });
-    lines.push({ t: `ช่องพลอย ${it.sockets} · เชื่อมยาวสุด ${longestLink(it)}`, col: 'rgba(244,230,200,0.8)', size: 9.5 });
-    lines.push({ h: 20 * s, draw: (c, x, y) => socketRow(c, G, it, x, y + 10 * s, s) });
+    lines.push({ t: `ช่องพลอย ${it.sockets} · เชื่อมยาวสุด ${longestLink(it)} (ดูรูบนรูปของด้านบน)`, col: 'rgba(244,230,200,0.8)', size: 9.5 });
   }
   lines.push({ sep: true, h: 8 * s });
   const lowLv = game.player.level < b.req;
@@ -156,7 +143,8 @@ export function drawGemTip(ctx, game, id, ax, ay, opt = {}) {
 
 export function drawCurrencyTip(ctx, game, kind, ax, ay, opt = {}) {
   const c = opt.raw || game.data.items.currency[kind], s = opt.s || 1;   // raw = กล่องแบบเดียวกันสำหรับยา
-  const lines = [{ t: c.name, col: c.color, size: 12.5, weight: '600', center: true }, { sep: true, h: 8 * s }, { t: c.desc, col: MOD_COL, size: 9.5 }];
+  const lines = [...(opt.raw ? [] : [{ h: 34 * s, draw: (g, x, y, w) => currencyIcon(g, kind, x + w / 2, y + 16 * s, 14 * s) }]),   // รูปศิลาแบบเดียวกับในช่อง/บนพื้น
+    { t: c.name, col: c.color, size: 12.5, weight: '600', center: true }, { sep: true, h: 8 * s }, { t: c.desc, col: MOD_COL, size: 9.5 }];
   if (opt.hint) lines.push({ t: opt.hint, col: '#9af0b0', size: 9.5, weight: '600' });
   tipBox(ctx, lines, ax, ay, s, opt.W, opt.H, c.color);
 }

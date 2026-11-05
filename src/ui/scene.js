@@ -3,7 +3,7 @@ import { createGround } from '../art/ground.js';
 import { createSpriteCache } from '../art/sprites.js';
 import { drawHuman } from '../art/characters.js';
 import { heroLook, heroGear } from './herolook.js';
-import { currencyIcon } from './gemtab.js';
+import { currencyIcon } from './itemicon.js';
 import { itemSprite } from '../art/items.js';
 import { gemSprite } from '../art/gems.js';
 import { itemName } from '../systems/items.js';

@@ -66,6 +66,7 @@ AI ทุกตัวต้องใช้สกิล `clean-game-dev` · อ�
 - อาชีพเลื่อนขั้น (Ascendancy แบบ PoE): data/ascendancy.json (อาชีพละ 2 ทาง ทางละ 4 โหนด · trials = ธงบอสที่ให้แต้ม ครั้งละ 2: ครุฑราช/พญานาคราช/ทศกัณฐ์) · ระบบ src/systems/ascend.js · หน้าต่าง src/ui/ascend.js เปิดจากปุ่ม "เลื่อนขั้น" ในต้นพาสซีฟ (mode 'ascend') · ค่า killHeal/killMana ใหม่ (statNames อยู่ใน gen_passives.py) · เซฟ v14 เพิ่ม ascend/ascNodes
 - โต๊ะช่าง (Crafting Bench แบบ PoE): สูตรใน data/items.json "bench" (unlock = ธงบอส) · ค่าคราฟต์เก็บที่ it.craft (1 ค่าต่อชิ้น แยกจากค่าสุ่ม ยูนีคไม่ได้) · ระบบ src/systems/bench.js · หน้าต่าง src/ui/bench.js (mode 'bench' ยืนหน้าโต๊ะกด E) · มีโต๊ะทุกเมือง: เมืองของบทใส่ใน zonelib.town() · เวียงด่านหินเติมใน gen_towns.py
 - แถบคราฟต์ (หีบศิลาแบบ Currency Tab ของ PoE) ในหน้าโปรไฟล์: src/ui/crafttab.js (ช่องคราฟต์กลาง + ช่องศิลาประจำชนิด + รายละเอียดของสด) · การใช้ศิลาทุกชนิดผ่าน src/systems/crafting.js applyCurrency ที่เดียว (แถบชุด/แถบพลอยใช้ตัวนี้ด้วย)
+- รูปของ/รูพลอย/ศิลา ใช้ตัววาดเดียวกันทุกที่: src/ui/itemicon.js (itemIcon ส่ง G = เห็นพลอยในรู · socketSpots · SOCKET_COL · currencyIcon) — กล่องรายละเอียดของใช้รูปของ+รูแบบเดียวกับช่อง ไม่มีแถวรูตรงแล้ว · check.js ตรวจ import ที่ไม่ได้ใช้ด้วย · ลายแทงขั้น 1 จากบอสเรื่องเฉพาะเลเวล ≥ minLevel ของ map1 (ทศกัณฐ์)
 - check.js ตรวจด้วยว่าทุก import มี export จริง (เคยมีไฟล์ถูกเขียนว่างแล้วตัวตรวจไม่จับ)
 - ท่าเดิน: ระยะก้าว STRIDE ใน player.js (ยิ่งมากยิ่งก้าวยาว)
 - ยังไม่มี repo บน GitHub ที่ Claude เขียนได้ → ตอนนี้ส่งเกมเป็นหน้าเว็บ artifact

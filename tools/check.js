@@ -107,6 +107,17 @@ if (balance.xpToNext.length < balance.maxLevel) bad('data/balance.json', 'xpToNe
   }
 }
 
+// import ที่ไม่ได้ใช้: ชื่อที่ import มา (รวม "a as b" นับชื่อ b) ต้องถูกใช้ในไฟล์นั้นจริง — ของค้างจากการย้ายโค้ด
+for (const f of walk(join(root, 'src')).filter((x) => x.endsWith('.js'))) {
+  const txt = readFileSync(f, 'utf8');
+  for (const m of txt.matchAll(/^import \{([^}]*)\} from/gm)) {
+    for (const part of m[1].split(',').map((x) => x.trim()).filter(Boolean)) {
+      const local = part.split(/\s+as\s+/).pop();
+      if ((txt.match(new RegExp('\\b' + local + '\\b', 'g')) || []).length < 2) bad(relative(root, f), `import ${local} แต่ไม่ได้ใช้ (ลบออก)`);
+    }
+  }
+}
+
 if (problems.length) {
   console.error('❌ ตรวจโครงสร้างไม่ผ่าน ' + problems.length + ' จุด');
   problems.forEach((p) => console.error('  - ' + p));

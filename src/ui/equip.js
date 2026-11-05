@@ -1,12 +1,11 @@
 // แถบ "ชุด" ในกระเป๋า: ช่องสวมใส่ 6 ช่อง + กระเป๋าของ · แตะของ 1 ครั้งดู/เทียบค่า แตะซ้ำเพื่อสวม · แตะช่องที่สวมแล้วซ้ำเพื่อถอด
-import { C, rrect, circle, poly } from '../art/draw.js';
-import { itemSprite } from '../art/items.js';
+import { C, rrect } from '../art/draw.js';
+import { itemIcon } from './itemicon.js';
 import { drawItemTip } from './tooltip.js';
-import { socketSpots, SOCKET_COL } from './gemtab.js';
 import { uiText as text } from './hud.js';
 import { EQUIP_SLOTS, itemName, equipFromBag, unequip, discard } from '../systems/items.js';
 import { applyCurrency } from '../systems/crafting.js';
-import { currencyIcon } from './gemtab.js';
+import { currencyIcon } from './itemicon.js';
 import { drawCurrencyTip } from './tooltip.js';
 
 const COLS = 6;
@@ -27,15 +26,6 @@ export function equipLayout(B, I) {
 }
 
 // ภาพไอเท็มเดียวกับที่ตกพื้นและในร้าน (art/items.js)
-export function itemIcon(ctx, I, it, x, y, r) {
-  ctx.drawImage(itemSprite(I, it.base, r * 2 * (ctx.getTransform().a || 1)), x - r, y - r, r * 2, r * 2);
-  if (it.sockets) {                                              // ช่องพลอยเล็กบนรูปของ (แบบ PoE) จุดเต็ม = มีพลอย
-    const sp = socketSpots(it.sockets, x, y, r * 0.55);
-    ctx.strokeStyle = 'rgba(243,210,122,0.9)'; ctx.lineWidth = Math.max(1, r * 0.12);
-    for (let i = 0; i < it.sockets - 1; i++) if (it.links[i]) { ctx.beginPath(); ctx.moveTo(sp[i].x, sp[i].y); ctx.lineTo(sp[i + 1].x, sp[i + 1].y); ctx.stroke(); }
-    sp.forEach((q, i) => { const sc = SOCKET_COL[(it.colors && it.colors[i]) || 'w']; ctx.fillStyle = it.gems && it.gems[i] ? sc.rim : sc.fill; ctx.beginPath(); ctx.arc(q.x, q.y, r * 0.17, 0, 7); ctx.fill(); ctx.strokeStyle = sc.rim; ctx.lineWidth = 1; ctx.stroke(); });
-  }
-}
 
 
 export function drawEquip(ctx, game, B) {
@@ -45,7 +35,7 @@ export function drawEquip(ctx, game, B) {
     const on = sel && sel.slot === sl.id;
     ctx.fillStyle = on ? 'rgba(217,166,48,0.25)' : 'rgba(0,0,0,0.35)'; rrect(ctx, sl.x, sl.y, sl.w, sl.h, 7 * s); ctx.fill();
     ctx.strokeStyle = it ? I.rarity[it.rarity].color : 'rgba(184,154,88,0.5)'; ctx.lineWidth = 1.5; ctx.stroke();
-    if (it) itemIcon(ctx, I, it, sl.x + sl.w / 2, sl.y + sl.h / 2 - 3 * s, 15 * s);
+    if (it) itemIcon(ctx, game.data, it, sl.x + sl.w / 2, sl.y + sl.h / 2 - 3 * s, 15 * s);
     text(ctx, I.slots[sl.id].name, sl.x + sl.w / 2, sl.y + sl.h - 7 * s, 8 * s, 'rgba(244,230,200,0.7)', 'center', 'normal');
   }
   const g = E.grid;
@@ -56,7 +46,7 @@ export function drawEquip(ctx, game, B) {
     const on = sel && sel.uid === it.uid;
     ctx.fillStyle = on ? 'rgba(217,166,48,0.35)' : 'rgba(0,0,0,0.35)'; rrect(ctx, cx - g.cell / 2 + 2, cy - g.cell / 2 + 2, g.cell - 4, g.cell - 4, 6 * s); ctx.fill();
     ctx.strokeStyle = I.rarity[it.rarity].color; ctx.lineWidth = it.rarity === 'normal' ? 0.8 : 1.6; ctx.stroke();
-    itemIcon(ctx, I, it, cx, cy, g.cell * 0.3);
+    itemIcon(ctx, game.data, it, cx, cy, g.cell * 0.3);
     if (p.level < I.bases[it.base].req) { ctx.fillStyle = 'rgba(160,30,20,0.45)'; rrect(ctx, cx - g.cell / 2 + 2, cy - g.cell / 2 + 2, g.cell - 4, g.cell - 4, 6 * s); ctx.fill(); }
   });
   // รายละเอียด + เทียบกับของที่สวมอยู่
