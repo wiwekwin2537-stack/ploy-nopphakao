@@ -392,6 +392,9 @@ await check('ป่าหิมพานต์: หลังล้มยัก�
   await page.screenshot({ path: SHOTS + '/28-camp_hunter.png' });
   await G(page, () => { const g = __ploy.game; g.player.x = 29.6 * 32; g.player.y = 11 * 32; });
   await hold(page, 'KeyD', 900);
+  assert((await state(page)).zone === 'himmapan_edge', 'ไม่ถึงพื้นที่ย่อย himmapan_edge: ' + (await state(page)).zone);   // บทแบบ PoE: เมือง → พื้นที่ย่อย → พื้นที่บอส
+  await G(page, () => { const g = __ploy.game; g.mobs.length = 0; g.player.x = 61.6 * 32; g.player.y = 26.5 * 32; });
+  await hold(page, 'KeyD', 900);
   const s = await state(page);
   assert(s.zone === 'himmapan', 'เดินเข้าป่าไม่ได้: ' + s.zone);
   await G(page, () => { const g = __ploy.game; g.player.x = 30 * 32; g.player.y = 21 * 32; });
@@ -421,6 +424,9 @@ await check('เขาไกรลาส: หลังล้มพญาคช�
   assert((await state(page)).zone === 'hermitage', 'ไม่ถึงอาศรมฤๅษี: ' + (await state(page)).zone);   // บทใหม่: ผ่านเมืองของบทก่อน
   await page.screenshot({ path: SHOTS + '/28-hermitage.png' });
   await G(page, () => { const g = __ploy.game; g.player.x = 29.6 * 32; g.player.y = 11 * 32; });
+  await hold(page, 'KeyD', 900);
+  assert((await state(page)).zone === 'snow_valley', 'ไม่ถึงพื้นที่ย่อย snow_valley: ' + (await state(page)).zone);   // บทแบบ PoE: เมือง → พื้นที่ย่อย → พื้นที่บอส
+  await G(page, () => { const g = __ploy.game; g.mobs.length = 0; g.player.x = 61.6 * 32; g.player.y = 26.5 * 32; });
   await hold(page, 'KeyD', 900);
   const s = await state(page);
   assert(s.zone === 'kailash', 'เดินขึ้นเขาไม่ได้: ' + s.zone);
@@ -452,6 +458,9 @@ await check('สวรรค์ดาวดึงส์: ล้มครุฑ�
   assert((await state(page)).zone === 'sky_sala', 'ไม่ถึงศาลาท่าสวรรค์: ' + (await state(page)).zone);
   await page.screenshot({ path: SHOTS + '/28-sky_sala.png' });
   await G(page, () => { const g = __ploy.game; g.player.x = 29.6 * 32; g.player.y = 11 * 32; });
+  await hold(page, 'KeyD', 900);
+  assert((await state(page)).zone === 'nandana', 'ไม่ถึงพื้นที่ย่อย nandana: ' + (await state(page)).zone);   // บทแบบ PoE: เมือง → พื้นที่ย่อย → พื้นที่บอส
+  await G(page, () => { const g = __ploy.game; g.mobs.length = 0; g.player.x = 61.6 * 32; g.player.y = 26.5 * 32; });
   await hold(page, 'KeyD', 900);
   assert((await state(page)).zone === 'tavatimsa', 'เข้าสวรรค์ไม่ได้: ' + (await state(page)).zone);
   await G(page, () => { const g = __ploy.game, k = g.mobs.find((m) => m.type === 'vessavana'); g.player.x = k.x; g.player.y = k.y + 170; });

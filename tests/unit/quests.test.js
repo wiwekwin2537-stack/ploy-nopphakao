@@ -88,3 +88,26 @@ test('เครื่องหมาย ! บนหัว NPC: ทอง = เ�
   g.flags.khotchasi_kingSlain = true;
   assert.equal(npcMark(g, 'phran'), 'reward');
 });
+
+test('พื้นที่ย่อยของบท (แบบ PoE): เมือง → พื้นที่ย่อย → พื้นที่บอส · เดินจากทางเข้าถึงศาลวาร์ปและทางออกได้จริง · มีมอนเลเวลไล่ระดับ', () => {
+  const g = makeGame(); g.flags.tutorialDone = true;
+  const Z = g.data.zones;
+  for (const [town, sub, boss] of [['camp_hunter', 'himmapan_edge', 'himmapan'], ['hermitage', 'snow_valley', 'kailash'], ['sky_sala', 'nandana', 'tavatimsa']]) {
+    assert.ok(Z[town].exits.some((e) => e.to === sub), `${town} → ${sub}`);
+    assert.ok(Z[sub].exits.some((e) => e.to === boss) && Z[sub].exits.some((e) => e.to === town), `${sub} ↔`);
+    assert.ok(Z[boss].exits.some((e) => e.to === sub), `${boss} → ${sub}`);
+    enterZone(g, sub);
+    const w = g.world, z = w.zone, T = 32, cols = Math.ceil(z.W / T), rows = Math.ceil(z.H / T);
+    const ok = (cx, cy) => cx >= 0 && cy >= 0 && cx < cols && cy < rows && !w.blocked(cx * T + 16, cy * T + 16, 10);
+    const st = z.def.start, seen = new Set([Math.floor(st.x) + ',' + Math.floor(st.y)]), q = [[Math.floor(st.x), Math.floor(st.y)]];
+    while (q.length) { const [x, y] = q.pop(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const k = (x + dx) + ',' + (y + dy); if (!seen.has(k) && ok(x + dx, y + dy)) { seen.add(k); q.push([x + dx, y + dy]); } } }
+    const reach = (tx, ty) => [-1, 0, 1].some((a) => [-1, 0, 1].some((b) => seen.has((Math.floor(tx) + a) + ',' + (Math.floor(ty) + b))));
+    const wp = z.def.objects.find((o) => o.type === 'waypoint'), ex = z.def.exits.find((e) => e.to === boss);
+    assert.ok(reach(wp.x, wp.y + 1), sub + ' เดินถึงศาลวาร์ป');
+    assert.ok(reach(ex.x - 1, ex.y + 1), sub + ' เดินถึงทางออกไปพื้นที่บอส');
+    const lv = (zid) => Math.max(...Z[zid].spawns.filter((s) => !g.data.monsters[s.type].boss && !s.named).map((s) => s.level[1]));
+    const lo = (zid) => Math.min(...Z[zid].spawns.filter((s) => !s.named).map((s) => s.level[0]));
+    assert.ok(lv(sub) <= lo(boss) + 2, `${sub} เลเวลไม่เกินพื้นที่บอส`);
+  }
+  assert.ok(g.data.quests.acts.find((a) => a.n === 2).zones.includes('himmapan_edge'));
+});
