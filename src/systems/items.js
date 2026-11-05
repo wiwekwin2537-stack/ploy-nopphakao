@@ -5,7 +5,6 @@ import { returnGems, socketFits } from './gems.js';
 
 // ช่องชุดครบแบบเอโดเรีย
 export const EQUIP_SLOTS = ['weapon', 'head', 'body', 'legs', 'arms', 'amulet', 'ring'];
-export const RARITY_ORDER = ['normal', 'green', 'purple', 'red'];
 
 export function emptyEquip() { return Object.fromEntries(EQUIP_SLOTS.map((s) => [s, null])); }
 const slotKind = (I, s) => I.slots[s].kind || s;

@@ -193,4 +193,3 @@ function wagon(g, fw, fh, broken) {
   if (broken) { g.save(); g.translate(fw + 6, -6); g.scale(1, 0.45); circle(g, 0, 0, 13, null, C.line, 4); circle(g, 0, 0, 13, null, '#7a5432', 2.4); g.restore(); }
 }
 
-export function propColor(type) { return shade(C.leaf, type.length * 0.01); }

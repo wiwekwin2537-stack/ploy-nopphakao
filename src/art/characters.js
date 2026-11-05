@@ -10,11 +10,6 @@ export const LOOKS = {
   guard: { skin: '#f1d2b0', top: '#a3262a', collar: '#c9433a', leg: '#2e2a26', leg2: '#3e3a36', hair: '#14141a', hat: 'helmet', sash: C.gold, weapon: 'spear' },
 };
 
-export function dirFromAngle(a) {
-  const c = Math.cos(a), s = Math.sin(a);
-  if (Math.abs(c) > Math.abs(s)) return c > 0 ? 3 : 2;
-  return s > 0 ? 0 : 1;
-}
 
 const easeOut = (u) => 1 - Math.pow(1 - Math.min(1, Math.max(0, u)), 3);
 const easeIn = (u) => Math.pow(Math.min(1, Math.max(0, u)), 2);

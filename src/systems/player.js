@@ -202,4 +202,3 @@ export function updatePlayer(game, dt) {
   if (p.moveTarget && moved < 0.05 && !(mx === 0 && my === 0)) p.moveTarget = null; // ติดกำแพง
 }
 
-export function nearestMobTo(game, x, y, maxD) { return nearestMob(game, x, y, maxD); }

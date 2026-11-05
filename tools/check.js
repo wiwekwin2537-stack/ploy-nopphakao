@@ -93,6 +93,20 @@ for (const [id, z] of Object.entries(zones)) {
 }
 if (balance.xpToNext.length < balance.maxLevel) bad('data/balance.json', 'xpToNext สั้นกว่าเลเวลสูงสุด');
 
+// โค้ดตาย: ฟังก์ชัน/ค่าที่ export แต่ไม่มีไฟล์ไหนใช้ (ทั้งใน src และ tests) = ของค้างจากการแก้ ต้องลบ ไม่ปล่อยกองไว้แบบเอโดเรีย
+{
+  const srcFiles = walk(join(root, 'src')).filter((f) => f.endsWith('.js'));
+  const allText = [...srcFiles, ...walk(join(root, 'tests')).filter((f) => f.endsWith('.js')), ...walk(join(root, 'tools')).filter((f) => f.endsWith('.js'))].map((f) => [f, readFileSync(f, 'utf8')]);
+  for (const f of srcFiles) {
+    const txt = readFileSync(f, 'utf8');
+    for (const m of txt.matchAll(/export (?:function|const) ([A-Za-z0-9_]+)/g)) {
+      const name = m[1], re = new RegExp('\\b' + name + '\\b', 'g');
+      const used = allText.some(([g, t]) => (t.match(re) || []).length > (g === f ? 1 : 0));
+      if (!used) bad(relative(root, f), `${name} ถูก export แต่ไม่มีใครใช้ (โค้ดตาย — ลบทิ้ง)`);
+    }
+  }
+}
+
 if (problems.length) {
   console.error('❌ ตรวจโครงสร้างไม่ผ่าน ' + problems.length + ' จุด');
   problems.forEach((p) => console.error('  - ' + p));
