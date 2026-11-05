@@ -10,12 +10,24 @@ let currentPage = null;
 async function check(name, fn) {
   const t0 = Date.now();
   try { const note = await fn(); results.push({ ok: true, name, note, ms: Date.now() - t0 }); }
-  catch (e) { results.push({ ok: false, name, note: e.message, ms: Date.now() - t0 }); }
+  catch (e) {
+    // ข้อที่ล้ม: แนบสภาพเกมตอนนั้นไว้ด้วย (โหมด เลือด พื้นที่ มอนรอบตัว) ช่วยหาสาเหตุเทสต์ผลไม่นิ่ง
+    const why = currentPage ? await currentPage.evaluate(() => { const g = globalThis.__ploy && __ploy.game; if (!g || !g.player) return ''; const p = g.player; const near = g.mobs.filter((m) => !m.dead && Math.hypot(m.x - p.x, m.y - p.y) < 200).length; return ` [โหมด ${g.mode} · เลือด ${Math.ceil(p.hp)} · ${g.world.zone.id} · มอนใกล้ ${near} · ui ${g.input.uiMode}]`; }).catch(() => '') : '';
+    results.push({ ok: false, name, note: e.message + why, ms: Date.now() - t0 });
+  }
   // ปิดหน้าต่างที่ค้าง เพื่อไม่ให้ข้อที่พังลามไปข้ออื่น
   if (currentPage) await currentPage.evaluate(() => { const g = globalThis.__ploy && __ploy.game; if (g && (g.mode === 'bag' || g.mode === 'tree')) { g.mode = 'play'; g.input.setUiMode(false); } }).catch(() => {});
 }
 const assert = (c, msg) => { if (!c) throw new Error(msg); };
 const state = (page) => G(page, () => { const g = __ploy.game, p = g.player; return { mode: g.mode, step: g.flags.tutStep, zone: g.world.zone.id, x: p.x, y: p.y, hp: p.hp, lv: p.level, xp: p.xp, coins: p.coins, gems: ['weapon', 'body'].flatMap((k) => (p.equip[k] && p.equip[k].gems) || []).filter(Boolean), allGems: [...p.bag, ...[...Object.values(p.equip).filter(Boolean), ...p.items].flatMap((it) => it.gems || []).filter(Boolean)].sort().join(','), pas: p.passives.join(','), gear: Object.values(p.equip).filter(Boolean).map((q) => q.uid).join(','), bagN: p.items.length, mobs: g.mobs.length, done: !!g.flags.tutorialDone }; });
+// วางผู้เล่นห่างบอส d พิกเซลในจุดที่บอสมองเห็น (ไม่มีต้นไม้/หินบัง) — บอสสุ่มตำแหน่งในลานได้ ห้ามสมมติว่าทางซ้ายโล่งเสมอ
+const nearBoss = (page, type, d) => G(page, ([type, d]) => {
+  const g = __ploy.game, k = g.mobs.find((m) => m.type === type && !m.dead), p = g.player;
+  g.mobs = g.mobs.filter((m) => m === k);                         // เหลือแค่บอส (มอนอื่นไม่บังหรือแย่งเป้า)
+  for (let i = 0; i < 16; i++) { const a = Math.PI + i * Math.PI / 8 * (i % 2 ? 1 : -1) / 2; const x = k.x + Math.cos(a) * d, y = k.y + Math.sin(a) * d;
+    if (!g.world.blocked(x, y, p.radius) && g.world.lineClear(x, y - 10, k.x, k.y - 10)) { p.x = x; p.y = y; p.aim = Math.atan2(k.y - y, k.x - x); return true; } }
+  p.x = k.x - d; p.y = k.y; return false;
+}, [type, d]);
 const wait = (page, fn, arg, ms = 8000) => page.waitForFunction(fn, arg, { timeout: ms });
 async function closeDialogs(page) {
   for (let i = 0; i < 20; i++) {
@@ -186,9 +198,9 @@ await check('พลอยเสริม: เก็บจากพื้น → 
   assert(sock[0] === 'ruby' && sock.includes('multi'), 'ฝังไม่ได้ ' + JSON.stringify(sock));
   await page.keyboard.press('KeyB'); await page.waitForTimeout(150);
   assert((await state(page)).mode === 'play', 'ปิดกระเป๋าไม่ได้');
-  await G(page, () => { const g = __ploy.game, p = g.player; g.mobs.length = 0; p.x = 36 * 32; p.y = 45 * 32; p.aim = -Math.PI / 2; p.targetMob = null; p.mp = 999; p.skillCd[0] = 0; g.shots.length = 0; }); // ยิงบนทางโล่ง ไม่ให้ต้นไม้บังลูกไฟ
+  await G(page, () => { const g = __ploy.game, p = g.player; g.mobs.length = 0; p.x = 36 * 32; p.y = 45 * 32; p.aim = -Math.PI / 2; p.targetMob = null; p.mp = 999; p.skillCd[0] = 0; g.shots.length = 0; p.pendingShot = null; }); // ยิงบนทางโล่ง ไม่ให้ต้นไม้บังลูกไฟ · ล้างลูกพลังคทาที่ค้างจากการตีก่อนหน้า
   await page.keyboard.press('KeyK'); await page.waitForTimeout(60);
-  const n = await G(page, () => __ploy.game.shots.filter((q) => q.from === 'player').length);
+  const n = await G(page, () => __ploy.game.shots.filter((q) => q.from === 'player' && q.kind === 'fire').length);
   assert(n === 3, 'ลูกไฟ ' + n + ' ลูก');
 });
 
@@ -359,7 +371,7 @@ await check('วัดร้าง: เดินเข้าซุ้มปร�
   assert(s.zone === 'dungeon1', 'เดินเข้าซุ้มแล้วไม่เข้าดันเจี้ยน: ' + s.zone);
   await page.waitForTimeout(600);
   await page.screenshot({ path: SHOTS + '/12-dungeon1.png' });
-  await G(page, () => { const g = __ploy.game; __ploy.enterZone(g, 'dungeon3'); const y = g.mobs.find((m) => m.type === 'yak'); g.player.x = y.x - 130; g.player.y = y.y; g.player.invuln = 999; });
+  await G(page, () => { const g = __ploy.game; __ploy.enterZone(g, 'dungeon3'); g.player.invuln = 999; }); await nearBoss(page, 'yak', 130);
   await page.waitForTimeout(2500);
   const seen = await G(page, () => { const g = __ploy.game, y = g.mobs.find((m) => m.type === 'yak'); return { aggro: y.aggroed, hz: g.hazards.length, st: y.state }; });
   await page.screenshot({ path: SHOTS + '/13-boss.png' });
@@ -403,15 +415,15 @@ await check('ป่าหิมพานต์: หลังล้มยัก�
   const types = await G(page, () => [...new Set(__ploy.game.mobs.map((m) => m.type))].join(','));
   assert(types.includes('khotchasi') && types.includes('naga_noi') && types.includes('hatsadi'), types);
   // บอสปลายป่า: เข้าใกล้แล้วตื่น มีแถบเลือดบอส แล้วล้มได้
-  await G(page, () => { const g = __ploy.game, k = g.mobs.find((m) => m.type === 'khotchasi_king'); g.player.x = k.x - 160; g.player.y = k.y; g.player.invuln = 999; });
+  await G(page, () => { __ploy.game.player.invuln = 999; }); await nearBoss(page, 'khotchasi_king', 140);
   await page.waitForTimeout(1600);
   await page.screenshot({ path: SHOTS + '/17-khotchasi-king.png' });
   const awake = await G(page, () => __ploy.game.mobs.find((m) => m.type === 'khotchasi_king').aggroed);
   assert(awake, 'บอสไม่ตื่น');
   await G(page, () => { const g = __ploy.game; const k = g.mobs.find((m) => m.type === 'khotchasi_king'); g.mobs.length = 0; g.mobs.push(k); k.hp = 1; g.player.x = k.x - 50; g.player.y = k.y; });   // เหลือแต่บอส ไม่ให้ดาบไปโดนตัวอื่นก่อน
   for (let i = 0; i < 30 && !(await G(page, () => !!__ploy.game.flags.khotchasi_kingSlain)); i++) {   // ยืนชิดบอสทุกครั้ง (บอสพุ่ง/ขยับได้)
-    await G(page, () => { const g = __ploy.game, k = g.mobs.find((m) => m.type === 'khotchasi_king' && !m.dead); if (k) { g.player.x = k.x - 45; g.player.y = k.y; g.player.aim = 0; g.player.dir = 3; } });
-    await page.keyboard.press('KeyJ'); await page.waitForTimeout(160);
+    if (await G(page, () => __ploy.game.mobs.some((m) => m.type === 'khotchasi_king' && !m.dead))) await nearBoss(page, 'khotchasi_king', 45);   // ชิดบอสจุดที่มองเห็น ลูกสมุนที่บอสเรียกออกไปก่อน
+    await page.keyboard.press('KeyJ'); await page.waitForTimeout(260);   // รอจังหวะปล่อยของคทา/ธนูด้วย
   }
   assert(await G(page, () => !!__ploy.game.flags.khotchasi_kingSlain), 'ล้มพญาคชสีห์ไม่ได้');
   return types;
@@ -439,14 +451,14 @@ await check('เขาไกรลาส: หลังล้มพญาคช�
 });
 
 await check('ยอดเขาไกรลาส: พญาครุฑราชตื่นเมื่อเข้าใกล้ มีแถบเลือดบอส ล้มได้', async () => {
-  await G(page, () => { const g = __ploy.game; __ploy.enterZone(g, 'kailash'); const k = g.mobs.find((m) => m.type === 'garuda_king'); g.player.x = k.x - 170; g.player.y = k.y; g.player.invuln = 999; });
+  await G(page, () => { const g = __ploy.game; __ploy.enterZone(g, 'kailash'); g.player.invuln = 999; }); await nearBoss(page, 'garuda_king', 150);
   await page.waitForTimeout(1600);
   await page.screenshot({ path: SHOTS + '/19-garuda-king.png' });
   assert(await G(page, () => __ploy.game.mobs.find((m) => m.type === 'garuda_king').aggroed), 'บอสไม่ตื่น');
   await G(page, () => { const g = __ploy.game; const k = g.mobs.find((m) => m.type === 'garuda_king'); g.mobs.length = 0; g.mobs.push(k); k.hp = 1; g.player.x = k.x - 50; g.player.y = k.y; });
   for (let i = 0; i < 30 && !(await G(page, () => !!__ploy.game.flags.garuda_kingSlain)); i++) {   // ยืนชิดบอสทุกครั้ง (บอสพุ่ง/ขยับได้)
-    await G(page, () => { const g = __ploy.game, k = g.mobs.find((m) => m.type === 'garuda_king' && !m.dead); if (k) { g.player.x = k.x - 45; g.player.y = k.y; g.player.aim = 0; g.player.dir = 3; } });
-    await page.keyboard.press('KeyJ'); await page.waitForTimeout(160);
+    if (await G(page, () => __ploy.game.mobs.some((m) => m.type === 'garuda_king' && !m.dead))) await nearBoss(page, 'garuda_king', 45);   // ชิดบอสจุดที่มองเห็น ลูกสมุนที่บอสเรียกออกไปก่อน
+    await page.keyboard.press('KeyJ'); await page.waitForTimeout(260);   // รอจังหวะปล่อยของคทา/ธนูด้วย
   }
   assert(await G(page, () => !!__ploy.game.flags.garuda_kingSlain), 'ล้มพญาครุฑราชไม่ได้');
 });
@@ -469,8 +481,8 @@ await check('สวรรค์ดาวดึงส์: ล้มครุฑ�
   assert(await G(page, () => __ploy.game.mobs.find((m) => m.type === 'vessavana').aggroed), 'บอสไม่ตื่น');
   await G(page, () => { const g = __ploy.game, k = g.mobs.find((m) => m.type === 'vessavana'); g.mobs.length = 0; g.mobs.push(k); k.hp = 1; });
   for (let i = 0; i < 30 && !(await G(page, () => !!__ploy.game.flags.vessavanaSlain)); i++) {
-    await G(page, () => { const g = __ploy.game, k = g.mobs.find((m) => m.type === 'vessavana' && !m.dead); if (k) { g.player.x = k.x - 45; g.player.y = k.y; g.player.aim = 0; g.player.dir = 3; } });
-    await page.keyboard.press('KeyJ'); await page.waitForTimeout(160);
+    if (await G(page, () => __ploy.game.mobs.some((m) => m.type === 'vessavana' && !m.dead))) await nearBoss(page, 'vessavana', 45);   // ชิดบอสจุดที่มองเห็น ลูกสมุนที่บอสเรียกออกไปก่อน
+    await page.keyboard.press('KeyJ'); await page.waitForTimeout(260);   // รอจังหวะปล่อยของคทา/ธนูด้วย
   }
   assert(await G(page, () => !!__ploy.game.flags.vessavanaSlain), 'ล้มท้าวเวสสุวรรณไม่ได้');
 });

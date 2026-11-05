@@ -1,4 +1,5 @@
-# สร้างเมืองประจำบท 2-4 (แบบเมืองของแต่ละ Act ใน PoE) ลงใน data/zones.json — รันซ้ำได้ (เขียนทับเฉพาะ 3 เมืองนี้ + ทางออกที่เกี่ยวข้อง)
+# สร้างเมืองประจำบท 2-4 (รันไฟล์นี้ไฟล์เดียว: จะเรียก gen_subzones.py ต่อให้เองเสมอ ลำดับถูกเสมอ)
+# (แบบเมืองของแต่ละ Act ใน PoE) ลงใน data/zones.json — รันซ้ำได้ (เขียนทับเฉพาะ 3 เมืองนี้ + ทางออกที่เกี่ยวข้อง)
 import json
 Z = json.load(open('data/zones.json'))
 
@@ -71,3 +72,7 @@ for zk, s in named.items():
     Z2[zk]['spawns'] = [x for x in Z2[zk]['spawns'] if not x.get('named')] + [s]
 json.dump(Z2, open('data/zones.json', 'w'), ensure_ascii=False, indent=1)
 print('ok', list(Z2.keys()))
+
+# ต่อด้วยพื้นที่ย่อยของบท (ต้องรันหลังเมืองทุกครั้ง ไม่งั้นทางออกของเมืองจะชี้ข้ามพื้นที่ย่อย)
+import runpy, os
+runpy.run_path(os.path.join(os.path.dirname(__file__), 'gen_subzones.py'))
