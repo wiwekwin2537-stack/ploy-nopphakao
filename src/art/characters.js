@@ -167,7 +167,7 @@ export function drawHuman(ctx, look, X, Y, o) {
   const hipY = y - 12 - bob;
   const R = (c, a, b, w, h) => { ctx.fillStyle = c; ctx.fillRect(Math.round(a), Math.round(b), w, h); };
   ctx.save();
-  if (o.dash) ctx.globalAlpha = 0.9;
+  // พุ่งหลบ: ตัวละครทึบปกติ (เอฟเฟกต์ลม/ฝุ่นวาดใน scene.js drawDashFx)
   if (o.hurt > 0 && Math.floor(t * 28) % 2) ctx.globalAlpha = 0.45;
   ctx.fillStyle = 'rgba(0,0,0,0.27)'; ctx.beginPath(); ctx.ellipse(X, Y + 1, 11 - bob, 4 - bob * 0.3, 0, 0, 7); ctx.fill();
 

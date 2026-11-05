@@ -18,7 +18,7 @@ import { npcMark } from '../systems/quests.js';
 export function createScene(game) {
   let ground = null, sprites = null, scale = 0;
   const list = [];
-  const ghosts = [];   // ภาพติดตาตอนหลบ (เอฟเฟกต์ภาพเท่านั้น)
+  const ghosts = [];   // จุดทางผ่านตอนพุ่งหลบ (ใช้วาดเส้นลม/ฝุ่น — เอฟเฟกต์ภาพเท่านั้น ไม่มีเงาตัวละคร)
   let lastT = 0;
 
   function ensure(dpr) {
@@ -258,7 +258,7 @@ export function createScene(game) {
       list.sort((a, b2) => a.key - b2.key);
       const p = game.player, t = game.time, dtv = Math.min(0.05, Math.max(0, t - lastT)); lastT = t;
       for (let i = ghosts.length - 1; i >= 0; i--) { ghosts[i].life -= dtv; if (ghosts[i].life <= 0) ghosts.splice(i, 1); }
-      if (p.dashT > 0 && dtv > 0) ghosts.push({ x: p.x, y: p.y, dir: p.dir, walk: p.walk, life: 0.22 });
+      if (p.dashT > 0 && dtv > 0) ghosts.push({ x: p.x, y: p.y, a: Math.atan2(p.dashVy, p.dashVx), life: 0.3, seed: Math.random() });
       for (const it of list) {
         if (it.o) sprites.draw(ctx, it.o);
         else if (it.mob) {
@@ -275,11 +275,7 @@ export function createScene(game) {
           drawHuman(ctx, n.look, n.x, n.y, { dir: n.face ? (n.face < 0 ? 2 : 3) : 0, t: t + n.x, moving: false, swing: -1 });
         } else if (it.drop) drawDrop(ctx, it.drop);
         else if (it.player && !(p.dead && game.mode === 'dead' && game.deadT > 0.6)) {
-          for (const gh of ghosts) {                                   // เงาซ้อนตอนหลบ
-            ctx.globalAlpha = Math.max(0, gh.life / 0.22) * 0.3;
-            drawHuman(ctx, 'hero', gh.x, gh.y, { dir: gh.dir, walk: gh.walk, moving: true, swing: -1, t, dash: true });
-          }
-          ctx.globalAlpha = 1;
+          drawDashFx(ctx, ghosts);                                     // พุ่งหลบ: เส้นลมเร็ว + ฝุ่นฟุ้งที่เท้า (ไม่มีเงาตัวละคร)
           drawAuraRings(ctx, game, p, t);
           drawHuman(ctx, heroLook(game), p.x, p.y, { ...heroGear(game), dir: p.dir, walk: p.walk, amt: p.walkAmt, moving: p.moving, swing: p.swing, combo: p.combo, aim: p.aim, hurt: p.hurt, t, dash: p.dashT > 0, cast: p.castT > 0, shoot: p.shootT > 0 ? 1 - p.shootT / p.shootDur : -1, shootKind: p.shootKind });
         }
@@ -308,4 +304,21 @@ function drawAuraRings(ctx, game, p, t) {
     ctx.globalAlpha = 0.75; ctx.strokeStyle = a.ring; ctx.lineWidth = 1.6; ctx.setLineDash([6, 4]); ctx.lineDashOffset = rot * 10;
     ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
   });
+}
+
+// เอฟเฟกต์พุ่งหลบ: เส้นลมสีขาวทองลากยาวตามทาง 3 ระดับ (ไหล่/เอว/เข่า) + ฝุ่นวงขยายที่เท้า — จางตามเวลา
+function drawDashFx(ctx, pts) {
+  for (const g of pts) {
+    const k = Math.max(0, g.life / 0.3), ca = Math.cos(g.a), sa = Math.sin(g.a), len = 10 + 14 * k;
+    ctx.save(); ctx.lineCap = 'round';
+    for (const [hy, w, col] of [[-26, 1.6, 'rgba(255,255,255,'], [-16, 2.2, 'rgba(255,236,190,'], [-7, 1.4, 'rgba(255,255,255,']]) {
+      const ox = -sa * (g.seed - 0.5) * 8, oy = ca * (g.seed - 0.5) * 4;
+      ctx.strokeStyle = col + (0.75 * k).toFixed(2) + ')'; ctx.lineWidth = w * k + 0.4;
+      ctx.beginPath(); ctx.moveTo(g.x + ox, g.y + hy + oy); ctx.lineTo(g.x + ox - ca * len, g.y + hy + oy - sa * len); ctx.stroke();
+    }
+    const r = 3 + (1 - k) * 9;                                       // ฝุ่นที่เท้า ขยายแล้วจาง
+    ctx.fillStyle = `rgba(216,196,154,${(0.45 * k).toFixed(2)})`;
+    ctx.beginPath(); ctx.ellipse(g.x - ca * 4, g.y + 1, r, r * 0.45, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
 }
