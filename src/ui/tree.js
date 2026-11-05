@@ -1,11 +1,12 @@
 // หน้าต้นพาสซีฟ: ลากเพื่อเลื่อน · ซูมด้วยปุ่ม +/− ล้อเมาส์ หรือสองนิ้ว · แตะโหนดดูรายละเอียด แตะซ้ำเพื่อเลือก/คืนแต้ม
-import { C, rrect, circle, poly } from '../art/draw.js';
+import { C, rrect, circle, kanokFrame } from '../art/draw.js';
 import { uiText as text } from './hud.js';
 import { startOf, pointsLeft, canAllocate, allocate, canRefund, refund, describe } from '../systems/passives.js';
 import { playerStats } from '../systems/stats.js';
 import { ascPointsLeft, ascPointsTotal } from '../systems/ascend.js';
 
 import { CLASS_COL } from './create.js';
+import { drawTreeBackground, drawLink, drawNode, nodeImage } from './treeart.js';
 
 function classOfNode(P, id) {
   if (P.nodes[id].class) return P.nodes[id].class;
@@ -13,7 +14,15 @@ function classOfNode(P, id) {
   return m ? m[1] : null;
 }
 
-function nodeR(n, s) { return (n.kind === 'keystone' ? 17 : n.kind === 'notable' ? 13 : n.kind === 'start' ? 19 : 8) * s; }
+function nodeR(n, s) { return (n.kind === 'keystone' ? 18 : n.kind === 'notable' ? 14 : n.kind === 'start' ? 24 : 9) * s; }
+
+// ป้ายชื่อโหนด: แผ่นมืดโปร่งใต้ตัวหนังสือ อ่านง่ายบนพื้นดาว
+function label(ctx, t, x, y, size, col, s) {
+  ctx.font = `600 ${size}px Kanit, sans-serif`;
+  const w = ctx.measureText(t).width + 10 * s;
+  ctx.fillStyle = 'rgba(8,6,10,0.72)'; rrect(ctx, x - w / 2, y - size * 0.75, w, size * 1.5, 4 * s); ctx.fill();
+  text(ctx, t, x, y, size, col, 'center', '600');
+}
 
 export function treeLayout(w, h, s) {
   return {
@@ -41,40 +50,25 @@ export function openTree(game) {
 export function drawTree(ctx, game, L, w, h) {
   const P = game.data.passives, p = game.player, v = game.treeView, s = L.s, t = game.time;
   const sx = (x) => w / 2 + (x - v.x) * v.z * s, sy = (y) => h / 2 + (y - v.y) * v.z * s;
-  const g = ctx.createRadialGradient(w / 2, h / 2, 10, w / 2, h / 2, Math.max(w, h) * 0.7);
-  g.addColorStop(0, '#2a1d18'); g.addColorStop(1, '#0e0a08');
-  ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
-  // ลายวงกลมจางๆ ที่ใจกลาง
-  ctx.strokeStyle = 'rgba(217,166,48,0.08)'; ctx.lineWidth = 1;
-  for (const r of [130, 300, 470, 650]) { ctx.beginPath(); ctx.arc(sx(0), sy(0), r * v.z * s, 0, Math.PI * 2); ctx.stroke(); }
+  drawTreeBackground(ctx, game.data, w, h, sx, sy, v.z, s, t);       // ท้องฟ้าดาว + มณฑลกนก + แสงประจำอาชีพ
   const own = new Set(p.passives);
-  // เส้นเชื่อม
+  // เส้นทาง: ทองเรืองมีประกายวิ่ง (ลงแล้ว) · ทองกะพริบ (เดินต่อได้) · ทองแดงหม่น
   for (const [id, n] of Object.entries(P.nodes)) {
     for (const l of n.links) {
       if (l < id) continue;
-      const a = own.has(id), b = own.has(l);
-      ctx.strokeStyle = a && b ? C.goldHi : (a && canAllocate(p, P, l)) || (b && canAllocate(p, P, id)) ? 'rgba(243,210,122,0.55)' : 'rgba(150,130,100,0.25)';
-      ctx.lineWidth = (a && b ? 4 : 2.5) * s;
-      ctx.beginPath(); ctx.moveTo(sx(n.x), sy(n.y)); ctx.lineTo(sx(P.nodes[l].x), sy(P.nodes[l].y)); ctx.stroke();
+      const a = own.has(id), b = own.has(l), st = a && b ? 'own' : (a && canAllocate(p, P, l)) || (b && canAllocate(p, P, id)) ? 'can' : 'none';
+      drawLink(ctx, sx(n.x), sy(n.y), sx(P.nodes[l].x), sy(P.nodes[l].y), st, s * Math.min(1.2, Math.max(0.6, v.z)), t);
     }
   }
-  // โหนด
+  // โหนด: กรอบทองตามชนิด (เล็ก/เด่น/คีย์สโตน/จุดเริ่ม) + ไอคอนตามค่า
   for (const [id, n] of Object.entries(P.nodes)) {
-    const x = sx(n.x), y = sy(n.y), r = nodeR(n, s);
-    if (x < -40 || y < -40 || x > w + 40 || y > h + 40) continue;
-    const has = own.has(id), can = canAllocate(p, P, id), cls = classOfNode(P, id);
-    const col = cls ? CLASS_COL[cls] : C.gold;
-    if (has) { const gl = ctx.createRadialGradient(x, y, r * 0.3, x, y, r * 2.2); gl.addColorStop(0, col + 'aa'); gl.addColorStop(1, col + '00'); ctx.fillStyle = gl; ctx.fillRect(x - r * 2.2, y - r * 2.2, r * 4.4, r * 4.4); }
-    const fill = has ? col : '#1e1612';
-    const ring = has ? C.goldHi : can ? `rgba(243,210,122,${0.6 + Math.sin(t * 5) * 0.35})` : 'rgba(150,130,100,0.6)';
-    if (n.kind === 'keystone') {
-      const pts = []; for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4 + Math.PI / 8; pts.push(x + Math.cos(a) * r, y + Math.sin(a) * r); }
-      poly(ctx, pts, fill, ring, 3 * s);
-    } else circle(ctx, x, y, r, fill, ring, (n.kind === 'small' ? 2 : 3) * s);
-    if (n.kind === 'notable' || n.kind === 'keystone') circle(ctx, x, y, r * 0.45, has ? C.goldHi : 'rgba(217,166,48,0.35)', null);
-    if (n.kind === 'start') text(ctx, n.name, x, y + r + 10 * s, 11 * s, CLASS_COL[n.class], 'center');
-    else if (n.kind !== 'small' && v.z > 0.7) text(ctx, n.name, x, y + r + 9 * s, 9 * s, has ? C.goldHi : 'rgba(244,230,200,0.75)', 'center', 'normal');
-    if (v.sel === id) circle(ctx, x, y, r + 5 * s, null, '#ffffff', 2);
+    const x = sx(n.x), y = sy(n.y), r = nodeR(n, s) * Math.min(1.3, Math.max(0.7, v.z));
+    if (x < -60 || y < -60 || x > w + 60 || y > h + 60) continue;
+    const has = own.has(id), cls = classOfNode(P, id), col = cls ? CLASS_COL[cls] : C.gold;
+    drawNode(ctx, game.data, n, x, y, r, has ? 'own' : canAllocate(p, P, id) ? 'can' : 'none', col, t);
+    if (n.kind === 'start') label(ctx, n.name, x, y + r * 1.45 + 8 * s, 11.5 * s, CLASS_COL[n.class], s);
+    else if (n.kind !== 'small' && v.z > 0.7) label(ctx, n.name, x, y + r * 1.3 + 8 * s, 9 * s, has ? C.goldHi : 'rgba(244,230,200,0.85)', s);
+    if (v.sel === id) { ctx.beginPath(); ctx.arc(x, y, r * 1.45, 0, 7); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.stroke(); ctx.setLineDash([]); }
   }
   // แถบบน
   const U = treeLayout(w, h, s), left = pointsLeft(p, P), st = startOf(p, P);
@@ -100,12 +94,14 @@ export function drawTree(ctx, game, L, w, h) {
   }
   // รายละเอียดโหนดที่เลือก
   const I = U.info;
-  ctx.fillStyle = 'rgba(14,12,18,0.88)'; rrect(ctx, I.x, I.y, I.w, I.h, 10 * s); ctx.fill();
-  ctx.strokeStyle = 'rgba(217,166,48,0.5)'; ctx.lineWidth = 1; ctx.stroke();
+  kanokFrame(ctx, I.x, I.y, I.w, I.h, 10);                          // กรอบลายไทยแบบหน้าต่างอื่นในเกม
+  ctx.fillStyle = 'rgba(12,8,14,0.9)'; rrect(ctx, I.x + 4 * s, I.y + 4 * s, I.w - 8 * s, I.h - 8 * s, 8 * s); ctx.fill();
   if (v.sel) {
-    const n = P.nodes[v.sel], lines = n.kind === 'start' ? [P.classes[n.class].desc] : describe(P, n);
-    text(ctx, n.name + (n.kind === 'keystone' ? ' (คีย์สโตน)' : n.kind === 'notable' ? ' (โหนดเด่น)' : ''), I.x + 12 * s, I.y + 14 * s, 13 * s, n.kind === 'start' ? CLASS_COL[n.class] : C.goldHi);
-    text(ctx, lines.join(' · '), I.x + 12 * s, I.y + 36 * s, 10.5 * s, C.cream, 'left', 'normal');
+    const n = P.nodes[v.sel], lines = n.kind === 'start' ? [P.classes[n.class].desc] : describe(P, n), cls = classOfNode(P, v.sel);
+    nodeImage(ctx, game.data, n, I.x + 30 * s, I.y + I.h / 2, 16 * s, own.has(v.sel) ? 'own' : 'can', cls ? CLASS_COL[cls] : C.gold);   // รูปโหนดที่เลือก
+    const tx = I.x + 58 * s;
+    text(ctx, n.name + (n.kind === 'keystone' ? ' (คีย์สโตน)' : n.kind === 'notable' ? ' (โหนดเด่น)' : ''), tx, I.y + 16 * s, 13 * s, n.kind === 'start' ? CLASS_COL[n.class] : C.goldHi);
+    text(ctx, lines.join(' · '), tx, I.y + 37 * s, 10.5 * s, C.cream, 'left', 'normal');
     let act;
     const rg = (p.currency && p.currency.regret) || 0;
     if (own.has(v.sel)) act = !canRefund(p, P, v.sel) ? 'ลงแล้ว · คืนไม่ได้: มีโหนดอื่นต่อจากโหนดนี้' : rg > 0 ? `แตะอีกครั้งเพื่อคืนแต้ม (ใช้ใบลานล้างกรรม 1 ใบ · มี ${rg})` : 'ลงแล้ว · คืนแต้มต้องใช้ใบลานล้างกรรม (ซื้อที่ร้านแม่ค้า หรือมอนดรอป)';
@@ -113,7 +109,7 @@ export function drawTree(ctx, game, L, w, h) {
     else if (!st) act = 'เลือกสายเริ่มต้นก่อน (โหนดวงใหญ่ 3 จุด)';
     else if (canAllocate(p, P, v.sel)) act = 'แตะอีกครั้งเพื่อเลือก (ใช้ 1 แต้ม · ลงแล้วถอนฟรีไม่ได้)';
     else act = left <= 0 ? 'แต้มไม่พอ — เลเวลอัพเพื่อรับแต้ม' : 'ต้องต่อจากโหนดที่เลือกไว้แล้ว';
-    text(ctx, act, I.x + 12 * s, I.y + 58 * s, 10.5 * s, '#9af0b0', 'left', '600');
+    text(ctx, act, tx, I.y + 58 * s, 10.5 * s, '#9af0b0', 'left', '600');
   } else {
     text(ctx, st ? 'แตะโหนดที่ติดกับเส้นทองเพื่อดูรายละเอียด แตะซ้ำเพื่อเลือก' : 'แตะจุดเริ่มของอาชีพตัวเอง (วงใหญ่สีประจำอาชีพ) เพื่อเริ่มต้น', I.x + 12 * s, I.y + 22 * s, 11 * s, C.cream, 'left', 'normal');
     text(ctx, 'ต้นเดียวกันทั้งหมด เดินข้ามไปสายอื่นได้ผ่านวงกลางหรือทางผสม', I.x + 12 * s, I.y + 46 * s, 10 * s, 'rgba(244,230,200,0.7)', 'left', 'normal');
@@ -142,7 +138,7 @@ export function updateTree(game, L, w, h) {
     let best = null, bd = 1e9;
     for (const [id, n] of Object.entries(P.nodes)) {
       const x = w / 2 + (n.x - v.x) * v.z * s, y = h / 2 + (n.y - v.y) * v.z * s, d = Math.hypot(t.sx - x, t.sy - y);
-      if (d < nodeR(n, s) + 10 * s && d < bd) { bd = d; best = id; }
+      if (d < nodeR(n, s) * Math.min(1.3, Math.max(0.7, v.z)) + 10 * s && d < bd) { bd = d; best = id; }   // ขนาดเดียวกับที่วาด
     }
     if (!best) { v.sel = null; continue; }
     if (v.sel !== best) { v.sel = best; game.audio.play('click'); continue; }
